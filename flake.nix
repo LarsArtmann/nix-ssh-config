@@ -16,7 +16,18 @@
     home-manager,
     treefmt-full-flake,
     ...
-  }: {
+  }: let
+    # Supported systems
+    systems = ["aarch64-darwin" "x86_64-linux" "x86_64-darwin" "aarch64-linux"];
+
+    # Helper to generate per-system outputs
+    forEachSystem = f:
+      nixpkgs.lib.genAttrs systems (system:
+        f {
+          inherit system;
+          pkgs = nixpkgs.legacyPackages.${system};
+        });
+  in {
     # Home Manager module for SSH client configuration
     homeManagerModules.ssh = import ./modules/home-manager/ssh.nix;
 
@@ -27,7 +38,7 @@
     homeManagerModule = self.homeManagerModules.ssh;
     nixosModule = self.nixosModules.ssh;
 
-    # Formatting via treefmt-full-flake
-    formatter = treefmt-full-flake.outputs.formatter { inherit nixpkgs; };
+    # Formatting via treefmt-full-flake (per-system)
+    formatter = forEachSystem ({pkgs, ...}: treefmt-full-flake.formatter.${pkgs.stdenv.hostPlatform.system});
   };
 }

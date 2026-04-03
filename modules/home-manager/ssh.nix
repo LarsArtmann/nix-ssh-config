@@ -79,14 +79,16 @@
       enable = true;
       enableDefaultConfig = false;
 
-      includes = lib.optionals pkgs.stdenv.isDarwin (
-        (lib.optional (config.ssh-config.enableOrbstack &&
-          builtins.pathExists "${config.home.homeDirectory}/.orbstack/ssh/config")
+      includes =
+        lib.optionals pkgs.stdenv.isDarwin (
+          (lib.optional (config.ssh-config.enableOrbstack
+            && builtins.pathExists "${config.home.homeDirectory}/.orbstack/ssh/config")
           "~/.orbstack/ssh/config")
-        ++ (lib.optional (config.ssh-config.enableColima &&
-          builtins.pathExists "${config.home.homeDirectory}/.colima/ssh_config")
+          ++ (lib.optional (config.ssh-config.enableColima
+            && builtins.pathExists "${config.home.homeDirectory}/.colima/ssh_config")
           "~/.colima/ssh_config")
-      ) ++ config.ssh-config.extraIncludes;
+        )
+        ++ config.ssh-config.extraIncludes;
 
       matchBlocks = lib.mkMerge [
         # Default settings for all hosts
@@ -122,14 +124,16 @@
 
         # User-defined hosts
         (lib.mapAttrs (name: hostConfig: {
-          inherit (hostConfig) hostname user;
-          inherit (hostConfig) port identityFile serverAliveInterval serverAliveCountMax extraOptions;
-        }) config.ssh-config.hosts)
+            inherit (hostConfig) hostname user;
+            inherit (hostConfig) port identityFile serverAliveInterval serverAliveCountMax extraOptions;
+          })
+          config.ssh-config.hosts)
       ];
     };
 
     # Ensure SSH directories exist
-    home.file.".ssh/sockets".source = config.lib.file.mkOutOfStoreSymlink
+    home.file.".ssh/sockets".source =
+      config.lib.file.mkOutOfStoreSymlink
       "${config.home.homeDirectory}/.ssh/sockets";
   };
 }

@@ -72,58 +72,63 @@
     services.openssh = {
       enable = true;
 
-      settings = {
-        # Basic hardening
-        PasswordAuthentication = config.services.ssh-server.passwordAuthentication;
-        PermitRootLogin = if config.services.ssh-server.allowRootLogin then "yes" else "no";
-        PermitEmptyPasswords = false;
+      settings =
+        {
+          # Basic hardening
+          PasswordAuthentication = config.services.ssh-server.passwordAuthentication;
+          PermitRootLogin =
+            if config.services.ssh-server.allowRootLogin
+            then "yes"
+            else "no";
+          PermitEmptyPasswords = false;
 
-        # Key-based authentication
-        PubkeyAuthentication = true;
-        # Accept modern algorithms only (OpenSSH 10.2+ compatible)
-        PubkeyAcceptedAlgorithms = "rsa-sha2-256,rsa-sha2-512,ssh-ed25519,sk-ssh-ed25519@openssh.com";
-        AuthorizedKeysFile = lib.concatStringsSep " " config.services.ssh-server.authorizedKeysFiles;
+          # Key-based authentication
+          PubkeyAuthentication = true;
+          # Accept modern algorithms only (OpenSSH 10.2+ compatible)
+          PubkeyAcceptedAlgorithms = "rsa-sha2-256,rsa-sha2-512,ssh-ed25519,sk-ssh-ed25519@openssh.com";
+          AuthorizedKeysFile = lib.concatStringsSep " " config.services.ssh-server.authorizedKeysFiles;
 
-        # Security settings
-        Protocol = 2;
-        X11Forwarding = false;
-        AllowTcpForwarding = false;
-        PermitTunnel = false;
+          # Security settings
+          Protocol = 2;
+          X11Forwarding = false;
+          AllowTcpForwarding = false;
+          PermitTunnel = false;
 
-        # Access control
-        AllowUsers = lib.mkIf (config.services.ssh-server.allowUsers != []) config.services.ssh-server.allowUsers;
+          # Access control
+          AllowUsers = lib.mkIf (config.services.ssh-server.allowUsers != []) config.services.ssh-server.allowUsers;
 
-        # Connection limits
-        MaxAuthTries = 3;
-        MaxSessions = 2;
-        ClientAliveInterval = 300;
-        ClientAliveCountMax = 2;
+          # Connection limits
+          MaxAuthTries = 3;
+          MaxSessions = 2;
+          ClientAliveInterval = 300;
+          ClientAliveCountMax = 2;
 
-        # Strong cryptographic settings
-        Ciphers = [
-          "chacha20-poly1305@openssh.com"
-          "aes256-gcm@openssh.com"
-          "aes128-gcm@openssh.com"
-          "aes256-ctr"
-          "aes192-ctr"
-          "aes128-ctr"
-        ];
+          # Strong cryptographic settings
+          Ciphers = [
+            "chacha20-poly1305@openssh.com"
+            "aes256-gcm@openssh.com"
+            "aes128-gcm@openssh.com"
+            "aes256-ctr"
+            "aes192-ctr"
+            "aes128-ctr"
+          ];
 
-        KexAlgorithms = [
-          "curve25519-sha256@libssh.org"
-          "diffie-hellman-group16-sha512"
-          "diffie-hellman-group18-sha512"
-          "diffie-hellman-group14-sha256"
-        ];
+          KexAlgorithms = [
+            "curve25519-sha256@libssh.org"
+            "diffie-hellman-group16-sha512"
+            "diffie-hellman-group18-sha512"
+            "diffie-hellman-group14-sha256"
+          ];
 
-        # Logging
-        LogLevel = "VERBOSE";
+          # Logging
+          LogLevel = "VERBOSE";
 
-        # Banner
-        Banner = lib.mkIf (config.services.ssh-server.bannerText != null) "/etc/ssh/banner";
+          # Banner
+          Banner = lib.mkIf (config.services.ssh-server.bannerText != null) "/etc/ssh/banner";
 
-        # Extra settings
-      } // config.services.ssh-server.extraSettings;
+          # Extra settings
+        }
+        // config.services.ssh-server.extraSettings;
 
       # Firewall
       openFirewall = true;
@@ -131,7 +136,8 @@
     };
 
     # Banner file
-    environment.etc."ssh/banner".text = lib.mkIf (config.services.ssh-server.bannerText != null)
+    environment.etc."ssh/banner".text =
+      lib.mkIf (config.services.ssh-server.bannerText != null)
       config.services.ssh-server.bannerText;
   };
 }
