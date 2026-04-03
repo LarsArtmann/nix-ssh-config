@@ -1,0 +1,23 @@
+# Nix build artifacts
+result
+result-*
+*.drv
+
+# Direnv
+.direnv
+.envrc
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Ignore private keys (public keys are tracked)
+ssh-keys/*
+!ssh-keys/*.pub
