@@ -7,12 +7,14 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    treefmt-full-flake.url = "github:LarsArtmann/treefmt-full-flake";
   };
 
   outputs = {
     self,
     nixpkgs,
     home-manager,
+    treefmt-full-flake,
     ...
   }: {
     # Home Manager module for SSH client configuration
@@ -24,5 +26,8 @@
     # Standalone module exports (for direct use)
     homeManagerModule = self.homeManagerModules.ssh;
     nixosModule = self.nixosModules.ssh;
+
+    # Formatting via treefmt-full-flake
+    formatter = treefmt-full-flake.outputs.formatter { inherit nixpkgs; };
   };
 }

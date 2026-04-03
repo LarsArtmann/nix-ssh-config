@@ -60,14 +60,14 @@ Configures SSH client settings via Home Manager.
 
 #### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `ssh-config.enable` | bool | `false` | Enable SSH client config |
-| `ssh-config.user` | str | `"lars"` | Default username |
-| `ssh-config.hosts` | attrs | `{}` | Host configurations |
-| `ssh-config.extraIncludes` | list | `[]` | Additional SSH config includes |
-| `ssh-config.enableOrbstack` | bool | `isDarwin` | Include OrbStack config |
-| `ssh-config.enableColima` | bool | `isDarwin` | Include Colima config |
+| Option                      | Type  | Default    | Description                    |
+| --------------------------- | ----- | ---------- | ------------------------------ |
+| `ssh-config.enable`         | bool  | `false`    | Enable SSH client config       |
+| `ssh-config.user`           | str   | `"lars"`   | Default username               |
+| `ssh-config.hosts`          | attrs | `{}`       | Host configurations            |
+| `ssh-config.extraIncludes`  | list  | `[]`       | Additional SSH config includes |
+| `ssh-config.enableOrbstack` | bool  | `isDarwin` | Include OrbStack config        |
+| `ssh-config.enableColima`   | bool  | `isDarwin` | Include Colima config          |
 
 #### Example
 
@@ -98,16 +98,16 @@ Configures OpenSSH server (sshd) with hardening.
 
 #### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `services.ssh-server.enable` | bool | `false` | Enable SSH server |
-| `services.ssh-server.port` | int | `22` | Listen port |
-| `services.ssh-server.allowUsers` | list | `[]` | Allowed users |
-| `services.ssh-server.allowRootLogin` | bool | `false` | Allow root login |
-| `services.ssh-server.passwordAuthentication` | bool | `false` | Allow passwords |
-| `services.ssh-server.authorizedKeysFiles` | list | `["%h/.ssh/authorized_keys"]` | Key file paths |
-| `services.ssh-server.extraSettings` | attrs | `{}` | Extra OpenSSH settings |
-| `services.ssh-server.bannerText` | str | default banner | SSH banner (null to disable) |
+| Option                                       | Type  | Default                       | Description                  |
+| -------------------------------------------- | ----- | ----------------------------- | ---------------------------- |
+| `services.ssh-server.enable`                 | bool  | `false`                       | Enable SSH server            |
+| `services.ssh-server.port`                   | int   | `22`                          | Listen port                  |
+| `services.ssh-server.allowUsers`             | list  | `[]`                          | Allowed users                |
+| `services.ssh-server.allowRootLogin`         | bool  | `false`                       | Allow root login             |
+| `services.ssh-server.passwordAuthentication` | bool  | `false`                       | Allow passwords              |
+| `services.ssh-server.authorizedKeysFiles`    | list  | `["%h/.ssh/authorized_keys"]` | Key file paths               |
+| `services.ssh-server.extraSettings`          | attrs | `{}`                          | Extra OpenSSH settings       |
+| `services.ssh-server.bannerText`             | str   | default banner                | SSH banner (null to disable) |
 
 #### Example
 
