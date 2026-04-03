@@ -38,6 +38,11 @@
     homeManagerModule = self.homeManagerModules.ssh;
     nixosModule = self.nixosModules.ssh;
 
+    # Public SSH keys (exposed as flake output for consumers)
+    sshKeys = {
+      lars = builtins.readFile ./ssh-keys/lars.pub;
+    };
+
     # Formatting via treefmt-full-flake (per-system)
     formatter = forEachSystem ({pkgs, ...}: treefmt-full-flake.formatter.${pkgs.stdenv.hostPlatform.system});
   };
