@@ -34,10 +34,6 @@
     # NixOS module for SSH server (sshd) configuration
     nixosModules.ssh = import ./modules/nixos/ssh.nix;
 
-    # Standalone module exports (for direct use)
-    homeManagerModule = self.homeManagerModules.ssh;
-    nixosModule = self.nixosModules.ssh;
-
     # Public SSH keys (exposed as flake output for consumers)
     sshKeys = {
       lars = builtins.readFile ./ssh-keys/lars.pub;
