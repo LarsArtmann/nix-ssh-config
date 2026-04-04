@@ -105,7 +105,7 @@ Configures OpenSSH server (sshd) with hardening.
 | `services.ssh-server.allowUsers`             | list  | `[]`                          | Allowed users                |
 | `services.ssh-server.allowRootLogin`         | bool  | `false`                       | Allow root login             |
 | `services.ssh-server.passwordAuthentication` | bool  | `false`                       | Allow passwords              |
-| `services.ssh-server.authorizedKeys`        | list  | `[]`                          | SSH public keys to authorize |
+| `services.ssh-server.authorizedKeys`         | list  | `[]`                          | SSH public keys to authorize |
 | `services.ssh-server.authorizedKeysFiles`    | list  | `["%h/.ssh/authorized_keys"]` | Key file paths               |
 | `services.ssh-server.extraSettings`          | attrs | `{}`                          | Extra OpenSSH settings       |
 | `services.ssh-server.bannerText`             | str   | default banner                | SSH banner (null to disable) |
