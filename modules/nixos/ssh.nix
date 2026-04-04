@@ -31,11 +31,18 @@
       description = "Whether to allow password authentication";
     };
 
+    authorizedKeys = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = "List of SSH public keys to authorize globally";
+    };
+
     authorizedKeysFiles = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [
         "%h/.ssh/authorized_keys"
         "/etc/ssh/authorized_keys.d/%u"
+        "/etc/ssh/authorized_keys"
       ];
       description = "Paths to authorized keys files";
     };
@@ -134,6 +141,11 @@
       openFirewall = true;
       ports = [config.services.ssh-server.port];
     };
+
+    # Global authorized keys (from ssh-keys/*.pub)
+    environment.etc."ssh/authorized_keys".text =
+      lib.mkIf (config.services.ssh-server.authorizedKeys != [])
+      (lib.concatStringsSep "\n" config.services.ssh-server.authorizedKeys);
 
     # Banner file
     environment.etc."ssh/banner".text =

@@ -105,6 +105,7 @@ Configures OpenSSH server (sshd) with hardening.
 | `services.ssh-server.allowUsers`             | list  | `[]`                          | Allowed users                |
 | `services.ssh-server.allowRootLogin`         | bool  | `false`                       | Allow root login             |
 | `services.ssh-server.passwordAuthentication` | bool  | `false`                       | Allow passwords              |
+| `services.ssh-server.authorizedKeys`        | list  | `[]`                          | SSH public keys to authorize |
 | `services.ssh-server.authorizedKeysFiles`    | list  | `["%h/.ssh/authorized_keys"]` | Key file paths               |
 | `services.ssh-server.extraSettings`          | attrs | `{}`                          | Extra OpenSSH settings       |
 | `services.ssh-server.bannerText`             | str   | default banner                | SSH banner (null to disable) |
@@ -117,8 +118,33 @@ Configures OpenSSH server (sshd) with hardening.
     enable = true;
     port = 2222;
     allowUsers = [ "admin" "deploy" ];
+    authorizedKeys = [
+      "ssh-rsa AAAA... user@host"
+    ];
     allowRootLogin = false;
     passwordAuthentication = false;
+  };
+}
+```
+
+Or use keys from the flake output:
+
+```nix
+{
+  inputs.nix-ssh-config.url = "github:yourusername/nix-ssh-config";
+
+  outputs = { self, nixpkgs, nix-ssh-config, ... }: {
+    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
+      modules = [
+        nix-ssh-config.nixosModules.ssh
+        {
+          services.ssh-server = {
+            enable = true;
+            authorizedKeys = builtins.attrValues nix-ssh-config.sshKeys;
+          };
+        }
+      ];
+    };
   };
 }
 ```
