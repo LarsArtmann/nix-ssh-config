@@ -136,7 +136,7 @@ in {
           # Strong cryptographic settings
           Ciphers = aeadCiphers;
 
-          MACs = lib.concatStringsSep "," etmMacs;
+          Macs = lib.concatStringsSep "," etmMacs;
 
           HostKeyAlgorithms = lib.concatStringsSep "," modernHostKeys;
 
