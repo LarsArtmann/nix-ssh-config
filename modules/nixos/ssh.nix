@@ -134,13 +134,13 @@ in {
           ClientAliveCountMax = 2;
 
           # Strong cryptographic settings
-          Ciphers = aeadCiphers;
+          Ciphers = lib.concatStringsSep "," aeadCiphers;
 
-          MACs = etmMacs;
+          MACs = lib.concatStringsSep "," etmMacs;
 
-          HostKeyAlgorithms = modernHostKeys;
+          HostKeyAlgorithms = lib.concatStringsSep "," modernHostKeys;
 
-          KexAlgorithms = pqKex;
+          KexAlgorithms = lib.concatStringsSep "," pqKex;
 
           # Logging
           LogLevel = "VERBOSE";

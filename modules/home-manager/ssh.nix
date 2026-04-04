@@ -151,8 +151,12 @@ in {
       ];
     };
 
-    home.file.".ssh/sockets".source =
-      config.lib.file.mkOutOfStoreSymlink
-      "${config.home.homeDirectory}/.ssh/sockets";
+    # Ensure SSH sockets directory exists as a real directory
+    # (not a symlink — mkOutOfStoreSymlink creates a circular reference here)
+    home.activation.createSshSockets =
+      lib.hm.dag.entryAfter ["writeBoundary"] ''
+        $DRY_RUN_CMD mkdir -p $VERBOSE_ARG "${config.home.homeDirectory}/.ssh/sockets"
+        $DRY_RUN_CMD chmod 700 "${config.home.homeDirectory}/.ssh/sockets"
+      '';
   };
 }
