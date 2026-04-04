@@ -104,6 +104,14 @@
             controlMaster = lib.mkDefault "no";
             controlPath = lib.mkDefault "~/.ssh/master-%r@%n:%p";
             controlPersist = lib.mkDefault "no";
+            extraOptions = lib.mkDefault {
+              KexAlgorithms = "mlkem768x25519-sha256,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org";
+              Ciphers = "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com";
+              MACs = "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com";
+              HostKeyAlgorithms = "ssh-ed25519,sk-ssh-ed25519@openssh.com,rsa-sha2-512,rsa-sha2-256";
+              PubkeyAcceptedAlgorithms = "ssh-ed25519,sk-ssh-ed25519@openssh.com,rsa-sha2-512,rsa-sha2-256";
+              IdentityFile = "~/.ssh/id_ed25519";
+            };
           };
         }
 
