@@ -7,7 +7,7 @@ Modular, reusable SSH configuration for Nix-based systems. Provides hardened SSH
 - **Cross-platform**: Works on both macOS (nix-darwin) and NixOS
 - **Modular**: Use only what you need - client config, server config, or both
 - **Hardened**: Secure-by-default settings following best practices
-- **Extensible**: Easy to customize for your specific needs
+- **Post-quantum ready**: ML-KEM hybrid key exchange for future-proof security
 
 ## Quick Start
 
@@ -119,7 +119,7 @@ Configures OpenSSH server (sshd) with hardening.
     port = 2222;
     allowUsers = [ "admin" "deploy" ];
     authorizedKeys = [
-      "ssh-rsa AAAA... user@host"
+      "ssh-ed25519 AAAA... user@host"
     ];
     allowRootLogin = false;
     passwordAuthentication = false;
@@ -155,7 +155,10 @@ Or use keys from the flake output:
 
 - Password authentication disabled (keys only)
 - Root login disabled
-- Strong ciphers and KEX algorithms
+- **Post-quantum key exchange**: `mlkem768x25519-sha256` (ML-KEM hybrid, NIST FIPS 203)
+- AEAD ciphers only: ChaCha20-Poly1305, AES-GCM
+- Encrypt-then-MAC only (no encrypt-and-MAC)
+- Ed25519 preferred host key algorithm
 - Connection limits (MaxAuthTries=3, MaxSessions=2)
 - X11 and TCP forwarding disabled
 - Verbose logging
@@ -163,6 +166,10 @@ Or use keys from the flake output:
 
 ### Client Defaults
 
+- **Post-quantum key exchange**: `mlkem768x25519-sha256` prioritized
+- **Ed25519 identity**: `~/.ssh/id_ed25519` as default key
+- AEAD ciphers and encrypt-then-MAC MACs only
+- Ed25519 preferred for host key verification
 - Keepalive every 60s
 - Control master disabled by default
 - Agent forwarding disabled
@@ -180,7 +187,7 @@ Or use keys from the flake output:
 │   └── nixos/
 │       └── ssh.nix          # Server configuration
 └── ssh-keys/
-    └── lars.pub             # Example public key
+    └── lars-ed25519.pub     # Ed25519 public key
 ```
 
 ## License

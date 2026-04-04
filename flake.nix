@@ -36,8 +36,7 @@
 
     # Public SSH keys (exposed as flake output for consumers)
     sshKeys = {
-      lars = builtins.readFile ./ssh-keys/lars.pub;
-      lars-ed25519 = builtins.readFile ./ssh-keys/lars-ed25519.pub;
+      lars = builtins.readFile ./ssh-keys/lars-ed25519.pub;
     };
 
     # Formatting via treefmt-full-flake (per-system)
