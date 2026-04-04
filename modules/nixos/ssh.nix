@@ -115,7 +115,7 @@ in {
           # Key-based authentication
           PubkeyAuthentication = true;
           # Accept modern algorithms only (OpenSSH 10.2+ compatible)
-          PubkeyAcceptedAlgorithms = "rsa-sha2-256,rsa-sha2-512,ssh-ed25519,sk-ssh-ed25519@openssh.com";
+          PubkeyAcceptedAlgorithms = lib.concatStringsSep "," modernHostKeys;
           AuthorizedKeysFile = lib.concatStringsSep " " config.services.ssh-server.authorizedKeysFiles;
 
           # Security settings
@@ -134,31 +134,13 @@ in {
           ClientAliveCountMax = 2;
 
           # Strong cryptographic settings
-          Ciphers = [
-            "chacha20-poly1305@openssh.com"
-            "aes256-gcm@openssh.com"
-            "aes128-gcm@openssh.com"
-          ];
+          Ciphers = aeadCiphers;
 
-          MACs = [
-            "hmac-sha2-512-etm@openssh.com"
-            "hmac-sha2-256-etm@openssh.com"
-            "umac-128-etm@openssh.com"
-          ];
+          MACs = etmMacs;
 
-          HostKeyAlgorithms = [
-            "ssh-ed25519"
-            "sk-ssh-ed25519@openssh.com"
-            "rsa-sha2-512"
-            "rsa-sha2-256"
-          ];
+          HostKeyAlgorithms = modernHostKeys;
 
-          KexAlgorithms = [
-            "mlkem768x25519-sha256"
-            "sntrup761x25519-sha512@openssh.com"
-            "curve25519-sha256@libssh.org"
-            "curve25519-sha256"
-          ];
+          KexAlgorithms = pqKex;
 
           # Logging
           LogLevel = "VERBOSE";
