@@ -158,9 +158,10 @@ in {
     };
 
     # Global authorized keys (from ssh-keys/*.pub)
-    environment.etc."ssh/authorized_keys".text =
-      lib.mkIf (config.services.ssh-server.authorizedKeys != [])
-      (lib.concatStringsSep "\n" config.services.ssh-server.authorizedKeys);
+    environment.etc = lib.mkIf (config.services.ssh-server.authorizedKeys != []) {
+      "ssh/authorized_keys".text =
+        lib.concatStringsSep "\n" config.services.ssh-server.authorizedKeys;
+    };
 
     # Banner file
     environment.etc."ssh/banner".text =
