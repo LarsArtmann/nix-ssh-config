@@ -15,7 +15,7 @@ Modular, reusable SSH configuration for Nix-based systems. Provides hardened SSH
 
 ```nix
 {
-  inputs.nix-ssh-config.url = "github:yourusername/nix-ssh-config";
+  inputs.nix-ssh-config.url = "github:LarsArtmann/nix-ssh-config";
 
   outputs = { self, nixpkgs, nix-ssh-config, ... }: {
     # For NixOS
@@ -60,14 +60,27 @@ Configures SSH client settings via Home Manager.
 
 #### Options
 
-| Option                      | Type  | Default    | Description                    |
-| --------------------------- | ----- | ---------- | ------------------------------ |
-| `ssh-config.enable`         | bool  | `false`    | Enable SSH client config       |
-| `ssh-config.user`           | str   | `"lars"`   | Default username               |
-| `ssh-config.hosts`          | attrs | `{}`       | Host configurations            |
-| `ssh-config.extraIncludes`  | list  | `[]`       | Additional SSH config includes |
-| `ssh-config.enableOrbstack` | bool  | `isDarwin` | Include OrbStack config        |
-| `ssh-config.enableColima`   | bool  | `isDarwin` | Include Colima config          |
+| Option                      | Type  | Default                | Description                    |
+| --------------------------- | ----- | ---------------------- | ------------------------------ |
+| `ssh-config.enable`         | bool  | `false`                | Enable SSH client config       |
+| `ssh-config.user`           | str   | `config.home.username` | Default username               |
+| `ssh-config.identityFile`   | str\|null | `"~/.ssh/id_ed25519"` | Default SSH identity file path |
+| `ssh-config.hosts`          | attrs | `{}`                   | Host configurations            |
+| `ssh-config.extraIncludes`  | list  | `[]`                   | Additional SSH config includes |
+| `ssh-config.enableOrbstack` | bool  | `isDarwin`             | Include OrbStack config        |
+| `ssh-config.enableColima`   | bool  | `isDarwin`             | Include Colima config          |
+
+#### Host Submodule Options
+
+| Option                | Type  | Default | Description              |
+| --------------------- | ----- | ------- | ------------------------ |
+| `hostname`            | str   | —       | Host IP or hostname      |
+| `user`                | str   | —       | Username for this host   |
+| `port`                | int\|null | `null`  | SSH port              |
+| `identityFile`        | str\|null | `null`  | Path to identity file |
+| `serverAliveInterval` | int\|null | `null`  | Keepalive interval (s) |
+| `serverAliveCountMax` | int\|null | `null`  | Max keepalive probes    |
+| `extraOptions`        | attrs | `{}`    | Additional SSH options   |
 
 #### Example
 
@@ -75,17 +88,11 @@ Configures SSH client settings via Home Manager.
 {
   ssh-config = {
     enable = true;
-    user = "admin";
     hosts = {
       webserver = {
         hostname = "203.0.113.10";
         user = "deploy";
         serverAliveInterval = 60;
-      };
-      github = {
-        hostname = "github.com";
-        user = "git";
-        compression = true;
       };
     };
   };
@@ -106,9 +113,15 @@ Configures OpenSSH server (sshd) with hardening.
 | `services.ssh-server.allowRootLogin`         | bool  | `false`                       | Allow root login             |
 | `services.ssh-server.passwordAuthentication` | bool  | `false`                       | Allow passwords              |
 | `services.ssh-server.authorizedKeys`         | list  | `[]`                          | SSH public keys to authorize |
-| `services.ssh-server.authorizedKeysFiles`    | list  | `["%h/.ssh/authorized_keys"]` | Key file paths               |
+| `services.ssh-server.authorizedKeysFiles`    | list  | (see below)                   | Key file paths               |
 | `services.ssh-server.extraSettings`          | attrs | `{}`                          | Extra OpenSSH settings       |
-| `services.ssh-server.bannerText`             | str   | default banner                | SSH banner (null to disable) |
+| `services.ssh-server.bannerText`             | str\|null | default banner             | SSH banner (null to disable) |
+
+Default `authorizedKeysFiles`:
+
+```
+["%h/.ssh/authorized_keys" "/etc/ssh/authorized_keys.d/%u" "/etc/ssh/authorized_keys"]
+```
 
 #### Example
 
@@ -131,7 +144,7 @@ Or use keys from the flake output:
 
 ```nix
 {
-  inputs.nix-ssh-config.url = "github:yourusername/nix-ssh-config";
+  inputs.nix-ssh-config.url = "github:LarsArtmann/nix-ssh-config";
 
   outputs = { self, nixpkgs, nix-ssh-config, ... }: {
     nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
@@ -176,20 +189,40 @@ Or use keys from the flake output:
 - Compression disabled by default
 - GitHub optimized settings with connection pooling
 
+### OpenSSH Version Compatibility
+
+| Algorithm                         | Min OpenSSH | Status              |
+| --------------------------------- | ----------- | ------------------- |
+| `mlkem768x25519-sha256`           | 9.9         | Default since 10.0  |
+| `sntrup761x25519-sha512`          | 8.5         | Widely available    |
+| `curve25519-sha256`               | 6.5         | Universal           |
+| `chacha20-poly1305`               | 6.5         | Universal           |
+
+Servers running OpenSSH < 6.5 (released 2014) will not be able to connect.
+
+### Post-Quantum Status
+
+| Area                     | Status          | Timeline                          |
+| ------------------------ | --------------- | --------------------------------- |
+| Key exchange (ML-KEM)    | Deployed        | Complete                          |
+| Authentication (ML-DSA)  | Not available   | IETF draft exists, no OpenSSH implementation timeline |
+
 ## Directory Structure
 
 ```
 .
 ├── flake.nix                 # Flake entry point
 ├── modules/
+│   ├── shared/
+│   │   └── crypto.nix        # Shared cryptographic algorithm definitions
 │   ├── home-manager/
-│   │   └── ssh.nix          # Client configuration
+│   │   └── ssh.nix           # Client configuration
 │   └── nixos/
-│       └── ssh.nix          # Server configuration
+│       └── ssh.nix           # Server configuration
 └── ssh-keys/
-    └── lars-ed25519.pub     # Ed25519 public key
+    └── lars-ed25519.pub      # Ed25519 public key
 ```
 
 ## License
 
-MIT - See LICENSE file
+MIT — See [LICENSE](LICENSE) file.

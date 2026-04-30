@@ -4,28 +4,7 @@
   pkgs,
   ...
 }: let
-  pqKex = [
-    "mlkem768x25519-sha256"
-    "sntrup761x25519-sha512@openssh.com"
-    "curve25519-sha256@libssh.org"
-    "curve25519-sha256"
-  ];
-  aeadCiphers = [
-    "chacha20-poly1305@openssh.com"
-    "aes256-gcm@openssh.com"
-    "aes128-gcm@openssh.com"
-  ];
-  etmMacs = [
-    "hmac-sha2-512-etm@openssh.com"
-    "hmac-sha2-256-etm@openssh.com"
-    "umac-128-etm@openssh.com"
-  ];
-  modernHostKeys = [
-    "ssh-ed25519"
-    "sk-ssh-ed25519@openssh.com"
-    "rsa-sha2-512"
-    "rsa-sha2-256"
-  ];
+  crypto = import ../shared/crypto.nix {inherit lib;};
 in {
   options.services.ssh-server = {
     enable = lib.mkEnableOption "SSH server with hardening";
@@ -102,9 +81,13 @@ in {
     services.openssh = {
       enable = true;
 
+      # NixOS services.openssh.settings rendering:
+      #   Explicit options (Ciphers, Macs, KexAlgorithms) accept Nix lists —
+      #   the module joins them with commas automatically.
+      #   Freeform keys (HostKeyAlgorithms, PubkeyAcceptedAlgorithms) require
+      #   pre-joined comma-separated strings.
       settings =
         {
-          # Basic hardening
           PasswordAuthentication = config.services.ssh-server.passwordAuthentication;
           PermitRootLogin =
             if config.services.ssh-server.allowRootLogin
@@ -112,60 +95,43 @@ in {
             else "no";
           PermitEmptyPasswords = false;
 
-          # Key-based authentication
           PubkeyAuthentication = true;
-          # Accept modern algorithms only (OpenSSH 10.2+ compatible)
-          PubkeyAcceptedAlgorithms = lib.concatStringsSep "," modernHostKeys;
+          PubkeyAcceptedAlgorithms = crypto.modernHostKeysString;
           AuthorizedKeysFile = lib.concatStringsSep " " config.services.ssh-server.authorizedKeysFiles;
 
-          # Security settings
-          Protocol = 2;
           X11Forwarding = false;
           AllowTcpForwarding = false;
           PermitTunnel = false;
 
-          # Access control
           AllowUsers = lib.mkIf (config.services.ssh-server.allowUsers != []) config.services.ssh-server.allowUsers;
 
-          # Connection limits
           MaxAuthTries = 3;
           MaxSessions = 2;
           ClientAliveInterval = 300;
           ClientAliveCountMax = 2;
 
-          # Strong cryptographic settings
-          Ciphers = aeadCiphers;
+          Ciphers = crypto.aeadCiphers;
+          Macs = crypto.etmMacs;
+          HostKeyAlgorithms = crypto.modernHostKeysString;
+          KexAlgorithms = crypto.pqKex;
 
-          Macs = etmMacs;
-
-          HostKeyAlgorithms = lib.concatStringsSep "," modernHostKeys;
-
-          KexAlgorithms = pqKex;
-
-          # Logging
           LogLevel = "VERBOSE";
 
-          # Banner
           Banner = lib.mkIf (config.services.ssh-server.bannerText != null) "/etc/ssh/banner";
-
-          # Extra settings
         }
         // config.services.ssh-server.extraSettings;
 
-      # Firewall
       openFirewall = true;
       ports = [config.services.ssh-server.port];
     };
 
-    # Global authorized keys (from ssh-keys/*.pub)
-    environment.etc = lib.mkIf (config.services.ssh-server.authorizedKeys != []) {
-      "ssh/authorized_keys".text =
-        lib.concatStringsSep "\n" config.services.ssh-server.authorizedKeys;
-    };
-
-    # Banner file
-    environment.etc."ssh/banner".text =
-      lib.mkIf (config.services.ssh-server.bannerText != null)
-      config.services.ssh-server.bannerText;
+    environment.etc =
+      (lib.optionalAttrs (config.services.ssh-server.authorizedKeys != []) {
+        "ssh/authorized_keys".text =
+          lib.concatStringsSep "\n" config.services.ssh-server.authorizedKeys;
+      })
+      // (lib.optionalAttrs (config.services.ssh-server.bannerText != null) {
+        "ssh/banner".text = config.services.ssh-server.bannerText;
+      });
   };
 }

@@ -17,10 +17,8 @@
     treefmt-full-flake,
     ...
   }: let
-    # Supported systems
     systems = ["aarch64-darwin" "x86_64-linux" "x86_64-darwin" "aarch64-linux"];
 
-    # Helper to generate per-system outputs
     forEachSystem = f:
       nixpkgs.lib.genAttrs systems (system:
         f {
@@ -28,18 +26,61 @@
           pkgs = nixpkgs.legacyPackages.${system};
         });
   in {
-    # Home Manager module for SSH client configuration
     homeManagerModules.ssh = import ./modules/home-manager/ssh.nix;
 
-    # NixOS module for SSH server (sshd) configuration
     nixosModules.ssh = import ./modules/nixos/ssh.nix;
 
-    # Public SSH keys (exposed as flake output for consumers)
     sshKeys = {
       lars = builtins.readFile ./ssh-keys/lars-ed25519.pub;
     };
 
-    # Formatting via treefmt-full-flake (per-system)
+    checks = forEachSystem ({system, pkgs}: let
+      testKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/uqxUhFQpJaBq+dDd+shObEjKm8YOPimFx7XHgqTFJ lars@Lars-MacBook-Air-2026-04";
+    in {
+      nixos-module-evaluates = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          self.nixosModules.ssh
+          {
+            services.ssh-server = {
+              enable = true;
+              allowUsers = ["testuser"];
+              authorizedKeys = [testKey];
+            };
+            boot.isContainer = true;
+            fileSystems."/".device = "/dev/null";
+          }
+        ];
+      };
+
+      home-manager-module-evaluates = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [
+          self.homeManagerModules.ssh
+          {
+            ssh-config = {
+              enable = true;
+              hosts.test = {
+                hostname = "example.com";
+                user = "admin";
+              };
+            };
+            home.username = "test";
+            home.homeDirectory = "/home/test";
+          }
+        ];
+      };
+    });
+
+    devShells = forEachSystem ({pkgs, ...}: {
+      default = pkgs.mkShell {
+        packages = with pkgs; [
+          nixfmt-rfc-style
+          nil
+        ];
+      };
+    });
+
     formatter = forEachSystem ({pkgs, ...}: treefmt-full-flake.formatter.${pkgs.stdenv.hostPlatform.system});
   };
 }

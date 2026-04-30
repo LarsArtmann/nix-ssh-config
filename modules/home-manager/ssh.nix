@@ -4,18 +4,16 @@
   pkgs,
   ...
 }: let
-  pqKex = "mlkem768x25519-sha256,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org";
-  aeadCiphers = "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com";
-  etmMacs = "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com";
-  modernHostKeys = "ssh-ed25519,sk-ssh-ed25519@openssh.com,rsa-sha2-512,rsa-sha2-256";
+  crypto = import ../shared/crypto.nix {inherit lib;};
 in {
   options.ssh-config = {
     enable = lib.mkEnableOption "SSH client configuration";
 
     user = lib.mkOption {
       type = lib.types.str;
-      default = "lars";
-      description = "Username for SSH connections";
+      default = config.home.username;
+      defaultText = "config.home.username";
+      description = "Default username for SSH connections";
     };
 
     identityFile = lib.mkOption {
@@ -104,6 +102,7 @@ in {
       matchBlocks = lib.mkMerge [
         {
           "*" = {
+            user = lib.mkDefault config.ssh-config.user;
             forwardAgent = lib.mkDefault false;
             addKeysToAgent = lib.mkDefault "no";
             compression = lib.mkDefault false;
@@ -116,11 +115,11 @@ in {
             controlPersist = lib.mkDefault "no";
             extraOptions = lib.mkDefault (
               {
-                KexAlgorithms = pqKex;
-                Ciphers = aeadCiphers;
-                MACs = etmMacs;
-                HostKeyAlgorithms = modernHostKeys;
-                PubkeyAcceptedAlgorithms = modernHostKeys;
+                KexAlgorithms = crypto.pqKexString;
+                Ciphers = crypto.aeadCiphersString;
+                MACs = crypto.etmMacsString;
+                HostKeyAlgorithms = crypto.modernHostKeysString;
+                PubkeyAcceptedAlgorithms = crypto.modernHostKeysString;
               }
               // lib.optionalAttrs (config.ssh-config.identityFile != null) {
                 IdentityFile = config.ssh-config.identityFile;
@@ -151,8 +150,6 @@ in {
       ];
     };
 
-    # Ensure SSH sockets directory exists as a real directory
-    # (not a symlink — mkOutOfStoreSymlink creates a circular reference here)
     home.activation.createSshSockets = lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD mkdir -p $VERBOSE_ARG "${config.home.homeDirectory}/.ssh/sockets"
       $DRY_RUN_CMD chmod 700 "${config.home.homeDirectory}/.ssh/sockets"
