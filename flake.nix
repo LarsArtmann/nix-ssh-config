@@ -34,10 +34,13 @@
       lars = builtins.readFile ./ssh-keys/lars-ed25519.pub;
     };
 
-    checks = forEachSystem ({system, pkgs}: let
+    checks = forEachSystem ({
+      system,
+      pkgs,
+    }: let
       testKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/uqxUhFQpJaBq+dDd+shObEjKm8YOPimFx7XHgqTFJ lars@Lars-MacBook-Air-2026-04";
-    in {
-      nixos-module-evaluates = nixpkgs.lib.nixosSystem {
+
+      nixosEval = nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
           self.nixosModules.ssh
@@ -53,7 +56,7 @@
         ];
       };
 
-      home-manager-module-evaluates = home-manager.lib.homeManagerConfiguration {
+      hmEval = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         modules = [
           self.homeManagerModules.ssh
@@ -67,15 +70,26 @@
             };
             home.username = "test";
             home.homeDirectory = "/home/test";
+            home.stateVersion = "25.05";
           }
         ];
       };
+    in {
+      nixos-module-evaluates = pkgs.runCommand "nixos-module-evaluates" {} ''
+        ${builtins.deepSeq nixosEval.config.environment.etc."ssh/authorized_keys".text ""}
+        echo ok > $out
+      '';
+
+      home-manager-module-evaluates = pkgs.runCommand "home-manager-module-evaluates" {} ''
+        ${builtins.deepSeq hmEval.config.programs.ssh.matchBlocks ""}
+        echo ok > $out
+      '';
     });
 
     devShells = forEachSystem ({pkgs, ...}: {
       default = pkgs.mkShell {
         packages = with pkgs; [
-          nixfmt-rfc-style
+          nixfmt
           nil
         ];
       };

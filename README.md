@@ -60,27 +60,27 @@ Configures SSH client settings via Home Manager.
 
 #### Options
 
-| Option                      | Type  | Default                | Description                    |
-| --------------------------- | ----- | ---------------------- | ------------------------------ |
-| `ssh-config.enable`         | bool  | `false`                | Enable SSH client config       |
-| `ssh-config.user`           | str   | `config.home.username` | Default username               |
-| `ssh-config.identityFile`   | str\|null | `"~/.ssh/id_ed25519"` | Default SSH identity file path |
-| `ssh-config.hosts`          | attrs | `{}`                   | Host configurations            |
-| `ssh-config.extraIncludes`  | list  | `[]`                   | Additional SSH config includes |
-| `ssh-config.enableOrbstack` | bool  | `isDarwin`             | Include OrbStack config        |
-| `ssh-config.enableColima`   | bool  | `isDarwin`             | Include Colima config          |
+| Option                      | Type      | Default                | Description                    |
+| --------------------------- | --------- | ---------------------- | ------------------------------ |
+| `ssh-config.enable`         | bool      | `false`                | Enable SSH client config       |
+| `ssh-config.user`           | str       | `config.home.username` | Default username               |
+| `ssh-config.identityFile`   | str\|null | `"~/.ssh/id_ed25519"`  | Default SSH identity file path |
+| `ssh-config.hosts`          | attrs     | `{}`                   | Host configurations            |
+| `ssh-config.extraIncludes`  | list      | `[]`                   | Additional SSH config includes |
+| `ssh-config.enableOrbstack` | bool      | `isDarwin`             | Include OrbStack config        |
+| `ssh-config.enableColima`   | bool      | `isDarwin`             | Include Colima config          |
 
 #### Host Submodule Options
 
-| Option                | Type  | Default | Description              |
-| --------------------- | ----- | ------- | ------------------------ |
-| `hostname`            | str   | —       | Host IP or hostname      |
-| `user`                | str   | —       | Username for this host   |
-| `port`                | int\|null | `null`  | SSH port              |
-| `identityFile`        | str\|null | `null`  | Path to identity file |
+| Option                | Type      | Default | Description            |
+| --------------------- | --------- | ------- | ---------------------- |
+| `hostname`            | str       | —       | Host IP or hostname    |
+| `user`                | str       | —       | Username for this host |
+| `port`                | int\|null | `null`  | SSH port               |
+| `identityFile`        | str\|null | `null`  | Path to identity file  |
 | `serverAliveInterval` | int\|null | `null`  | Keepalive interval (s) |
-| `serverAliveCountMax` | int\|null | `null`  | Max keepalive probes    |
-| `extraOptions`        | attrs | `{}`    | Additional SSH options   |
+| `serverAliveCountMax` | int\|null | `null`  | Max keepalive probes   |
+| `extraOptions`        | attrs     | `{}`    | Additional SSH options |
 
 #### Example
 
@@ -105,17 +105,17 @@ Configures OpenSSH server (sshd) with hardening.
 
 #### Options
 
-| Option                                       | Type  | Default                       | Description                  |
-| -------------------------------------------- | ----- | ----------------------------- | ---------------------------- |
-| `services.ssh-server.enable`                 | bool  | `false`                       | Enable SSH server            |
-| `services.ssh-server.port`                   | int   | `22`                          | Listen port                  |
-| `services.ssh-server.allowUsers`             | list  | `[]`                          | Allowed users                |
-| `services.ssh-server.allowRootLogin`         | bool  | `false`                       | Allow root login             |
-| `services.ssh-server.passwordAuthentication` | bool  | `false`                       | Allow passwords              |
-| `services.ssh-server.authorizedKeys`         | list  | `[]`                          | SSH public keys to authorize |
-| `services.ssh-server.authorizedKeysFiles`    | list  | (see below)                   | Key file paths               |
-| `services.ssh-server.extraSettings`          | attrs | `{}`                          | Extra OpenSSH settings       |
-| `services.ssh-server.bannerText`             | str\|null | default banner             | SSH banner (null to disable) |
+| Option                                       | Type      | Default        | Description                  |
+| -------------------------------------------- | --------- | -------------- | ---------------------------- |
+| `services.ssh-server.enable`                 | bool      | `false`        | Enable SSH server            |
+| `services.ssh-server.port`                   | int       | `22`           | Listen port                  |
+| `services.ssh-server.allowUsers`             | list      | `[]`           | Allowed users                |
+| `services.ssh-server.allowRootLogin`         | bool      | `false`        | Allow root login             |
+| `services.ssh-server.passwordAuthentication` | bool      | `false`        | Allow passwords              |
+| `services.ssh-server.authorizedKeys`         | list      | `[]`           | SSH public keys to authorize |
+| `services.ssh-server.authorizedKeysFiles`    | list      | (see below)    | Key file paths               |
+| `services.ssh-server.extraSettings`          | attrs     | `{}`           | Extra OpenSSH settings       |
+| `services.ssh-server.bannerText`             | str\|null | default banner | SSH banner (null to disable) |
 
 Default `authorizedKeysFiles`:
 
@@ -191,21 +191,21 @@ Or use keys from the flake output:
 
 ### OpenSSH Version Compatibility
 
-| Algorithm                         | Min OpenSSH | Status              |
-| --------------------------------- | ----------- | ------------------- |
-| `mlkem768x25519-sha256`           | 9.9         | Default since 10.0  |
-| `sntrup761x25519-sha512`          | 8.5         | Widely available    |
-| `curve25519-sha256`               | 6.5         | Universal           |
-| `chacha20-poly1305`               | 6.5         | Universal           |
+| Algorithm                | Min OpenSSH | Status             |
+| ------------------------ | ----------- | ------------------ |
+| `mlkem768x25519-sha256`  | 9.9         | Default since 10.0 |
+| `sntrup761x25519-sha512` | 8.5         | Widely available   |
+| `curve25519-sha256`      | 6.5         | Universal          |
+| `chacha20-poly1305`      | 6.5         | Universal          |
 
 Servers running OpenSSH < 6.5 (released 2014) will not be able to connect.
 
 ### Post-Quantum Status
 
-| Area                     | Status          | Timeline                          |
-| ------------------------ | --------------- | --------------------------------- |
-| Key exchange (ML-KEM)    | Deployed        | Complete                          |
-| Authentication (ML-DSA)  | Not available   | IETF draft exists, no OpenSSH implementation timeline |
+| Area                    | Status        | Timeline                                              |
+| ----------------------- | ------------- | ----------------------------------------------------- |
+| Key exchange (ML-KEM)   | Deployed      | Complete                                              |
+| Authentication (ML-DSA) | Not available | IETF draft exists, no OpenSSH implementation timeline |
 
 ## Directory Structure
 

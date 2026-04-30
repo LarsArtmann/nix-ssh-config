@@ -34,27 +34,27 @@ The single most impactful change: **adding `checks` outputs with module evaluati
 
 ### What Works Well
 
-| Area | Assessment |
-|---|---|
+| Area                    | Assessment                                                                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Module architecture** | Clean separation: `homeManagerModules.ssh` (client) and `nixosModules.ssh` (server). Each is a self-contained Nix module with proper `options`/`config` structure. |
-| **Security posture** | Post-quantum KEX (ML-KEM hybrid), AEAD-only ciphers, ETM-only MACs, Ed25519 preferred. Hardened defaults throughout. |
-| **Flake structure** | 45-line `flake.nix` with 3 inputs, 4 system architectures, `forEachSystem` helper. Minimal and readable. |
-| **Key management** | `sshKeys.lars` exposed as flake output for declarative consumption. Ed25519 key migration complete. |
-| **Formatting** | `treefmt-full-flake` integrated as per-system formatter. |
-| **Git hygiene** | Clean working tree, proper `.gitignore`, coherent commit history. |
+| **Security posture**    | Post-quantum KEX (ML-KEM hybrid), AEAD-only ciphers, ETM-only MACs, Ed25519 preferred. Hardened defaults throughout.                                               |
+| **Flake structure**     | 45-line `flake.nix` with 3 inputs, 4 system architectures, `forEachSystem` helper. Minimal and readable.                                                           |
+| **Key management**      | `sshKeys.lars` exposed as flake output for declarative consumption. Ed25519 key migration complete.                                                                |
+| **Formatting**          | `treefmt-full-flake` integrated as per-system formatter.                                                                                                           |
+| **Git hygiene**         | Clean working tree, proper `.gitignore`, coherent commit history.                                                                                                  |
 
 ### What's Missing or Broken
 
-| Area | Severity | Details |
-|---|---|---|
-| **No `checks` output** | **High** | `nix flake check` only validates basic schema. No module evaluation tests. |
-| **No CI pipeline** | **High** | Zero automated validation on push or PR. |
-| **No LICENSE file** | **Critical** | README says "MIT — See LICENSE file" but no LICENSE file exists. Legal gap. |
-| **Duplicated crypto constants** | **High** | Both modules define the same 4 algorithm sets independently. DRY violation causing drift risk. |
-| **No devShells** | **Medium** | No `nix develop` environment for contributors. |
-| **No `home-manager` input usage** | **Medium** | Input declared but never referenced in any output. Dead weight in flake.lock. |
-| **Hardcoded default user** | **Medium** | `ssh-config.user` defaults to `"lars"` instead of `config.home.username`. |
-| **README inaccuracies** | **Medium** | Wrong `authorizedKeysFiles` default, incomplete option docs, `yourusername` placeholder. |
+| Area                              | Severity     | Details                                                                                        |
+| --------------------------------- | ------------ | ---------------------------------------------------------------------------------------------- |
+| **No `checks` output**            | **High**     | `nix flake check` only validates basic schema. No module evaluation tests.                     |
+| **No CI pipeline**                | **High**     | Zero automated validation on push or PR.                                                       |
+| **No LICENSE file**               | **Critical** | README says "MIT — See LICENSE file" but no LICENSE file exists. Legal gap.                    |
+| **Duplicated crypto constants**   | **High**     | Both modules define the same 4 algorithm sets independently. DRY violation causing drift risk. |
+| **No devShells**                  | **Medium**   | No `nix develop` environment for contributors.                                                 |
+| **No `home-manager` input usage** | **Medium**   | Input declared but never referenced in any output. Dead weight in flake.lock.                  |
+| **Hardcoded default user**        | **Medium**   | `ssh-config.user` defaults to `"lars"` instead of `config.home.username`.                      |
+| **README inaccuracies**           | **Medium**   | Wrong `authorizedKeysFiles` default, incomplete option docs, `yourusername` placeholder.       |
 
 ---
 
@@ -245,10 +245,10 @@ devShells = forEachSystem ({pkgs, ...}: {
 
 **Potential apps:**
 
-| App | Purpose |
-|---|---|
-| `vm-test` | Spin up a NixOS VM with the SSH server module enabled and verify sshd starts |
-| `fmt-check` | Run formatter in check mode without modifying files |
+| App         | Purpose                                                                      |
+| ----------- | ---------------------------------------------------------------------------- |
+| `vm-test`   | Spin up a NixOS VM with the SSH server module enabled and verify sshd starts |
+| `fmt-check` | Run formatter in check mode without modifying files                          |
 
 **Effort:** 30 minutes | **Priority:** Low
 
@@ -414,22 +414,22 @@ vm-test:
 
 ### 6.1 Missing Files
 
-| File | Status | Effort |
-|---|---|---|
-| `LICENSE` | **Critical — Missing** | 2 min |
-| `CONTRIBUTING.md` | Not started | 15 min |
-| `CHANGELOG.md` | Not started | 10 min |
-| `.editorconfig` | Not started | 5 min |
+| File              | Status                 | Effort |
+| ----------------- | ---------------------- | ------ |
+| `LICENSE`         | **Critical — Missing** | 2 min  |
+| `CONTRIBUTING.md` | Not started            | 15 min |
+| `CHANGELOG.md`    | Not started            | 10 min |
+| `.editorconfig`   | Not started            | 5 min  |
 
 ### 6.2 README Inaccuracies
 
-| Issue | Current | Correct | Location |
-|---|---|---|---|
+| Issue                         | Current                       | Correct                                                                                  | Location             |
+| ----------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------- | -------------------- |
 | `authorizedKeysFiles` default | `["%h/.ssh/authorized_keys"]` | `["%h/.ssh/authorized_keys" "/etc/ssh/authorized_keys.d/%u" "/etc/ssh/authorized_keys"]` | README options table |
-| Host submodule options | 6 listed | 7 total (`extraOptions` missing) | README options table |
-| GitHub URL | `yourusername` | Actual org/user | README Quick Start |
-| `user` default | `"lars"` | Should reflect actual default or be changed | README options table |
-| OpenSSH min version | Not documented | `mlkem768x25519-sha256` ≥ 9.9, `sntrup761x25519-sha512` ≥ 8.5 | Missing section |
+| Host submodule options        | 6 listed                      | 7 total (`extraOptions` missing)                                                         | README options table |
+| GitHub URL                    | `yourusername`                | Actual org/user                                                                          | README Quick Start   |
+| `user` default                | `"lars"`                      | Should reflect actual default or be changed                                              | README options table |
+| OpenSSH min version           | Not documented                | `mlkem768x25519-sha256` ≥ 9.9, `sntrup761x25519-sha512` ≥ 8.5                            | Missing section      |
 
 ### 6.3 Suggested README Additions
 
@@ -447,12 +447,12 @@ vm-test:
 
 The current KEX priority list requires:
 
-| Algorithm | Min OpenSSH | Status |
-|---|---|---|
-| `mlkem768x25519-sha256` | 9.9 (Oct 2024) | Default since 10.0 |
-| `sntrup761x25519-sha512` | 8.5 (Mar 2021) | Widely available |
-| `curve25519-sha256` | 6.5 (Oct 2016) | Universal |
-| `chacha20-poly1305` | 6.5 | Universal |
+| Algorithm                | Min OpenSSH    | Status             |
+| ------------------------ | -------------- | ------------------ |
+| `mlkem768x25519-sha256`  | 9.9 (Oct 2024) | Default since 10.0 |
+| `sntrup761x25519-sha512` | 8.5 (Mar 2021) | Widely available   |
+| `curve25519-sha256`      | 6.5 (Oct 2016) | Universal          |
+| `chacha20-poly1305`      | 6.5            | Universal          |
 
 **Risk:** Servers running OpenSSH < 6.5 (extremely rare in 2026) will fail to connect. Servers with static KEX configurations that exclude all listed algorithms will also fail.
 
@@ -460,11 +460,11 @@ The current KEX priority list requires:
 
 ### 7.2 Post-Quantum Signature Roadmap
 
-| Area | Status | Timeline |
-|---|---|---|
-| Key exchange (ML-KEM) | ✅ Deployed | Complete |
-| Authentication (ML-DSA) | ❌ Not available | IETF draft exists, no OpenSSH implementation timeline |
-| Threat level | Low urgency | Attacker needs captured handshake AND future quantum computer |
+| Area                    | Status           | Timeline                                                      |
+| ----------------------- | ---------------- | ------------------------------------------------------------- |
+| Key exchange (ML-KEM)   | ✅ Deployed      | Complete                                                      |
+| Authentication (ML-DSA) | ❌ Not available | IETF draft exists, no OpenSSH implementation timeline         |
+| Threat level            | Low urgency      | Attacker needs captured handshake AND future quantum computer |
 
 **Recommendation:** Add a README section documenting this and a note in `modules/shared/crypto.nix` for future ML-DSA migration.
 
@@ -480,67 +480,67 @@ The Home Manager module defaults to `~/.ssh/id_ed25519` as identity file but doe
 
 ### Phase 1 — Critical Fixes (30 minutes)
 
-| # | Task | Effort |
-|---|---|---|
-| 1 | Add MIT LICENSE file | 2 min |
-| 2 | Fix README `authorizedKeysFiles` default | 2 min |
-| 3 | Document all host submodule options in README | 5 min |
-| 4 | Update README GitHub URL | 1 min |
-| 5 | Add OpenSSH minimum version compatibility notes | 15 min |
+| #   | Task                                            | Effort |
+| --- | ----------------------------------------------- | ------ |
+| 1   | Add MIT LICENSE file                            | 2 min  |
+| 2   | Fix README `authorizedKeysFiles` default        | 2 min  |
+| 3   | Document all host submodule options in README   | 5 min  |
+| 4   | Update README GitHub URL                        | 1 min  |
+| 5   | Add OpenSSH minimum version compatibility notes | 15 min |
 
 ### Phase 2 — Shared Architecture (1 hour)
 
-| # | Task | Effort |
-|---|---|---|
-| 6 | Create `modules/shared/crypto.nix` with shared constants | 30 min |
-| 7 | Refactor both modules to import shared constants | 20 min |
-| 8 | Add comments in NixOS module documenting list-vs-string format | 5 min |
+| #   | Task                                                           | Effort |
+| --- | -------------------------------------------------------------- | ------ |
+| 6   | Create `modules/shared/crypto.nix` with shared constants       | 30 min |
+| 7   | Refactor both modules to import shared constants               | 20 min |
+| 8   | Add comments in NixOS module documenting list-vs-string format | 5 min  |
 
 ### Phase 3 — Testing & CI (3 hours)
 
-| # | Task | Effort |
-|---|---|---|
-| 9 | Add `checks` output with module evaluation tests | 1.5 hr |
-| 10 | Add Home Manager config content verification test | 1 hr |
-| 11 | Add GitHub Actions CI workflow | 30 min |
+| #   | Task                                              | Effort |
+| --- | ------------------------------------------------- | ------ |
+| 9   | Add `checks` output with module evaluation tests  | 1.5 hr |
+| 10  | Add Home Manager config content verification test | 1 hr   |
+| 11  | Add GitHub Actions CI workflow                    | 30 min |
 
 ### Phase 4 — Developer Experience (1 hour)
 
-| # | Task | Effort |
-|---|---|---|
-| 12 | Add `devShells` output | 15 min |
-| 13 | Add `.envrc` for direnv | 2 min |
-| 14 | Add `justfile` for common tasks | 15 min |
-| 15 | Add `.editorconfig` | 5 min |
+| #   | Task                            | Effort |
+| --- | ------------------------------- | ------ |
+| 12  | Add `devShells` output          | 15 min |
+| 13  | Add `.envrc` for direnv         | 2 min  |
+| 14  | Add `justfile` for common tasks | 15 min |
+| 15  | Add `.editorconfig`             | 5 min  |
 
 ### Phase 5 — Polish (2 hours)
 
-| # | Task | Effort |
-|---|---|---|
-| 16 | Change default `user` from `"lars"` to `config.home.username` | 5 min |
-| 17 | Evaluate/remove unused `home-manager` input | 10 min |
-| 18 | Extract banner text to separate constant | 10 min |
-| 19 | Add crypto algorithm rationale documentation | 30 min |
-| 20 | Add `CONTRIBUTING.md` | 15 min |
-| 21 | Add `CHANGELOG.md` | 10 min |
-| 22 | Add post-quantum status section to README | 10 min |
+| #   | Task                                                          | Effort |
+| --- | ------------------------------------------------------------- | ------ |
+| 16  | Change default `user` from `"lars"` to `config.home.username` | 5 min  |
+| 17  | Evaluate/remove unused `home-manager` input                   | 10 min |
+| 18  | Extract banner text to separate constant                      | 10 min |
+| 19  | Add crypto algorithm rationale documentation                  | 30 min |
+| 20  | Add `CONTRIBUTING.md`                                         | 15 min |
+| 21  | Add `CHANGELOG.md`                                            | 10 min |
+| 22  | Add post-quantum status section to README                     | 10 min |
 
 ### Phase 6 — Advanced Testing (4 hours)
 
-| # | Task | Effort |
-|---|---|---|
-| 23 | Add NixOS VM integration test (sshd starts, key auth works) | 3 hr |
-| 24 | Add SSH config syntax validation test | 1 hr |
+| #   | Task                                                        | Effort |
+| --- | ----------------------------------------------------------- | ------ |
+| 23  | Add NixOS VM integration test (sshd starts, key auth works) | 3 hr   |
+| 24  | Add SSH config syntax validation test                       | 1 hr   |
 
 ### Future Considerations
 
-| # | Task | Effort |
-|---|---|---|
-| 25 | Add `apps` output (vm-test, fmt-check) | 30 min |
-| 26 | Consider nix-darwin server module (`darwinModules`) | 1 hr |
-| 27 | Consider age/sops-nix integration | 2 hr |
-| 28 | Add git versioning (v0.1.0 tag) | 5 min |
-| 29 | Plan for post-quantum signature migration (ML-DSA) | TBD |
+| #   | Task                                                | Effort |
+| --- | --------------------------------------------------- | ------ |
+| 25  | Add `apps` output (vm-test, fmt-check)              | 30 min |
+| 26  | Consider nix-darwin server module (`darwinModules`) | 1 hr   |
+| 27  | Consider age/sops-nix integration                   | 2 hr   |
+| 28  | Add git versioning (v0.1.0 tag)                     | 5 min  |
+| 29  | Plan for post-quantum signature migration (ML-DSA)  | TBD    |
 
 ---
 
@@ -566,20 +566,20 @@ This is explicit, type-safe, and makes the NixOS inconsistency visible rather th
 
 ### 9.2 Should `home-manager` Input Stay or Go?
 
-| Option | Pros | Cons |
-|---|---|---|
-| **Keep** | Enables `home-manager.lib.homeManagerConfiguration` in `checks`; downstream users can `follows` | Dead weight if nobody uses `follows`; extra lock entries |
-| **Remove** | Cleaner flake.lock; less maintenance | Can't write HM evaluation tests; downstream users can't `follows` |
+| Option     | Pros                                                                                            | Cons                                                              |
+| ---------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **Keep**   | Enables `home-manager.lib.homeManagerConfiguration` in `checks`; downstream users can `follows` | Dead weight if nobody uses `follows`; extra lock entries          |
+| **Remove** | Cleaner flake.lock; less maintenance                                                            | Can't write HM evaluation tests; downstream users can't `follows` |
 
 **Recommendation:** Keep — the testing benefit alone justifies it. But if evaluation tests are written differently (e.g., using `nixpkgs.lib.evalModules` directly), the input could be removed.
 
 ### 9.3 Default User: `"lars"` vs `config.home.username` vs No Default
 
-| Option | Pros | Cons |
-|---|---|---|
-| `config.home.username` | Automatically correct for any user | Creates dependency on `home.username` being set; circular if not |
-| No default (`lib.mkOption { type = lib.types.str; }`) | Forces explicit configuration | Breaking change for current users |
-| Keep `"lars"` | No breaking change | Not reusable for others |
+| Option                                                | Pros                               | Cons                                                             |
+| ----------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------- |
+| `config.home.username`                                | Automatically correct for any user | Creates dependency on `home.username` being set; circular if not |
+| No default (`lib.mkOption { type = lib.types.str; }`) | Forces explicit configuration      | Breaking change for current users                                |
+| Keep `"lars"`                                         | No breaking change                 | Not reusable for others                                          |
 
 **Recommendation:** Change to `config.home.username` — it's the semantically correct default for a Home Manager module.
 
@@ -587,10 +587,10 @@ This is explicit, type-safe, and makes the NixOS inconsistency visible rather th
 
 Should the client KEX list include `diffie-hellman-group14-sha256` as a last-resort fallback?
 
-| Option | Pros | Cons |
-|---|---|---|
-| **Current** (no fallback) | Maximum security; fails loud on old servers | Breaks on OpenSSH < 6.5 |
-| **Add fallback** | Works on virtually any SSH server | Slightly weaker negotiation position |
+| Option                    | Pros                                        | Cons                                 |
+| ------------------------- | ------------------------------------------- | ------------------------------------ |
+| **Current** (no fallback) | Maximum security; fails loud on old servers | Breaks on OpenSSH < 6.5              |
+| **Add fallback**          | Works on virtually any SSH server           | Slightly weaker negotiation position |
 
 **Recommendation:** Keep current. OpenSSH 6.5 was released in 2014. By 2026, any server still running it has bigger security problems.
 
@@ -624,26 +624,26 @@ Should the client KEX list include `diffie-hellman-group14-sha256` as a last-res
 
 ### Commit History (20 commits)
 
-| Hash | Message |
-|---|---|
-| `3c5452a` | fix: correct formatting inconsistencies across docs and modules |
-| `252dc08` | docs: add comprehensive session 4 status report (2026-04-04) |
-| `b52e543` | fix: Macs also expects list, only HostKeyAlgorithms needs string |
-| `d6686c5` | fix: use Macs (not MACs) to match NixOS sshd settings casing |
-| `2dd120d` | fix: use string for MACs/HostKeyAlgorithms, list for Ciphers/KexAlgorithms |
-| `2a92b33` | fix: revert Ciphers/KexAlgorithms to lists — NixOS expects lists for these |
-| `d9f990a` | fix: convert Ciphers and KexAlgorithms from lists to comma-separated strings |
-| `c761b32` | refactor(nixos): extract crypto algorithms into named constants |
-| `77ed2b0` | feat: update SSH configuration modules for nix-ssh-config project |
-| `1c079f9` | docs: add comprehensive project status report (session 3, 2026-04-04) |
-| `af9dc53` | refactor: complete RSA to Ed25519 key migration |
+| Hash      | Message                                                                       |
+| --------- | ----------------------------------------------------------------------------- |
+| `3c5452a` | fix: correct formatting inconsistencies across docs and modules               |
+| `252dc08` | docs: add comprehensive session 4 status report (2026-04-04)                  |
+| `b52e543` | fix: Macs also expects list, only HostKeyAlgorithms needs string              |
+| `d6686c5` | fix: use Macs (not MACs) to match NixOS sshd settings casing                  |
+| `2dd120d` | fix: use string for MACs/HostKeyAlgorithms, list for Ciphers/KexAlgorithms    |
+| `2a92b33` | fix: revert Ciphers/KexAlgorithms to lists — NixOS expects lists for these    |
+| `d9f990a` | fix: convert Ciphers and KexAlgorithms from lists to comma-separated strings  |
+| `c761b32` | refactor(nixos): extract crypto algorithms into named constants               |
+| `77ed2b0` | feat: update SSH configuration modules for nix-ssh-config project             |
+| `1c079f9` | docs: add comprehensive project status report (session 3, 2026-04-04)         |
+| `af9dc53` | refactor: complete RSA to Ed25519 key migration                               |
 | `8867c43` | feat: add ed25519 SSH key and harden SSH configuration with modern algorithms |
-| `9a906b7` | docs: add comprehensive project status report (session 2, 2026-04-04) |
-| `8017855` | feat: add global authorizedKeys option for NixOS SSH server configuration |
-| `1c327ec` | docs: add comprehensive project status report (2026-04-04) |
-| `e134229` | remove standalone module exports as they are no longer needed |
-| `fa07246` | feat: expose sshKeys as flake output for declarative key consumption |
-| `4650ca1` | fix: correct formatter output for per-system builds |
-| `6d7d5a9` | chore: lock flake dependencies to specific versions |
-| `624cf95` | feat: add treefmt-full-flake integration for formatting |
-| `a7e5332` | Initial commit: Modular SSH configuration for Nix systems |
+| `9a906b7` | docs: add comprehensive project status report (session 2, 2026-04-04)         |
+| `8017855` | feat: add global authorizedKeys option for NixOS SSH server configuration     |
+| `1c327ec` | docs: add comprehensive project status report (2026-04-04)                    |
+| `e134229` | remove standalone module exports as they are no longer needed                 |
+| `fa07246` | feat: expose sshKeys as flake output for declarative key consumption          |
+| `4650ca1` | fix: correct formatter output for per-system builds                           |
+| `6d7d5a9` | chore: lock flake dependencies to specific versions                           |
+| `624cf95` | feat: add treefmt-full-flake integration for formatting                       |
+| `a7e5332` | Initial commit: Modular SSH configuration for Nix systems                     |
