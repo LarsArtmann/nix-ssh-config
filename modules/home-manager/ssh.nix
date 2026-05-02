@@ -30,11 +30,12 @@ in {
             description = "Host IP or hostname";
           };
           user = lib.mkOption {
-            type = lib.types.str;
-            description = "Username for this host";
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Username for this host (defaults to ssh-config.user)";
           };
           port = lib.mkOption {
-            type = lib.types.nullOr lib.types.int;
+            type = lib.types.nullOr lib.types.port;
             default = null;
             description = "SSH port";
           };
@@ -142,11 +143,20 @@ in {
           };
         }
 
-        (lib.mapAttrs (name: hostConfig: {
-            inherit (hostConfig) hostname user;
-            inherit (hostConfig) port identityFile serverAliveInterval serverAliveCountMax extraOptions;
-          })
-          config.ssh-config.hosts)
+        (lib.mapAttrs (name: hostConfig:
+          {
+            hostname = hostConfig.hostname;
+            user =
+              if hostConfig.user != null
+              then hostConfig.user
+              else lib.mkDefault config.ssh-config.user;
+          }
+          // lib.optionalAttrs (hostConfig.port != null) {port = hostConfig.port;}
+          // lib.optionalAttrs (hostConfig.identityFile != null) {identityFile = hostConfig.identityFile;}
+          // lib.optionalAttrs (hostConfig.serverAliveInterval != null) {serverAliveInterval = hostConfig.serverAliveInterval;}
+          // lib.optionalAttrs (hostConfig.serverAliveCountMax != null) {serverAliveCountMax = hostConfig.serverAliveCountMax;}
+          // lib.optionalAttrs (hostConfig.extraOptions != {}) {extraOptions = hostConfig.extraOptions;})
+        config.ssh-config.hosts)
       ];
     };
 
