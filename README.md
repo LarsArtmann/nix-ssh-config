@@ -72,15 +72,15 @@ Configures SSH client settings via Home Manager.
 
 #### Host Submodule Options
 
-| Option                | Type      | Default | Description            |
-| --------------------- | --------- | ------- | ---------------------- |
-| `hostname`            | str       | —       | Host IP or hostname    |
-| `user`                | str       | —       | Username for this host |
-| `port`                | int\|null | `null`  | SSH port               |
-| `identityFile`        | str\|null | `null`  | Path to identity file  |
-| `serverAliveInterval` | int\|null | `null`  | Keepalive interval (s) |
-| `serverAliveCountMax` | int\|null | `null`  | Max keepalive probes   |
-| `extraOptions`        | attrs     | `{}`    | Additional SSH options |
+| Option                | Type      | Default | Description                              |
+| --------------------- | --------- | ------- | ---------------------------------------- |
+| `hostname`            | str       | —       | Host IP or hostname                      |
+| `user`                | str\|null | `null`  | Username (defaults to `ssh-config.user`) |
+| `port`                | int\|null | `null`  | SSH port                                 |
+| `identityFile`        | str\|null | `null`  | Path to identity file                    |
+| `serverAliveInterval` | int\|null | `null`  | Keepalive interval (s)                   |
+| `serverAliveCountMax` | int\|null | `null`  | Max keepalive probes                     |
+| `extraOptions`        | attrs     | `{}`    | Additional SSH options                   |
 
 #### Example
 
@@ -93,6 +93,10 @@ Configures SSH client settings via Home Manager.
         hostname = "203.0.113.10";
         user = "deploy";
         serverAliveInterval = 60;
+      };
+      # user inherits from ssh-config.user (defaults to home.username)
+      backup = {
+        hostname = "192.168.1.50";
       };
     };
   };
@@ -206,6 +210,16 @@ Servers running OpenSSH < 6.5 (released 2014) will not be able to connect.
 | ----------------------- | ------------- | ----------------------------------------------------- |
 | Key exchange (ML-KEM)   | Deployed      | Complete                                              |
 | Authentication (ML-DSA) | Not available | IETF draft exists, no OpenSSH implementation timeline |
+
+## Crypto Algorithm Rationale
+
+All algorithm choices follow a **conservative + post-quantum** strategy:
+
+- **Key Exchange**: ML-KEM hybrid (`mlkem768x25519-sha256`) as primary — NIST FIPS 203 standard, protects against "harvest now, decrypt later" attacks. Falls back to NTRU Prime hybrid, then pure Curve25519.
+- **Ciphers**: AEAD-only (ChaCha20-Poly1305, AES-256/128-GCM) — authenticated encryption eliminates separate MAC vulnerabilities. No CBC mode.
+- **MACs**: Encrypt-then-MAC only — prevents padding oracle attacks that are possible with encrypt-and-MAC. No HMAC-MD5 or HMAC-SHA1.
+- **Host Keys**: Ed25519 preferred (128-bit security, small keys, constant-time). RSA-SHA2 accepted for compatibility. No DSA or RSA-SHA1.
+- **Threat Model**: Passive network adversaries with future quantum computers (KEX), classical MITM and replay attacks (AEAD+ETM), weak legacy algorithm downgrade attacks (modern-only lists).
 
 ## Directory Structure
 
