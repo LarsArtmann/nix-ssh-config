@@ -5,7 +5,6 @@ result-*
 
 # Direnv
 .direnv
-.envrc
 
 # IDE
 .vscode
