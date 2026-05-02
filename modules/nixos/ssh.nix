@@ -10,7 +10,7 @@ in {
     enable = lib.mkEnableOption "SSH server with hardening";
 
     port = lib.mkOption {
-      type = lib.types.int;
+      type = lib.types.port;
       default = 22;
       description = "Port to listen on";
     };
@@ -50,9 +50,9 @@ in {
     };
 
     extraSettings = lib.mkOption {
-      type = lib.types.attrsOf lib.types.anything;
+      type = lib.types.attrsOf (lib.types.oneOf [lib.types.str lib.types.int lib.types.bool]);
       default = {};
-      description = "Additional OpenSSH settings";
+      description = "Additional OpenSSH settings (string, int, or bool values)";
     };
 
     bannerText = lib.mkOption {
@@ -86,6 +86,7 @@ in {
       #   the module joins them with commas automatically.
       #   Freeform keys (HostKeyAlgorithms, PubkeyAcceptedAlgorithms) require
       #   pre-joined comma-separated strings.
+      #   AuthorizedKeysFile uses space-separated paths (sshd_config format).
       settings =
         {
           PasswordAuthentication = config.services.ssh-server.passwordAuthentication;
@@ -98,7 +99,6 @@ in {
           PubkeyAuthentication = true;
           PubkeyAcceptedAlgorithms = crypto.modernHostKeysString;
           AuthorizedKeysFile = lib.concatStringsSep " " config.services.ssh-server.authorizedKeysFiles;
-
           X11Forwarding = false;
           AllowTcpForwarding = false;
           PermitTunnel = false;
@@ -117,7 +117,7 @@ in {
 
           LogLevel = "VERBOSE";
 
-          Banner = lib.mkIf (config.services.ssh-server.bannerText != null) "/etc/ssh/banner";
+          Banner = lib.mkIf (config.services.ssh-server.bannerText != null) (lib.mkDefault "/etc/ssh/banner");
         }
         // config.services.ssh-server.extraSettings;
 
