@@ -57,7 +57,7 @@ in {
           extraOptions = lib.mkOption {
             type = lib.types.attrsOf lib.types.str;
             default = {};
-            description = "Additional SSH options";
+            description = "Additional SSH options (merged directly into the host block using upstream directive names)";
           };
         };
       });
@@ -100,62 +100,59 @@ in {
         )
         ++ config.ssh-config.extraIncludes;
 
-      matchBlocks = lib.mkMerge [
+      # Global defaults applied to all hosts via "*" block.
+      # Uses upstream SSH directive names (PascalCase) per Home Manager
+      # programs.ssh.settings freeform type.
+      settings = lib.mkMerge [
         {
           "*" = {
-            user = lib.mkDefault config.ssh-config.user;
-            forwardAgent = lib.mkDefault false;
-            addKeysToAgent = lib.mkDefault "no";
-            compression = lib.mkDefault false;
-            serverAliveInterval = lib.mkDefault 60;
-            serverAliveCountMax = lib.mkDefault 3;
-            hashKnownHosts = lib.mkDefault false;
-            userKnownHostsFile = lib.mkDefault "~/.ssh/known_hosts";
-            controlMaster = lib.mkDefault "no";
-            controlPath = lib.mkDefault "~/.ssh/master-%r@%n:%p";
-            controlPersist = lib.mkDefault "no";
-            extraOptions = lib.mkDefault (
-              {
-                KexAlgorithms = crypto.pqKexString;
-                Ciphers = crypto.aeadCiphersString;
-                MACs = crypto.etmMacsString;
-                HostKeyAlgorithms = crypto.modernHostKeysString;
-                PubkeyAcceptedAlgorithms = crypto.modernHostKeysString;
-              }
-              // lib.optionalAttrs (config.ssh-config.identityFile != null) {
-                IdentityFile = config.ssh-config.identityFile;
-              }
-            );
+            User = config.ssh-config.user;
+            ForwardAgent = "no";
+            AddKeysToAgent = "no";
+            Compression = "no";
+            ServerAliveInterval = 60;
+            ServerAliveCountMax = 3;
+            HashKnownHosts = "no";
+            UserKnownHostsFile = "~/.ssh/known_hosts";
+            ControlMaster = "no";
+            ControlPath = "~/.ssh/master-%r@%n:%p";
+            ControlPersist = "no";
+            KexAlgorithms = crypto.pqKexString;
+            Ciphers = crypto.aeadCiphersString;
+            MACs = crypto.etmMacsString;
+            HostKeyAlgorithms = crypto.modernHostKeysString;
+            PubkeyAcceptedAlgorithms = crypto.modernHostKeysString;
+          }
+          // lib.optionalAttrs (config.ssh-config.identityFile != null) {
+            IdentityFile = config.ssh-config.identityFile;
           };
         }
 
         {
           "github.com" = {
-            user = "git";
-            compression = true;
-            serverAliveInterval = 60;
-            controlMaster = "auto";
-            controlPath = "~/.ssh/sockets/%r@%h-%p";
-            controlPersist = "600";
-            extraOptions = {
-              TCPKeepAlive = "yes";
-            };
+            User = "git";
+            Compression = "yes";
+            ServerAliveInterval = 60;
+            ControlMaster = "auto";
+            ControlPath = "~/.ssh/sockets/%r@%h-%p";
+            ControlPersist = "600";
+            TCPKeepAlive = "yes";
           };
         }
 
         (lib.mapAttrs (name: hostConfig:
           {
-            hostname = hostConfig.hostname;
-            user =
+            HostName = hostConfig.hostname;
+            User =
               if hostConfig.user != null
               then hostConfig.user
-              else lib.mkDefault config.ssh-config.user;
+              else config.ssh-config.user;
           }
-          // lib.optionalAttrs (hostConfig.port != null) {port = hostConfig.port;}
-          // lib.optionalAttrs (hostConfig.identityFile != null) {identityFile = hostConfig.identityFile;}
-          // lib.optionalAttrs (hostConfig.serverAliveInterval != null) {serverAliveInterval = hostConfig.serverAliveInterval;}
-          // lib.optionalAttrs (hostConfig.serverAliveCountMax != null) {serverAliveCountMax = hostConfig.serverAliveCountMax;}
-          // lib.optionalAttrs (hostConfig.extraOptions != {}) {extraOptions = hostConfig.extraOptions;})
+          // lib.optionalAttrs (hostConfig.port != null) {Port = hostConfig.port;}
+          // lib.optionalAttrs (hostConfig.identityFile != null) {IdentityFile = hostConfig.identityFile;}
+          // lib.optionalAttrs (hostConfig.serverAliveInterval != null) {ServerAliveInterval = hostConfig.serverAliveInterval;}
+          // lib.optionalAttrs (hostConfig.serverAliveCountMax != null) {ServerAliveCountMax = hostConfig.serverAliveCountMax;}
+          // lib.optionalAttrs (hostConfig.extraOptions != {}) hostConfig.extraOptions)
         config.ssh-config.hosts)
       ];
     };
