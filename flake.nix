@@ -39,6 +39,7 @@
 
     sshKeys = {
       lars = builtins.readFile ./ssh-keys/lars-ed25519.pub;
+      lars-evo-x2 = builtins.readFile ./ssh-keys/lars-evo-x2-ed25519.pub;
     };
 
     checks =
