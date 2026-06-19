@@ -136,7 +136,7 @@ Nothing. All changes evaluate cleanly. `nix flake check --all-systems` passes on
 | 22  | age/sops-nix integration for secret management                        | 2 hr   | Secure private key distribution        |
 | 23  | Post-quantum signature migration plan (ML-DSA)                        | TBD    | Future-proof when OpenSSH adds support |
 | 24  | Consider `lib.types.nullOr` validation on bannerText                  | 15 min | Prevent invalid sshd configs           |
-| 25  | Explore NixOS `nixos/lib/testing-python.nix` for multi-node SSH tests | 2 hr   | End-to-end client↔server verification |
+| 25  | Explore NixOS `nixos/lib/testing-python.nix` for multi-node SSH tests | 2 hr   | End-to-end client↔server verification  |
 
 ---
 
