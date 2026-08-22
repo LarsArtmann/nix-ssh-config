@@ -94,6 +94,22 @@
             }
           ];
 
+          # Custom port + extraSettings override in one eval: proves the
+          # passthrough wiring, not just the defaults.
+          nixosCustomEval = mkNixosEval [
+            {
+              services.ssh-server = {
+                enable = true;
+                port = 2222;
+                extraSettings.LoginGraceTime = 42;
+              };
+            }
+          ];
+
+          # mkEnableOption defaults to false, so a bare eval is the disabled
+          # state: the module must contribute nothing to openssh or /etc.
+          nixosDisabledEval = mkNixosEval [ ];
+
           mkHmEval =
             extraModules:
             home-manager.lib.homeManagerConfiguration {
@@ -295,6 +311,83 @@
                 name = "/etc/ssh/banner text (must equal modules/shared/banner.nix)";
                 actual = nixosEval.config.environment.etc."ssh/banner".text;
                 expected = banner.defaultBannerText;
+              }
+            ];
+
+            # Guards the documented NixOS settings quirk: Ciphers/Macs/
+            # KexAlgorithms must be Nix lists (NixOS joins them), while the
+            # freeform HostKeyAlgorithms/PubkeyAcceptedAlgorithms must be
+            # pre-joined strings. If crypto.nix drifts or the forms get
+            # swapped, this fails.
+            nixos-crypto = assertEq "nixos-crypto" [
+              {
+                name = "Ciphers (list form)";
+                actual = sshdSettings.Ciphers;
+                expected = crypto.aeadCiphers;
+              }
+              {
+                name = "Macs (list form)";
+                actual = sshdSettings.Macs;
+                expected = crypto.etmMacs;
+              }
+              {
+                name = "KexAlgorithms (list form)";
+                actual = sshdSettings.KexAlgorithms;
+                expected = crypto.pqKex;
+              }
+              {
+                name = "HostKeyAlgorithms (string form)";
+                actual = sshdSettings.HostKeyAlgorithms;
+                expected = crypto.modernHostKeysString;
+              }
+              {
+                name = "PubkeyAcceptedAlgorithms (string form)";
+                actual = sshdSettings.PubkeyAcceptedAlgorithms;
+                expected = crypto.modernHostKeysString;
+              }
+              {
+                name = "AuthorizedKeysFile (space-separated)";
+                actual = sshdSettings.AuthorizedKeysFile;
+                expected = "%h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u /etc/ssh/authorized_keys";
+              }
+            ];
+
+            nixos-authorized-keys = assertEq "nixos-authorized-keys" [
+              {
+                name = "/etc/ssh/authorized_keys text";
+                actual = nixosEval.config.environment.etc."ssh/authorized_keys".text;
+                expected = testKey;
+              }
+            ];
+
+            nixos-custom-settings = assertEq "nixos-custom-settings" [
+              {
+                name = "custom port reaches services.openssh.ports";
+                actual = nixosCustomEval.config.services.openssh.ports;
+                expected = [ 2222 ];
+              }
+              {
+                name = "extraSettings overrides a default (LoginGraceTime)";
+                actual = nixosCustomEval.config.services.openssh.settings.LoginGraceTime;
+                expected = 42;
+              }
+            ];
+
+            nixos-disabled-noop = assertEq "nixos-disabled-noop" [
+              {
+                name = "openssh stays disabled";
+                actual = nixosDisabledEval.config.services.openssh.enable;
+                expected = false;
+              }
+              {
+                name = "no /etc/ssh/banner generated";
+                actual = nixosDisabledEval.config.environment.etc ? "ssh/banner";
+                expected = false;
+              }
+              {
+                name = "no /etc/ssh/authorized_keys generated";
+                actual = nixosDisabledEval.config.environment.etc ? "ssh/authorized_keys";
+                expected = false;
               }
             ];
 
