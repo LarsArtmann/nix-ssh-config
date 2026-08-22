@@ -296,21 +296,28 @@
                 actual = nixosEval.config.environment.etc."ssh/banner".text;
                 expected = banner.defaultBannerText;
               }
+            ];
+
+            format = config.treefmt.build.check self;
+          }
+          # Forcing config.assertions pulls in unrelated NixOS assertion
+          # machinery that does not evaluate on darwin host platforms
+          # (shadow et al.), so assertion checks run on Linux only.
+          // lib.optionalAttrs pkgs.stdenv.isLinux {
+            nixos-module-assertions = assertEq "nixos-module-assertions" [
               {
                 name = "default config satisfies all module assertions";
                 actual = builtins.all (a: a.assertion) nixosEval.config.assertions;
                 expected = true;
               }
               {
-                name = "control-char banner produces a failed assertion";
+                name = "control-char banner is rejected";
                 actual = builtins.any (
                   a: !a.assertion && lib.hasInfix "bannerText" a.message
                 ) nixosBadBannerEval.config.assertions;
                 expected = true;
               }
             ];
-
-            format = config.treefmt.build.check self;
           };
 
           devShells.default = pkgs.mkShellNoCC {
