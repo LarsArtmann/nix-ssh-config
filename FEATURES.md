@@ -50,7 +50,7 @@
 | ------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------ |
 | `homeManagerModules.ssh` / `nixosModules.ssh` | 🟢 `FULLY_FUNCTIONAL` | `flake.nix:34-35`; evaluated by checks on 3 systems                                   |
 | `sshKeys` output (tracked pubkeys)   | 🟢 `FULLY_FUNCTIONAL`      | `flake.nix:36-39`; `lars`, `lars-evo-x2`                                              |
-| Evaluation + content checks          | 🟡 `PARTIALLY_FUNCTIONAL`  | 4 checks + format per system (`flake.nix:109-131`); HM check forces vacuous `matchBlocks`, VM test and 12 content assertions dropped in the flake-parts migration — see TODO_LIST |
+| Evaluation + content checks          | 🟡 `PARTIALLY_FUNCTIONAL`  | 4 checks + format per system (`flake.nix:109-131`); HM check forces vacuous `matchBlocks`, VM test and 10 of the 14 pre-migration eval tests dropped in the flake-parts migration — see TODO_LIST |
 | Formatting via treefmt-nix           | 🟢 `FULLY_FUNCTIONAL`      | `flake.nix:107`; runs as `checks.format` and `nix fmt`                                |
 | GitHub Actions CI                    | 🔴 `BROKEN`                | `.github/workflows/check.yml` — all 9 runs since inception failed (`--all-systems` tried to BUILD foreign-system checks -> platform mismatch); fixed workflow staged locally (`--no-build` eval + native build), pending push and green verification |
 | Dev shell (`nix develop`)            | 🟢 `FULLY_FUNCTIONAL`      | `flake.nix:133-135`; provides `nil` (formatting handled by treefmt)                   |

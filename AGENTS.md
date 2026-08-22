@@ -136,4 +136,4 @@ Public keys are tracked in `ssh-keys/*.pub`; private keys are gitignored. The `s
 | `TODO_LIST.md` | Open, bounded work items                                 |
 | `ROADMAP.md`   | Long-term themes, non-goals                              |
 | `CHANGELOG.md` | What changed per version                                 |
-| `docs/status/` | Point-in-time session reports (historical, annotated)    |
+| `docs/status/`  | Point-in-time session reports — all fully annotated and moved to `docs/status/archived/` (open follow-ups live in TODO_LIST.md / ROADMAP.md) |
