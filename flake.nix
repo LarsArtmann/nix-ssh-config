@@ -92,16 +92,23 @@
 
           sshdSettings = nixosEval.config.services.openssh.settings;
 
-          assertContains =
-            label: text: substr:
-            pkgs.runCommand "assert-${label}" { } ''
-              printf '%s' ${lib.escapeShellArg text} | grep -qF ${lib.escapeShellArg substr} || (
-                echo "FAIL: ${label}"
-                echo "Expected to find: ${substr}"
-                exit 1
-              )
-              echo ok > $out
-            '';
+          # Attribute-equality assertion: compares Nix values directly instead of
+          # grepping serialized JSON, so checks never break on formatting drift.
+          # The comparison itself happens at eval time; a mismatch produces a
+          # derivation whose build fails with the diff below.
+          assertEq =
+            label: actual: expected:
+            pkgs.runCommand "assert-${label}" { } (
+              if actual == expected then
+                "echo ok > $out"
+              else
+                ''
+                  echo "FAIL: ${label}"
+                  echo "  expected: ${builtins.toJSON expected}"
+                  echo "  actual:   ${builtins.toJSON actual}"
+                  exit 1
+                ''
+            );
         in
         {
           treefmt.programs.nixfmt.enable = true;
@@ -117,13 +124,10 @@
               echo ok > $out
             '';
 
-            nixos-password-auth-disabled =
-              assertContains "password-auth-disabled" (builtins.toJSON sshdSettings)
-                ''"PasswordAuthentication":false'';
+            nixos-password-auth-disabled = assertEq "password-auth-disabled" sshdSettings.PasswordAuthentication
+              false;
 
-            nixos-root-login-disabled =
-              assertContains "root-login-disabled" (builtins.toJSON sshdSettings)
-                ''"PermitRootLogin":"no"'';
+            nixos-root-login-disabled = assertEq "root-login-disabled" sshdSettings.PermitRootLogin "no";
 
             format = config.treefmt.build.check self;
           };
