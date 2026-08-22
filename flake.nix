@@ -136,6 +136,23 @@
                     identityFile = "~/.ssh/full_key";
                     serverAliveInterval = 30;
                     serverAliveCountMax = 2;
+                    proxyJump = "bastion.example.com";
+                    forwardX11 = true;
+                    localForwards = [
+                      {
+                        bind.port = 8080;
+                        host.address = "10.0.0.13";
+                        host.port = 80;
+                      }
+                    ];
+                    remoteForwards = [
+                      {
+                        bind.port = 9090;
+                        host.address = "db.internal";
+                        host.port = 5432;
+                      }
+                    ];
+                    dynamicForwards = [ { port = 1080; } ];
                     extraOptions = {
                       Compression = "yes";
                       StrictHostKeyChecking = "accept-new";
@@ -350,6 +367,56 @@
                 name = "extraOptions.StrictHostKeyChecking";
                 actual = (hmBlock "full").StrictHostKeyChecking;
                 expected = "accept-new";
+              }
+            ];
+
+            hm-host-advanced = assertEq "hm-host-advanced" [
+              {
+                name = "ProxyJump";
+                actual = (hmBlock "full").ProxyJump;
+                expected = "bastion.example.com";
+              }
+              {
+                name = "ForwardX11";
+                actual = (hmBlock "full").ForwardX11;
+                expected = "yes";
+              }
+              {
+                name = "LocalForward (structured, defaults applied)";
+                actual = (hmBlock "full").LocalForward;
+                expected = [
+                  {
+                    bind = {
+                      address = "localhost";
+                      port = 8080;
+                    };
+                    host = {
+                      address = "10.0.0.13";
+                      port = 80;
+                    };
+                  }
+                ];
+              }
+              {
+                name = "RemoteForward (structured, defaults applied)";
+                actual = (hmBlock "full").RemoteForward;
+                expected = [
+                  {
+                    bind = {
+                      address = "localhost";
+                      port = 9090;
+                    };
+                    host = {
+                      address = "db.internal";
+                      port = 5432;
+                    };
+                  }
+                ];
+              }
+              {
+                name = "DynamicForward (structured, defaults applied)";
+                actual = (hmBlock "full").DynamicForward;
+                expected = [ { address = "localhost"; port = 1080; } ];
               }
             ];
 

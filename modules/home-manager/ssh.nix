@@ -6,6 +6,43 @@
 }:
 let
   crypto = import ../shared/crypto.nix { inherit lib; };
+
+  # Address/port pairs mirror the shapes Home Manager's settings renderer
+  # understands natively (see its renderForward/renderDynamicForward), so the
+  # forwarding values below pass through unrendered and HM handles IPv6
+  # brackets, unix socket paths and plain ports itself.
+  mkAddressPortModule =
+    action:
+    lib.types.submodule {
+      options = {
+        address = lib.mkOption {
+          type =
+            if action == "bind" then lib.types.str else lib.types.nullOr lib.types.str;
+          default = if action == "bind" then "localhost" else null;
+          example = "example.org";
+          description = "The address to ${action} to.";
+        };
+        port = lib.mkOption {
+          type = lib.types.nullOr lib.types.port;
+          default = null;
+          example = 8080;
+          description = "The port to ${action} to.";
+        };
+      };
+    };
+
+  forwardModule = lib.types.submodule {
+    options = {
+      bind = lib.mkOption {
+        type = mkAddressPortModule "bind";
+        description = "Local side of the forwarding";
+      };
+      host = lib.mkOption {
+        type = mkAddressPortModule "forward";
+        description = "Remote side of the forwarding";
+      };
+    };
+  };
 in
 {
   options.ssh-config = {
@@ -61,6 +98,53 @@ in
               type = lib.types.attrsOf lib.types.str;
               default = { };
               description = "Additional SSH options (merged directly into the host block using upstream directive names)";
+            };
+            proxyJump = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              example = "bastion.example.com";
+              description = "Jump host to route this connection through (ProxyJump)";
+            };
+            forwardX11 = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+              description = "Whether to forward X11 sessions for this host (ForwardX11)";
+            };
+            localForwards = lib.mkOption {
+              type = lib.types.listOf forwardModule;
+              default = [ ];
+              example = lib.literalExpression ''
+                [
+                  {
+                    bind.port = 8080;
+                    host.address = "10.0.0.13";
+                    host.port = 80;
+                  }
+                ]
+              '';
+              description = "Local port forwardings (LocalForward)";
+            };
+            remoteForwards = lib.mkOption {
+              type = lib.types.listOf forwardModule;
+              default = [ ];
+              example = lib.literalExpression ''
+                [
+                  {
+                    bind.port = 8080;
+                    host.address = "10.0.0.13";
+                    host.port = 80;
+                  }
+                ]
+              '';
+              description = "Remote port forwardings (RemoteForward)";
+            };
+            dynamicForwards = lib.mkOption {
+              type = lib.types.listOf (mkAddressPortModule "bind");
+              default = [ ];
+              example = lib.literalExpression ''
+                [ { port = 8080; } ]
+              '';
+              description = "Dynamic (SOCKS) port forwardings (DynamicForward)";
             };
           };
         }
@@ -159,6 +243,22 @@ in
           }
           // lib.optionalAttrs (hostConfig.serverAliveCountMax != null) {
             ServerAliveCountMax = hostConfig.serverAliveCountMax;
+          }
+          // lib.optionalAttrs (hostConfig.proxyJump != null) {
+            ProxyJump = hostConfig.proxyJump;
+          }
+          // lib.optionalAttrs hostConfig.forwardX11 { ForwardX11 = "yes"; }
+          # Forwarding values keep their structured shape: Home Manager's
+          # settings renderer accepts it natively and repeats the directive
+          # per list element.
+          // lib.optionalAttrs (hostConfig.localForwards != [ ]) {
+            LocalForward = hostConfig.localForwards;
+          }
+          // lib.optionalAttrs (hostConfig.remoteForwards != [ ]) {
+            RemoteForward = hostConfig.remoteForwards;
+          }
+          // lib.optionalAttrs (hostConfig.dynamicForwards != [ ]) {
+            DynamicForward = hostConfig.dynamicForwards;
           }
           // lib.optionalAttrs (hostConfig.extraOptions != { }) hostConfig.extraOptions
         ) config.ssh-config.hosts)
