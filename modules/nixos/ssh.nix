@@ -5,6 +5,15 @@
 }:
 let
   crypto = import ../shared/crypto.nix { inherit lib; };
+  banner = import ../shared/banner.nix;
+
+  # sshd banners travel over a line-oriented protocol channel: control
+  # characters other than newline and tab can corrupt or break the channel.
+  invalidBannerChars =
+    text:
+    lib.filter (c: c != "\n" && c != "\t" && builtins.match "[[:print:]]" c == null) (
+      lib.stringToCharacters text
+    );
 in
 {
   options.services.ssh-server = {
@@ -64,27 +73,29 @@ in
 
     bannerText = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
-      default = ''
-        **************************************************************************
-                                    AUTHORIZED ACCESS ONLY
-        **************************************************************************
-
-        This system is for authorized users only. Individual use of this system
-        and/or network without authority, or in excess of your authority, is
-        strictly prohibited and may be subject to criminal and civil penalties.
-
-        All activities on this system are logged and monitored. Unauthorized access
-        or attempts to access this system may be reported to law enforcement.
-
-        If you are not an authorized user, disconnect immediately.
-
-        **************************************************************************
+      default = banner.defaultBannerText;
+      defaultText = "the legal banner defined in modules/shared/banner.nix";
+      description = ''
+        SSH banner text (null to disable). Only printable characters,
+        newlines and tabs are allowed; control characters are rejected at
+        evaluation time because they can break the sshd banner channel.
       '';
-      description = "SSH banner text (null to disable)";
     };
   };
 
   config = lib.mkIf config.services.ssh-server.enable {
+    assertions =
+      let
+        text = config.services.ssh-server.bannerText;
+      in
+      lib.optional (text != null) {
+        assertion = invalidBannerChars text == [ ];
+        message =
+          "services.ssh-server.bannerText must not contain control characters "
+          + "(printable characters, newline and tab are allowed); found character codes: "
+          + builtins.toJSON (map (c: lib.toHexString (lib.charToInt c)) (invalidBannerChars text));
+      };
+
     services.openssh = {
       enable = true;
 

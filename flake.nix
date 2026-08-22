@@ -49,28 +49,50 @@
         }:
         let
           crypto = import ./modules/shared/crypto.nix { inherit lib; };
+          banner = import ./modules/shared/banner.nix;
 
           # Throwaway ed25519 key generated for CI test evals only - never used
           # anywhere real. Regenerate freely: ssh-keygen -t ed25519 -C <comment>
           testKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIFVoGCZ+Xlywmk19S5Z9DKF9VvEBU9CWvvz74GrqIfa nix-ssh-config-ci-test";
 
-          nixosEval = nixpkgs.lib.nixosSystem {
-            inherit system;
-            modules = [
-              self.nixosModules.ssh
-              {
-                services.ssh-server = {
-                  enable = true;
-                  allowUsers = [ "testuser" ];
-                  authorizedKeys = [ testKey ];
-                };
-                boot.isContainer = true;
-                system.stateVersion = lib.mkDefault "25.05";
-                fileSystems."/".device = "/dev/null";
-                fileSystems."/".fsType = "ext4";
-              }
-            ];
-          };
+          # Nix string escapes have no \xNN form; JSON \u escapes produce the
+          # raw control characters this eval deliberately injects.
+          bannerWithControlChars = builtins.fromJSON ''"ok line\n\u0007bell\u0001soh"'';
+
+          mkNixosEval =
+            extraModules:
+            nixpkgs.lib.nixosSystem {
+              inherit system;
+              modules = [
+                self.nixosModules.ssh
+                {
+                  boot.isContainer = true;
+                  system.stateVersion = lib.mkDefault "25.05";
+                  fileSystems."/".device = "/dev/null";
+                  fileSystems."/".fsType = "ext4";
+                }
+              ]
+              ++ extraModules;
+            };
+
+          nixosEval = mkNixosEval [
+            {
+              services.ssh-server = {
+                enable = true;
+                allowUsers = [ "testuser" ];
+                authorizedKeys = [ testKey ];
+              };
+            }
+          ];
+
+          nixosBadBannerEval = mkNixosEval [
+            {
+              services.ssh-server = {
+                enable = true;
+                bannerText = bannerWithControlChars;
+              };
+            }
+          ];
 
           mkHmEval =
             extraModules:
@@ -260,6 +282,31 @@
                 name = "PermitRootLogin";
                 actual = sshdSettings.PermitRootLogin;
                 expected = "no";
+              }
+            ];
+
+            nixos-banner = assertEq "nixos-banner" [
+              {
+                name = "Banner path";
+                actual = sshdSettings.Banner;
+                expected = "/etc/ssh/banner";
+              }
+              {
+                name = "/etc/ssh/banner text (must equal modules/shared/banner.nix)";
+                actual = nixosEval.config.environment.etc."ssh/banner".text;
+                expected = banner.defaultBannerText;
+              }
+              {
+                name = "default config satisfies all module assertions";
+                actual = builtins.all (a: a.assertion) nixosEval.config.assertions;
+                expected = true;
+              }
+              {
+                name = "control-char banner produces a failed assertion";
+                actual = builtins.any (
+                  a: !a.assertion && lib.hasInfix "bannerText" a.message
+                ) nixosBadBannerEval.config.assertions;
+                expected = true;
               }
             ];
 

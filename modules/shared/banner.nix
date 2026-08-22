@@ -1,7 +1,7 @@
 {
   defaultBannerText = ''
     **************************************************************************
-                                    AUTHORIZED ACCESS ONLY
+                                AUTHORIZED ACCESS ONLY
     **************************************************************************
 
     This system is for authorized users only. Individual use of this system
