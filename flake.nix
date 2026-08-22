@@ -121,9 +121,26 @@
             {
               ssh-config = {
                 enable = true;
-                hosts.test = {
-                  hostname = "example.com";
-                  user = "admin";
+                hosts = {
+                  test = {
+                    hostname = "example.com";
+                    user = "admin";
+                  };
+                  # No user set: must inherit ssh-config.user ("test" via
+                  # home.username).
+                  inherit-user.hostname = "inherit.example.com";
+                  # Every per-host option exercised at once.
+                  full = {
+                    hostname = "full.example.com";
+                    port = 2222;
+                    identityFile = "~/.ssh/full_key";
+                    serverAliveInterval = 30;
+                    serverAliveCountMax = 2;
+                    extraOptions = {
+                      Compression = "yes";
+                      StrictHostKeyChecking = "accept-new";
+                    };
+                  };
                 };
               };
               home.username = "test";
@@ -282,6 +299,57 @@
                 name = "TCPKeepAlive";
                 actual = (hmBlock "github.com").TCPKeepAlive;
                 expected = "yes";
+              }
+            ];
+
+            hm-host-blocks = assertEq "hm-host-blocks" [
+              {
+                name = "HostName rendered from hostname";
+                actual = (hmBlock "test").HostName;
+                expected = "example.com";
+              }
+              {
+                name = "explicit per-host user";
+                actual = (hmBlock "test").User;
+                expected = "admin";
+              }
+              {
+                name = "null user inherits ssh-config.user";
+                actual = (hmBlock "inherit-user").User;
+                expected = "test";
+              }
+            ];
+
+            hm-host-options = assertEq "hm-host-options" [
+              {
+                name = "Port";
+                actual = (hmBlock "full").Port;
+                expected = 2222;
+              }
+              {
+                name = "IdentityFile";
+                actual = (hmBlock "full").IdentityFile;
+                expected = "~/.ssh/full_key";
+              }
+              {
+                name = "ServerAliveInterval";
+                actual = (hmBlock "full").ServerAliveInterval;
+                expected = 30;
+              }
+              {
+                name = "ServerAliveCountMax";
+                actual = (hmBlock "full").ServerAliveCountMax;
+                expected = 2;
+              }
+              {
+                name = "extraOptions.Compression";
+                actual = (hmBlock "full").Compression;
+                expected = "yes";
+              }
+              {
+                name = "extraOptions.StrictHostKeyChecking";
+                actual = (hmBlock "full").StrictHostKeyChecking;
+                expected = "accept-new";
               }
             ];
 
