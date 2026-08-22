@@ -121,9 +121,11 @@
               modules = [
                 self.homeManagerModules.ssh
                 {
-                  home.stateVersion = lib.mkDefault "25.05";
-                  home.username = lib.mkDefault "test";
-                  home.homeDirectory = lib.mkDefault "/home/test";
+                  home = {
+                    stateVersion = lib.mkDefault "25.05";
+                    username = lib.mkDefault "test";
+                    homeDirectory = lib.mkDefault "/home/test";
+                  };
                 }
               ]
               ++ extraModules;
@@ -172,9 +174,11 @@
                   };
                 };
               };
-              home.username = "test";
-              home.homeDirectory = "/home/test";
-              home.stateVersion = "25.05";
+              home = {
+                username = "test";
+                homeDirectory = "/home/test";
+                stateVersion = "25.05";
+              };
             }
           ];
 

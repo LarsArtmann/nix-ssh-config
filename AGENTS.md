@@ -12,6 +12,7 @@ nix flake check                            # Build + run the current system's ch
 nix fmt                                    # Format all files (treefmt via treefmt-nix)
 nix fmt -- --fail-on-change                # CI-mode: fail if files need formatting
 nix develop                                # Dev shell with nil (Nix LSP)
+statix check                               # Nix anti-pattern linter (manual, not in CI; keep clean)
 ```
 
 CI (`.github/workflows/check.yml`) has two jobs: `check` (x86_64-linux, runs the three commands above plus a lychee markdown-link check) and `check-aarch64` (native arm64 runner, same gate). All steps must pass.
