@@ -52,6 +52,25 @@ Modular, reusable SSH configuration for Nix-based systems. Provides hardened SSH
 }
 ```
 
+### Nixpkgs Pinning
+
+This flake tracks `nixpkgs/nixos-unstable` internally, but its modules are
+pure configuration — they consume no packages from it, so the pin only
+affects this repo's own CI checks. Two strategies for consumers:
+
+1. **Recommended: let it float.** Add the input without `follows`. The
+   modules are version-independent Nix expressions; nothing you build
+   depends on this flake's nixpkgs.
+2. **Conservative: pin everything to your nixpkgs.**
+   `inputs.nix-ssh-config.inputs.nixpkgs.follows = "nixpkgs";` — only
+   matters if you want the flake's *test evals* to run against your exact
+   nixpkgs revision.
+
+Since the modules render `services.openssh.settings` / `programs.ssh.settings`
+values, the OpenSSH version that actually matters is the one in **your**
+system's nixpkgs — see the compatibility matrix above (≥ 9.9 for
+post-quantum KEX).
+
 ## Module Reference
 
 ### Home Manager Module (`homeManagerModules.ssh`)
@@ -195,14 +214,21 @@ Or use keys from the flake output:
 
 ### OpenSSH Version Compatibility
 
-| Algorithm                | Min OpenSSH | Status             |
-| ------------------------ | ----------- | ------------------ |
-| `mlkem768x25519-sha256`  | 9.9         | Default since 10.0 |
-| `sntrup761x25519-sha512` | 8.5         | Widely available   |
-| `curve25519-sha256`      | 6.5         | Universal          |
-| `chacha20-poly1305`      | 6.5         | Universal          |
+Every row verified against the upstream release notes (openssh.com/txt/release-\*).
 
-Servers running OpenSSH < 6.5 (released 2014) will not be able to connect.
+| Algorithm                       | Min OpenSSH | Upstream default behavior                                             |
+| ------------------------------- | ----------- | --------------------------------------------------------------------- |
+| `mlkem768x25519-sha256`         | 9.9         | Enabled by default since 9.9; the client's first preference since 10.0 |
+| `sntrup761x25519-sha512`        | 8.5         | Disabled by default upstream — this flake enables it explicitly        |
+| `curve25519-sha256@libssh.org`  | 6.5         | Default KEX when both sides support it                                 |
+| `curve25519-sha256` (IANA name) | 7.4         | Identical method to the `@libssh.org` name                             |
+| `chacha20-poly1305@openssh.com` | 6.5         | First-preference cipher since 6.5, still first in 10.0                 |
+| `ssh-ed25519`                   | 6.5         | First-preference host/user key type since 8.5                           |
+| `rsa-sha2-256/512`              | 7.2         | Used automatically for RSA keys when both sides support                |
+
+Sources: 6.5 (2014-01-30, curve25519/ed25519/chacha20), 7.2 (rsa-sha2), 7.4 (2016-12-19, `curve25519-sha256` name), 8.5 (2021-03-03, sntrup761 — "disabled by default"), 9.9 (2024-09-19, ML-KEM — "available by default"), 10.0 (2025-04-09, ML-KEM "used by default for key agreement").
+
+Because this flake pins explicit `KexAlgorithms`/`Ciphers`/`MACs` lists, clients and servers configured by it negotiate the post-quantum algorithms first on any OpenSSH ≥ 9.9 regardless of upstream preference order. Servers running OpenSSH < 6.5 (released 2014) cannot connect.
 
 ### Post-Quantum Status
 
