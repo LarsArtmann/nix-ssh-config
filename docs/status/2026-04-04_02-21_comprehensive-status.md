@@ -39,7 +39,7 @@ Added `services.ssh-server.authorizedKeys` option to the NixOS module, allowing 
 
 | #   | Item                     | Status                                           | What's Missing                                                                                                                                                                                                                                                                    |
 | --- | ------------------------ | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **README documentation** | Updated with `authorizedKeys` option and example | Still references `yourusername` instead of actual GitHub org/user. Missing documentation for all host submodule options (only table shows 6 of ~13 total options). `authorizedKeysFiles` default in table doesn't match actual default (missing `/etc/ssh/authorized_keys` entry) |
+| 1   | **README documentation** | ~~Updated with `authorizedKeys` option and example~~ done at `db540d4`, `abe5144` | ~~Still references `yourusername` instead of actual GitHub org/user. Missing documentation for all host submodule options (only table shows 6 of ~13 total options). `authorizedKeysFiles` default in table doesn't match actual default (missing `/etc/ssh/authorized_keys` entry)~~ |
 
 ---
 
@@ -47,26 +47,26 @@ Added `services.ssh-server.authorizedKeys` option to the NixOS module, allowing 
 
 | #   | Item                                                                                                                                                                                                         | Priority     | Effort |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ------ |
-| 1   | **LICENSE file** — README claims "MIT - See LICENSE file" but no LICENSE file exists                                                                                                                         | **Critical** | 2 min  |
-| 2   | **Automated tests** — No `checks` output, no `nix flake check` tests, no evaluation tests                                                                                                                    | High         | 2 hr   |
-| 3   | **CI pipeline** — No GitHub Actions workflow                                                                                                                                                                 | High         | 30 min |
-| 4   | **README `authorizedKeysFiles` default mismatch** — Table shows `["%h/.ssh/authorized_keys"]` but actual default is `["%h/.ssh/authorized_keys" "/etc/ssh/authorized_keys.d/%u" "/etc/ssh/authorized_keys"]` | Medium       | 2 min  |
-| 5   | **Hardcoded default user `"lars"`** — Should use `config.home.username` or have no default                                                                                                                   | Medium       | 5 min  |
-| 6   | **Evaluate if `home-manager` input is needed** — Declared but never referenced in outputs                                                                                                                    | Medium       | 10 min |
-| 7   | **Example configurations** — No `examples/` directory                                                                                                                                                        | Medium       | 30 min |
-| 8   | **CHANGELOG.md**                                                                                                                                                                                             | Low          | 10 min |
-| 9   | **CONTRIBUTING.md**                                                                                                                                                                                          | Low          | 15 min |
-| 10  | **`.editorconfig`**                                                                                                                                                                                          | Low          | 5 min  |
-| 11  | **Versioning/tags** — No git tags or releases                                                                                                                                                                | Low          | 15 min |
-| 12  | **NixOS VM integration test**                                                                                                                                                                                | Medium       | 2 hr   |
-| 13  | **Home Manager module test** — Verify generated `~/.ssh/config`                                                                                                                                              | Medium       | 1 hr   |
-| 14  | **Extract banner text** — 12-line inline string in options default                                                                                                                                           | Low          | 10 min |
-| 15  | **Document crypto algorithm choices**                                                                                                                                                                        | Low          | 15 min |
-| 16  | **Additional SSH keys** — Only `lars.pub` exists                                                                                                                                                             | Low          | 2 min  |
-| 17  | **nix-darwin server module** — `darwinModules` for macOS sshd                                                                                                                                                | Low          | 1 hr   |
-| 18  | **age/sops-nix integration**                                                                                                                                                                                 | Low          | 2 hr   |
-| 19  | **SSH config validation tool**                                                                                                                                                                               | Low          | 1 hr   |
-| 20  | **CLI apps output** — Key rotation, config lint                                                                                                                                                              | Low          | 3 hr   |
+| 1   | **LICENSE file** — README claims "MIT - See LICENSE file" but no LICENSE file exists                                                                                                                         | ~~**Critical**~~ done at `db540d4` | ~~2 min~~  |
+| 2   | **Automated tests** — No `checks` output, no `nix flake check` tests, no evaluation tests                                                                                                                    | ~~High~~ done at `1e00553` (reduced at `e910e78`) | ~~2 hr~~   |
+| 3   | **CI pipeline** — No GitHub Actions workflow                                                                                                                                                                 | ~~High~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22) | ~~30 min~~ |
+| 4   | **README `authorizedKeysFiles` default mismatch** — Table shows `["%h/.ssh/authorized_keys"]` but actual default is `["%h/.ssh/authorized_keys" "/etc/ssh/authorized_keys.d/%u" "/etc/ssh/authorized_keys"]` | ~~Medium~~ done at `db540d4` | ~~2 min~~  |
+| 5   | **Hardcoded default user `"lars"`** — Should use `config.home.username` or have no default                                                                                                                   | ~~Medium~~ done at `78a96ec` | ~~5 min~~  |
+| 6   | **Evaluate if `home-manager` input is needed** — Declared but never referenced in outputs                                                                                                                    | ~~Medium~~ done (decision: keep — it now powers the HM eval checks) | ~~10 min~~ |
+| 7   | **Example configurations** — No `examples/` directory                                                                                                                                                        | ~~Medium~~ → TODO_LIST.md Low — still open | ~~30 min~~ |
+| 8   | **CHANGELOG.md**                                                                                                                                                                                             | ~~Low~~ done at `abe5144` | ~~10 min~~ |
+| 9   | **CONTRIBUTING.md**                                                                                                                                                                                          | ~~Low~~ done at `abe5144` | ~~15 min~~ |
+| 10  | **`.editorconfig`**                                                                                                                                                                                          | ~~Low~~ done at `2f25e95` | ~~5 min~~  |
+| 11  | **Versioning/tags** — No git tags or releases                                                                                                                                                                | ~~Low~~ → TODO_LIST.md High — still open | ~~15 min~~ |
+| 12  | **NixOS VM integration test**                                                                                                                                                                                | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~2 hr~~ |
+| 13  | **Home Manager module test** — Verify generated `~/.ssh/config`                                                                                                                                              | ~~Medium~~ done at `1e00553`, reduced at `e910e78` | ~~1 hr~~ |
+| 14  | **Extract banner text** — 12-line inline string in options default                                                                                                                                           | ~~Low~~ → TODO_LIST.md Low — still open | ~~10 min~~ |
+| 15  | **Document crypto algorithm choices**                                                                                                                                                                        | ~~Low~~ done at `abe5144` | ~~15 min~~ |
+| 16  | **Additional SSH keys** — Only `lars.pub` exists                                                                                                                                                             | ~~Low~~ done at `c06d0d4` | ~~2 min~~  |
+| 17  | **nix-darwin server module** — `darwinModules` for macOS sshd                                                                                                                                                | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open | ~~1 hr~~ |
+| 18  | **age/sops-nix integration**                                                                                                                                                                                 | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~2 hr~~ |
+| 19  | **SSH config validation tool**                                                                                                                                                                               | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~1 hr~~ |
+| 20  | **CLI apps output** — Key rotation, config lint                                                                                                                                                              | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~3 hr~~ |
 
 ---
 
@@ -80,29 +80,29 @@ Nothing. Working tree is clean, master branch, all commits coherent. No broken s
 
 ### Critical
 
-1. **Missing LICENSE file** — README says "MIT - See LICENSE file" but the file doesn't exist. This means the repo is technically all-rights-reserved by default copyright law, which contradicts the README claim and could deter users/contributors.
+1. ~~**Missing LICENSE file** — README says "MIT - See LICENSE file" but the file doesn't exist. This means the repo is technically all-rights-reserved by default copyright law, which contradicts the README claim and could deter users/contributors.~~ done at `db540d4`
 
 ### High Impact
 
-2. **No automated testing** — Zero tests exist. For a Nix flake with 527 lines of Nix code, adding `checks` outputs with module evaluation tests is trivial and would catch regressions immediately.
-3. **No CI** — Pushes and PRs go unchecked. A single GitHub Actions workflow running `nix flake check` would provide a safety net.
-4. **README table is inaccurate** — `authorizedKeysFiles` default doesn't match reality. This misleads users.
-5. **`home-manager` input potentially unused** — Consumes lock space and closure size for no clear benefit.
+2. ~~**No automated testing** — Zero tests exist. For a Nix flake with 527 lines of Nix code, adding `checks` outputs with module evaluation tests is trivial and would catch regressions immediately.~~ done at `1e00553` (suite reduced at `e910e78`; restoring coverage tracked in TODO_LIST.md)
+3. ~~**No CI** — Pushes and PRs go unchecked. A single GitHub Actions workflow running `nix flake check` would provide a safety net.~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22)
+4. ~~**README table is inaccurate** — `authorizedKeysFiles` default doesn't match reality. This misleads users.~~ done at `db540d4`
+5. ~~**`home-manager` input potentially unused** — Consumes lock space and closure size for no clear benefit.~~ done (decision: keep — it now powers the HM eval checks; recorded in AGENTS.md/ROADMAP.md)
 
 ### Medium Impact
 
-6. **Hardcoded `user = "lars"`** — Makes the module less reusable for non-Lars users. Should default to `config.home.username`.
-7. **Host submodule options underdocumented** — Only 6 options in README table, but the submodule has `hostname`, `user`, `port`, `identityFile`, `serverAliveInterval`, `serverAliveCountMax`, `extraOptions` (7 fields). README should list all.
-8. **No `examples/` directory** — Ready-to-use configs would lower the barrier to entry significantly.
-9. **Banner text inline** — 12-line default string bloats the option definition. Extract to a file or constant.
-10. **`ssh-keys/` directory is minimal** — Only one key. Fine for now, but worth noting.
+6. ~~**Hardcoded `user = "lars"`** — Makes the module less reusable for non-Lars users. Should default to `config.home.username`.~~ done at `78a96ec`
+7. ~~**Host submodule options underdocumented** — Only 6 options in README table, but the submodule has `hostname`, `user`, `port`, `identityFile`, `serverAliveInterval`, `serverAliveCountMax`, `extraOptions` (7 fields). README should list all.~~ done (all 8 documented)
+8. ~~**No `examples/` directory** — Ready-to-use configs would lower the barrier to entry significantly.~~ → TODO_LIST.md Low — still open
+9. ~~**Banner text inline** — 12-line default string bloats the option definition. Extract to a file or constant.~~ → TODO_LIST.md Low — still open
+10. ~~**`ssh-keys/` directory is minimal** — Only one key. Fine for now, but worth noting.~~ done at `c06d0d4` (`lars-evo-x2` added)
 
 ### Low Impact
 
-11. **README GitHub URL placeholder** — `yourusername` should be actual org/user.
-12. **No `.editorconfig`** — Minor consistency concern for contributors.
-13. **No CHANGELOG** — Hard to track what changed between uses.
-14. **No git tags** — No versioning scheme for consumers to pin against.
+11. ~~**README GitHub URL placeholder** — `yourusername` should be actual org/user.~~ done at `db540d4`
+12. ~~**No `.editorconfig`** — Minor consistency concern for contributors.~~ done at `2f25e95`
+13. ~~**No CHANGELOG** — Hard to track what changed between uses.~~ done at `abe5144`
+14. ~~**No git tags** — No versioning scheme for consumers to pin against.~~ → TODO_LIST.md High — still open
 
 ---
 
@@ -110,37 +110,37 @@ Nothing. Working tree is clean, master branch, all commits coherent. No broken s
 
 | #   | Task                                                                       | Priority     | Effort | Category      |
 | --- | -------------------------------------------------------------------------- | ------------ | ------ | ------------- |
-| 1   | Add MIT LICENSE file                                                       | **Critical** | 2 min  | Legal         |
-| 2   | Fix README `authorizedKeysFiles` default value in table                    | **High**     | 2 min  | Docs          |
-| 3   | Document all 7 host submodule options in README table                      | **High**     | 5 min  | Docs          |
-| 4   | Add `checks` output to flake.nix (module evaluation tests)                 | **High**     | 1 hr   | Quality       |
-| 5   | Add GitHub Actions CI workflow (`nix flake check`, `nix fmt --check`)      | **High**     | 30 min | CI            |
-| 6   | Change default `user` from `"lars"` to `config.home.username`              | Medium       | 5 min  | Config        |
-| 7   | Evaluate and potentially remove `home-manager` input                       | Medium       | 10 min | Cleanup       |
-| 8   | Update README GitHub URL from `yourusername` to actual org                 | Medium       | 1 min  | Docs          |
-| 9   | Add NixOS module evaluation test                                           | Medium       | 1 hr   | Testing       |
-| 10  | Add Home Manager module evaluation test                                    | Medium       | 1 hr   | Testing       |
-| 11  | Extract banner text to separate file or constant                           | Medium       | 10 min | Refactor      |
-| 12  | Add example configurations in `examples/`                                  | Medium       | 30 min | Docs          |
-| 13  | Add NixOS VM integration test (sshd starts, key auth works)                | Medium       | 2 hr   | Testing       |
-| 14  | Add CONTRIBUTING.md                                                        | Low          | 15 min | Docs          |
-| 15  | Add CHANGELOG.md                                                           | Low          | 10 min | Docs          |
-| 16  | Add `.editorconfig`                                                        | Low          | 5 min  | Quality       |
-| 17  | Add git versioning (v0.1.0 tag)                                            | Low          | 5 min  | Process       |
-| 18  | Document crypto algorithm choices and review schedule                      | Low          | 15 min | Docs          |
-| 19  | Add more SSH keys to `ssh-keys/` as needed                                 | Low          | 2 min  | Config        |
-| 20  | Add `homeManagerModule` (singular) backward-compat alias or migration note | Low          | 5 min  | Compatibility |
-| 21  | Consider nix-darwin server module (`darwinModules`)                        | Low          | 1 hr   | Feature       |
-| 22  | Add SSH config syntax validation test                                      | Low          | 1 hr   | Testing       |
-| 23  | Consider age/sops-nix integration for private key management               | Low          | 2 hr   | Feature       |
-| 24  | Add `apps` output for CLI tools (key rotation, config lint)                | Low          | 3 hr   | Feature       |
-| 25  | Add `nixosConfigurations` or `homeConfigurations` as example/demo outputs  | Low          | 30 min | Demo          |
+| 1   | Add MIT LICENSE file                                                       | ~~**Critical**~~ done at `db540d4` | ~~2 min~~  | ~~Legal~~     |
+| 2   | Fix README `authorizedKeysFiles` default value in table                   | ~~**High**~~ done at `db540d4`     | ~~2 min~~  | ~~Docs~~      |
+| 3   | Document all 7 host submodule options in README table                      | ~~**High**~~ done (all 8 documented) | ~~5 min~~ | ~~Docs~~   |
+| 4   | Add `checks` output to flake.nix (module evaluation tests)                 | ~~**High**~~ done at `1e00553`, `e910e78` | ~~1 hr~~ | ~~Quality~~ |
+| 5   | Add GitHub Actions CI workflow (`nix flake check`, `nix fmt --check`)      | ~~**High**~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22) | ~~30 min~~ | ~~CI~~ |
+| 6   | Change default `user` from `"lars"` to `config.home.username`              | ~~Medium~~ done at `78a96ec`       | ~~5 min~~  | ~~Config~~    |
+| 7   | Evaluate and potentially remove `home-manager` input                       | ~~Medium~~ done (decision: keep — powers the HM eval checks) | ~~10 min~~ | ~~Cleanup~~ |
+| 8   | Update README GitHub URL from `yourusername` to actual org                 | ~~Medium~~ done at `db540d4`       | ~~1 min~~  | ~~Docs~~      |
+| 9   | Add NixOS module evaluation test                                           | ~~Medium~~ done (`nixos-module-evaluates`, `flake.nix:110`) | ~~1 hr~~ | ~~Testing~~ |
+| 10  | Add Home Manager module evaluation test                                    | ~~Medium~~ done (`home-manager-module-evaluates`, `flake.nix:115`) | ~~1 hr~~ | ~~Testing~~ |
+| 11  | Extract banner text to separate file or constant                           | ~~Medium~~ → TODO_LIST.md Low — still open | ~~10 min~~ | ~~Refactor~~ |
+| 12  | Add example configurations in `examples/`                                  | ~~Medium~~ → TODO_LIST.md Low — still open | ~~30 min~~ | ~~Docs~~ |
+| 13  | Add NixOS VM integration test (sshd starts, key auth works)                | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~2 hr~~ | ~~Testing~~ |
+| 14  | Add CONTRIBUTING.md                                                        | ~~Low~~ done at `abe5144`          | ~~15 min~~ | ~~Docs~~      |
+| 15  | Add CHANGELOG.md                                                           | ~~Low~~ done at `abe5144`          | ~~10 min~~ | ~~Docs~~      |
+| 16  | Add `.editorconfig`                                                        | ~~Low~~ done at `2f25e95`          | ~~5 min~~   | ~~Quality~~   |
+| 17  | Add git versioning (v0.1.0 tag)                                            | ~~Low~~ → TODO_LIST.md High — still open | ~~5 min~~ | ~~Process~~ |
+| 18  | Document crypto algorithm choices and review schedule                      | ~~Low~~ done at `abe5144` (review cadence → ROADMAP.md "Post-quantum completion") | ~~15 min~~ | ~~Docs~~ |
+| 19  | Add more SSH keys to `ssh-keys/` as needed                                 | ~~Low~~ done at `c06d0d4`          | ~~2 min~~   | ~~Config~~    |
+| 20  | Add `homeManagerModule` (singular) backward-compat alias or migration note | ~~Low~~ **Won't implement — the singular aliases were removed before any release shipped; no consumers exist.** | ~~5 min~~ | ~~Compatibility~~ |
+| 21  | Consider nix-darwin server module (`darwinModules`)                        | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open | ~~1 hr~~ | ~~Feature~~ |
+| 22  | Add SSH config syntax validation test                                      | ~~Low~~ → ROADMAP.md "Test depth" — still open | ~~1 hr~~ | ~~Testing~~ |
+| 23  | Consider age/sops-nix integration for private key management               | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~2 hr~~ | ~~Feature~~ |
+| 24  | Add `apps` output for CLI tools (key rotation, config lint)                | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~3 hr~~ | ~~Feature~~ |
+| 25  | Add `nixosConfigurations` or `homeConfigurations` as example/demo outputs  | ~~Low~~ → ROADMAP.md "Ecosystem integration" (examples) — still open | ~~30 min~~ | ~~Demo~~ |
 
 ---
 
 ## g) Top #1 Question I Cannot Figure Out Myself
 
-**Is the `home-manager` flake input needed, and if so, by whom?**
+~~**Is the `home-manager` flake input needed, and if so, by whom?**~~ Resolved: keep — it powers the Home Manager evaluation checks via `homeManagerConfiguration`; decision recorded in AGENTS.md and ROADMAP.md.
 
 It's declared in `flake.nix:6-9` but never used in any output. The modules themselves only use standard module arguments (`config`, `lib`, `pkgs`). If downstream consumers are expected to use it as a shared input via `inputs.nix-ssh-config.inputs.home-manager.follows = "home-manager"`, it should stay. If nobody does that, it's dead weight adding ~150 entries to `flake.lock`. This is a product/ecosystem decision only the maintainer can make.
 

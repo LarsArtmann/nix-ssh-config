@@ -105,29 +105,29 @@ These appear to be an incomplete key migration — the RSA key is staged for del
 
 ### Critical
 
-1. **Missing LICENSE file** — Still not addressed. README says "MIT - See LICENSE file" but the file doesn't exist. Legal risk.
+1. ~~**Missing LICENSE file** — Still not addressed. README says "MIT - See LICENSE file" but the file doesn't exist. Legal risk.~~ done at `db540d4`
 
 ### High Impact
 
-2. **Uncommitted key migration** — RSA→Ed25519 migration is half-done in working tree. Should be committed as a single coherent change.
-3. **No automated testing** — Zero tests for 552 lines of Nix. Both modules have complex crypto configurations that should be validated.
-4. **No CI** — No validation on push.
-5. **README table inaccuracies** — `authorizedKeysFiles` default wrong. Host submodule options incomplete.
+2. ~~**Uncommitted key migration** — RSA→Ed25519 migration is half-done in working tree. Should be committed as a single coherent change.~~ done (committed at `af9dc53`)
+3. ~~**No automated testing** — Zero tests for 552 lines of Nix. Both modules have complex crypto configurations that should be validated.~~ done at `1e00553` (suite reduced at `e910e78`; restoring coverage tracked in TODO_LIST.md)
+4. ~~**No CI** — No validation on push.~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22)
+5. ~~**README table inaccuracies** — `authorizedKeysFiles` default wrong. Host submodule options incomplete.~~ done at `db540d4`
 
 ### Medium Impact
 
-6. **OpenSSH version compatibility unknown** — Post-quantum KEX (`mlkem768x25519-sha256`) requires recent OpenSSH. No minimum version documented. Could break on older servers.
-7. **Hardcoded `user = "lars"`** — Still present.
-8. **No fallback for missing ed25519 identity** — Client defaults to `~/.ssh/id_ed25519` but doesn't create it. User may not have this key.
-9. **`home-manager` input still undeclared-use** — Previous report flagged this, still unresolved.
-10. **Crypto algorithm choices not documented with rationale** — Why these specific KEX/ciphers/MACs? What threat model? What compatibility tradeoffs?
+6. ~~**OpenSSH version compatibility unknown** — Post-quantum KEX (`mlkem768x25519-sha256`) requires recent OpenSSH. No minimum version documented. Could break on older servers.~~ done at `abe5144` (compatibility matrix in README)
+7. ~~**Hardcoded `user = "lars"`** — Still present.~~ done at `78a96ec`
+8. ~~**No fallback for missing ed25519 identity** — Client defaults to `~/.ssh/id_ed25519` but doesn't create it. User may not have this key.~~ **Won't implement — `identityFile` is nullable and documented; key provisioning is outside module scope.**
+9. ~~**`home-manager` input still undeclared-use** — Previous report flagged this, still unresolved.~~ done (decision: keep — it now powers the HM eval checks; recorded in AGENTS.md/ROADMAP.md)
+10. ~~**Crypto algorithm choices not documented with rationale** — Why these specific KEX/ciphers/MACs? What threat model? What compatibility tradeoffs?~~ done at `abe5144`
 
 ### Low Impact
 
-11. **README GitHub URL placeholder** — Still `yourusername`.
-12. **No CHANGELOG** — Three sessions of changes, no tracking.
-13. **No versioning** — No git tags.
-14. **Only one SSH key** — Single ed25519 key for single user.
+11. ~~**README GitHub URL placeholder** — Still `yourusername`.~~ done at `db540d4`
+12. ~~**No CHANGELOG** — Three sessions of changes, no tracking.~~ done at `abe5144`
+13. ~~**No versioning** — No git tags.~~ → TODO_LIST.md High — still open
+14. ~~**Only one SSH key** — Single ed25519 key for single user.~~ done at `c06d0d4`
 
 ---
 
@@ -135,37 +135,37 @@ These appear to be an incomplete key migration — the RSA key is staged for del
 
 | #   | Task                                                                                    | Priority     | Effort | Category  |
 | --- | --------------------------------------------------------------------------------------- | ------------ | ------ | --------- |
-| 1   | Add MIT LICENSE file                                                                    | **Critical** | 2 min  | Legal     |
-| 2   | Commit the pending RSA→Ed25519 migration (stage flake.nix + README + lars.pub deletion) | **High**     | 2 min  | Migration |
-| 3   | Fix README `authorizedKeysFiles` default value in options table                         | **High**     | 2 min  | Docs      |
-| 4   | Document all 7 host submodule fields in README table                                    | **High**     | 5 min  | Docs      |
-| 5   | Add OpenSSH minimum version compatibility notes to README                               | **High**     | 15 min | Docs      |
-| 6   | Add `checks` output to flake.nix (module evaluation tests)                              | **High**     | 1 hr   | Quality   |
-| 7   | Add GitHub Actions CI workflow                                                          | **High**     | 30 min | CI        |
-| 8   | Change default `user` from `"lars"` to `config.home.username`                           | Medium       | 5 min  | Config    |
-| 9   | Evaluate/remove `home-manager` input if unused                                          | Medium       | 10 min | Cleanup   |
-| 10  | Update README GitHub URL from `yourusername`                                            | Medium       | 1 min  | Docs      |
-| 11  | Add NixOS module evaluation test                                                        | Medium       | 1 hr   | Testing   |
-| 12  | Add Home Manager module evaluation test                                                 | Medium       | 1 hr   | Testing   |
-| 13  | Document crypto algorithm rationale and threat model                                    | Medium       | 30 min | Docs      |
-| 14  | Add fallback identity file handling or document prerequisite                            | Medium       | 15 min | Config    |
-| 15  | Extract banner text to separate file/constant                                           | Medium       | 10 min | Refactor  |
-| 16  | Add example configurations in `examples/`                                               | Medium       | 30 min | Docs      |
-| 17  | Add NixOS VM integration test (sshd starts, key auth works)                             | Medium       | 2 hr   | Testing   |
-| 18  | Add CONTRIBUTING.md                                                                     | Low          | 15 min | Docs      |
-| 19  | Add CHANGELOG.md                                                                        | Low          | 10 min | Docs      |
-| 20  | Add `.editorconfig`                                                                     | Low          | 5 min  | Quality   |
-| 21  | Add git versioning (v0.1.0 tag)                                                         | Low          | 5 min  | Process   |
-| 22  | Add more SSH keys as needed                                                             | Low          | 2 min  | Config    |
-| 23  | Consider nix-darwin server module                                                       | Low          | 1 hr   | Feature   |
-| 24  | Consider age/sops-nix integration for private key management                            | Low          | 2 hr   | Feature   |
-| 25  | Add `apps` output for CLI tools (key rotation, config lint)                             | Low          | 3 hr   | Feature   |
+| 1   | Add MIT LICENSE file                                                                    | ~~**Critical**~~ done at `db540d4` | ~~2 min~~  | ~~Legal~~     |
+| 2   | Commit the pending RSA→Ed25519 migration (stage flake.nix + README + lars.pub deletion) | ~~**High**~~ done at `af9dc53` | ~~2 min~~  | ~~Migration~~ |
+| 3   | Fix README `authorizedKeysFiles` default value in options table                         | ~~**High**~~ done at `db540d4` | ~~2 min~~  | ~~Docs~~      |
+| 4   | Document all 7 host submodule fields in README table                                    | ~~**High**~~ done (all 8 documented) | ~~5 min~~  | ~~Docs~~ |
+| 5   | Add OpenSSH minimum version compatibility notes to README                               | ~~**High**~~ done at `abe5144` | ~~15 min~~ | ~~Docs~~      |
+| 6   | Add `checks` output to flake.nix (module evaluation tests)                              | ~~**High**~~ done at `1e00553`, `e910e78` | ~~1 hr~~ | ~~Quality~~ |
+| 7   | Add GitHub Actions CI workflow                                                          | ~~**High**~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22) | ~~30 min~~ | ~~CI~~ |
+| 8   | Change default `user` from `"lars"` to `config.home.username`                           | ~~Medium~~ done at `78a96ec` | ~~5 min~~  | ~~Config~~    |
+| 9   | Evaluate/remove `home-manager` input if unused                                          | ~~Medium~~ done (decision: keep — powers the HM eval checks) | ~~10 min~~ | ~~Cleanup~~ |
+| 10  | Update README GitHub URL from `yourusername`                                            | ~~Medium~~ done at `db540d4` | ~~1 min~~  | ~~Docs~~      |
+| 11  | Add NixOS module evaluation test                                                        | ~~Medium~~ done (`nixos-module-evaluates`, `flake.nix:110`) | ~~1 hr~~ | ~~Testing~~ |
+| 12  | Add Home Manager module evaluation test                                                 | ~~Medium~~ done (`home-manager-module-evaluates`, `flake.nix:115`) | ~~1 hr~~ | ~~Testing~~ |
+| 13  | Document crypto algorithm rationale and threat model                                    | ~~Medium~~ done at `abe5144` | ~~30 min~~ | ~~Docs~~      |
+| 14  | Add fallback identity file handling or document prerequisite                            | ~~Medium~~ **Won't implement — `identityFile` is nullable and documented; key provisioning is outside module scope.** | ~~15 min~~ | ~~Config~~ |
+| 15  | Extract banner text to separate file/constant                                           | ~~Medium~~ → TODO_LIST.md Low — still open | ~~10 min~~ | ~~Refactor~~ |
+| 16  | Add example configurations in `examples/`                                               | ~~Medium~~ → TODO_LIST.md Low — still open | ~~30 min~~ | ~~Docs~~ |
+| 17  | Add NixOS VM integration test (sshd starts, key auth works)                             | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~2 hr~~ | ~~Testing~~ |
+| 18  | Add CONTRIBUTING.md                                                                     | ~~Low~~ done at `abe5144` | ~~15 min~~ | ~~Docs~~      |
+| 19  | Add CHANGELOG.md                                                                        | ~~Low~~ done at `abe5144` | ~~10 min~~ | ~~Docs~~      |
+| 20  | Add `.editorconfig`                                                                     | ~~Low~~ done at `2f25e95` | ~~5 min~~   | ~~Quality~~   |
+| 21  | Add git versioning (v0.1.0 tag)                                                         | ~~Low~~ → TODO_LIST.md High — still open | ~~5 min~~ | ~~Process~~ |
+| 22  | Add more SSH keys as needed                                                             | ~~Low~~ done at `c06d0d4` | ~~2 min~~   | ~~Config~~    |
+| 23  | Consider nix-darwin server module                                                       | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open | ~~1 hr~~ | ~~Feature~~ |
+| 24  | Consider age/sops-nix integration for private key management                            | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~2 hr~~ | ~~Feature~~ |
+| 25  | Add `apps` output for CLI tools (key rotation, config lint)                             | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~3 hr~~ | ~~Feature~~ |
 
 ---
 
 ## g) Top #1 Question I Cannot Figure Out Myself
 
-**What is the minimum OpenSSH version required for `mlkem768x25519-sha256` KEX, and should we provide a fallback for older servers?**
+~~**What is the minimum OpenSSH version required for `mlkem768x25519-sha256` KEX, and should we provide a fallback for older servers?**~~ Resolved at `abe5144`: README documents the compatibility matrix (ML-KEM ≥ 9.9, NTRU Prime hybrid ≥ 8.5, Curve25519/ChaCha20 ≥ 6.5); decision: keep modern-only lists — legacy fallback is a ROADMAP non-goal, `extraOptions` is the escape hatch.
 
 The client module now prioritizes `mlkem768x25519-sha256` as the first KEX algorithm. This is a post-quantum hybrid key exchange based on ML-KEM (NIST FIPS 203). However:
 
