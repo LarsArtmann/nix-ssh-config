@@ -56,9 +56,9 @@ These are in-progress changes — likely from a concurrent session or manual edi
 
 | #   | Item                            | Status                                                    | What's Missing                                                                                                                                                                                                  |
 | --- | ------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **RSA key removal**             | Old `lars.pub` staged for deletion, `flake.nix` updated   | Still uncommitted. RSA key deletion + flake update + README update all in working tree but not committed together                                                                                               |
-| 2   | **README documentation**        | Updated with post-quantum features and ed25519 references | `authorizedKeysFiles` default in table still doesn't match actual default. Host submodule options incomplete (only 6 of 7 listed). GitHub URL still `yourusername`. `user` default still documented as `"lars"` |
-| 3   | **Security defaults in README** | Server and client sections rewritten with crypto details  | No explanation of _why_ specific algorithms were chosen or compatibility matrix (which OpenSSH versions support mlkem768x25519-sha256?)                                                                         |
+| 1   | **RSA key removal**             | ~~Old `lars.pub` staged for deletion, `flake.nix` updated~~ done (committed at `af9dc53`) | ~~Still uncommitted. RSA key deletion + flake update + README update all in working tree but not committed together~~                                                                                               |
+| 2   | **README documentation**        | ~~Updated with post-quantum features and ed25519 references~~ done at `db540d4`, `abe5144` | ~~`authorizedKeysFiles` default in table still doesn't match actual default. Host submodule options incomplete (only 6 of 7 listed). GitHub URL still `yourusername`. `user` default still documented as `"lars"`~~ |
+| 3   | **Security defaults in README** | ~~Server and client sections rewritten with crypto details~~ done at `abe5144` | ~~No explanation of _why_ specific algorithms were chosen or compatibility matrix (which OpenSSH versions support mlkem768x25519-sha256?)~~                                                                         |
 
 ---
 
@@ -66,26 +66,26 @@ These are in-progress changes — likely from a concurrent session or manual edi
 
 | #   | Item                                                                                                                  | Priority     | Effort |
 | --- | --------------------------------------------------------------------------------------------------------------------- | ------------ | ------ |
-| 1   | **LICENSE file** — README claims MIT but file doesn't exist                                                           | **Critical** | 2 min  |
-| 2   | **Automated tests** — No `checks` output, no evaluation tests                                                         | High         | 2 hr   |
-| 3   | **CI pipeline** — No GitHub Actions workflow                                                                          | High         | 30 min |
-| 4   | **Fix README `authorizedKeysFiles` default** — Table says `["%h/.ssh/authorized_keys"]`, actual default has 3 entries | Medium       | 2 min  |
-| 5   | **Fix README GitHub URL** — Still `yourusername`                                                                      | Medium       | 1 min  |
-| 6   | **Document all host submodule options** — Missing `extraOptions` from table                                           | Medium       | 5 min  |
-| 7   | **OpenSSH version compatibility docs** — mlkem768x25519-sha256 requires OpenSSH 9.x+. Document minimum versions       | Medium       | 15 min |
-| 8   | **Hardcoded default user `"lars"`** — Should use `config.home.username`                                               | Medium       | 5 min  |
-| 9   | **Evaluate `home-manager` input necessity**                                                                           | Medium       | 10 min |
-| 10  | **Example configurations** — No `examples/` directory                                                                 | Medium       | 30 min |
-| 11  | **CHANGELOG.md**                                                                                                      | Low          | 10 min |
-| 12  | **CONTRIBUTING.md**                                                                                                   | Low          | 15 min |
-| 13  | **`.editorconfig`**                                                                                                   | Low          | 5 min  |
-| 14  | **Versioning/tags**                                                                                                   | Low          | 15 min |
-| 15  | **NixOS VM integration test**                                                                                         | Medium       | 2 hr   |
-| 16  | **Home Manager module test**                                                                                          | Medium       | 1 hr   |
-| 17  | **Extract banner text**                                                                                               | Low          | 10 min |
-| 18  | **Additional SSH keys**                                                                                               | Low          | 2 min  |
-| 19  | **nix-darwin server module**                                                                                          | Low          | 1 hr   |
-| 20  | **age/sops-nix integration**                                                                                          | Low          | 2 hr   |
+| 1   | **LICENSE file** — README claims MIT but file doesn't exist                                                           | ~~**Critical**~~ done at `db540d4` | ~~2 min~~  |
+| 2   | **Automated tests** — No `checks` output, no evaluation tests                                                         | ~~High~~ done at `1e00553` (reduced at `e910e78`) | ~~2 hr~~   |
+| 3   | **CI pipeline** — No GitHub Actions workflow                                                                          | ~~High~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22) | ~~30 min~~ |
+| 4   | **Fix README `authorizedKeysFiles` default** — Table says `["%h/.ssh/authorized_keys"]`, actual default has 3 entries | ~~Medium~~ done at `db540d4` | ~~2 min~~  |
+| 5   | **Fix README GitHub URL** — Still `yourusername`                                                                      | ~~Medium~~ done at `db540d4` | ~~1 min~~  |
+| 6   | **Document all host submodule options** — Missing `extraOptions` from table                                           | ~~Medium~~ done (all 8 documented) | ~~5 min~~ |
+| 7   | **OpenSSH version compatibility docs** — mlkem768x25519-sha256 requires OpenSSH 9.x+. Document minimum versions       | ~~Medium~~ done at `abe5144` | ~~15 min~~ |
+| 8   | **Hardcoded default user `"lars"`** — Should use `config.home.username`                                               | ~~Medium~~ done at `78a96ec` | ~~5 min~~  |
+| 9   | **Evaluate `home-manager` input necessity**                                                                           | ~~Medium~~ done (decision: keep — powers the HM eval checks) | ~~10 min~~ |
+| 10  | **Example configurations** — No `examples/` directory                                                                 | ~~Medium~~ → TODO_LIST.md Low — still open | ~~30 min~~ |
+| 11  | **CHANGELOG.md**                                                                                                      | ~~Low~~ done at `abe5144` | ~~10 min~~ |
+| 12  | **CONTRIBUTING.md**                                                                                                   | ~~Low~~ done at `abe5144` | ~~15 min~~ |
+| 13  | **`.editorconfig`**                                                                                                   | ~~Low~~ done at `2f25e95` | ~~5 min~~  |
+| 14  | **Versioning/tags**                                                                                                   | ~~Low~~ → TODO_LIST.md High — still open | ~~15 min~~ |
+| 15  | **NixOS VM integration test**                                                                                         | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~2 hr~~ |
+| 16  | **Home Manager module test**                                                                                          | ~~Medium~~ done at `1e00553`, reduced at `e910e78` | ~~1 hr~~ |
+| 17  | **Extract banner text**                                                                                               | ~~Low~~ → TODO_LIST.md Low — still open | ~~10 min~~ |
+| 18  | **Additional SSH keys**                                                                                               | ~~Low~~ done at `c06d0d4` | ~~2 min~~  |
+| 19  | **nix-darwin server module**                                                                                          | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open | ~~1 hr~~ |
+| 20  | **age/sops-nix integration**                                                                                          | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~2 hr~~ |
 
 ---
 

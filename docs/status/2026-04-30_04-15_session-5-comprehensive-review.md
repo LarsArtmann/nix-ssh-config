@@ -37,7 +37,7 @@ Full codebase review and refactoring session. Read every file, cross-referenced 
 
 | #   | What                           | Status                                                                                                                                                                                                                                                     | What's Left                                                                                                           |
 | --- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Migration proposal updates** | The `MIGRATION_TO_NIX_FLAKES_PROPOSAL.md` was reformatted by `nix fmt` but not substantively updated to reflect completed work (§2.1 shared crypto is done, §2.3 user default is done, §3.1 checks is done, §3.2 devShells is done, §6.1 LICENSE is done). | Update proposal to mark completed items, add new discovery about `user` option wiring, re-prioritize remaining items. |
+| 1   | **Migration proposal updates** | ~~The `MIGRATION_TO_NIX_FLAKES_PROPOSAL.md` was reformatted by `nix fmt` but not substantively updated to reflect completed work (§2.1 shared crypto is done, §2.3 user default is done, §3.1 checks is done, §3.2 devShells is done, §6.1 LICENSE is done).~~ done (moot — the proposal file was deleted at `2f25e95`) | ~~Update proposal to mark completed items, add new discovery about `user` option wiring, re-prioritize remaining items.~~ |
 
 ---
 
@@ -45,21 +45,21 @@ Full codebase review and refactoring session. Read every file, cross-referenced 
 
 | #   | What                                            | Priority | Effort | Notes                                                                                                                                 |
 | --- | ----------------------------------------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | GitHub Actions CI workflow                      | High     | 30 min | `.github/workflows/check.yml` with `nix flake check --all-systems` + `nix fmt -- --check`. Proposal §4.4 has template.                |
-| 2   | NixOS VM integration test                       | Medium   | 3 hr   | Spin up QEMU VM, verify sshd starts, banner served, ciphers correct, key auth works. Gold standard but time-intensive. Proposal §4.2. |
-| 3   | Home Manager config content verification        | Medium   | 1 hr   | Verify generated `~/.ssh/config` text contains expected content (Host, User, KexAlgorithms, etc.). Proposal §4.3.                     |
-| 4   | `CONTRIBUTING.md`                               | Low      | 15 min | Standard contribution guidelines.                                                                                                     |
-| 5   | `CHANGELOG.md`                                  | Low      | 10 min | Track versions and changes.                                                                                                           |
-| 6   | `.editorconfig`                                 | Low      | 5 min  | Cross-editor formatting consistency.                                                                                                  |
-| 7   | `.envrc` for direnv                             | Low      | 2 min  | `use flake` — auto-activates devShell on cd.                                                                                          |
-| 8   | `justfile`                                      | Low      | 15 min | Standardized task runner for check/fmt/update/test.                                                                                   |
-| 9   | Update migration proposal to reflect done items | Medium   | 15 min | Mark §2.1, §2.3, §3.1, §3.2, §6.1 as complete.                                                                                        |
-| 10  | Evaluate/remove unused `home-manager` input     | Medium   | 10 min | Kept for `checks` — could use `nixpkgs.lib.evalModules` directly instead. Decision needed.                                            |
-| 11  | Crypto algorithm rationale documentation        | Low      | 30 min | Why these specific algorithms, what threat model they address.                                                                        |
-| 12  | `apps` output (vm-test, fmt-check)              | Low      | 30 min | Convenience commands.                                                                                                                 |
-| 13  | nix-darwin server module (`darwinModules`)      | Low      | 1 hr   | macOS sshd configuration.                                                                                                             |
-| 14  | age/sops-nix integration                        | Low      | 2 hr   | Secret management for SSH keys.                                                                                                       |
-| 15  | Git versioning (v0.1.0 tag)                     | Low      | 5 min  | First release tag.                                                                                                                    |
+| 1   | GitHub Actions CI workflow                      | ~~High~~ done at `ecd73a4` (later broken by platform mismatch; fixed 2026-08-22) | ~~`.github/workflows/check.yml` with `nix flake check --all-systems` + `nix fmt -- --check`. Proposal §4.4 has template.~~                |
+| 2   | NixOS VM integration test                       | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~Spin up QEMU VM, verify sshd starts, banner served, ciphers correct, key auth works. Gold standard but time-intensive. Proposal §4.2.~~ |
+| 3   | Home Manager config content verification        | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~Verify generated `~/.ssh/config` text contains expected content (Host, User, KexAlgorithms, etc.). Proposal §4.3.~~                     |
+| 4   | `CONTRIBUTING.md`                               | ~~Low~~ done at `abe5144`      | ~~Standard contribution guidelines.~~                                                                                                     |
+| 5   | `CHANGELOG.md`                                  | ~~Low~~ done at `abe5144`      | ~~Track versions and changes.~~                                                                                                           |
+| 6   | `.editorconfig`                                 | ~~Low~~ done at `2f25e95`      | ~~Cross-editor formatting consistency.~~                                                                                                  |
+| 7   | `.envrc` for direnv                             | ~~Low~~ done at `2f25e95`      | ~~`use flake` — auto-activates devShell on cd.~~                                                                                          |
+| 8   | `justfile`                                      | ~~Low~~ **Won't implement — organizational convention: flake.nix is the task runner; justfiles are deprecated.** | ~~Standardized task runner for check/fmt/update/test.~~                                                                   |
+| 9   | Update migration proposal to reflect done items | ~~Medium~~ done (moot — proposal deleted at `2f25e95`) | ~~Mark §2.1, §2.3, §3.1, §3.2, §6.1 as complete.~~                                                                                        |
+| 10  | Evaluate/remove unused `home-manager` input     | ~~Medium~~ done (decision: keep — powers the HM eval checks; recorded in AGENTS.md/ROADMAP.md) | ~~Kept for `checks` — could use `nixpkgs.lib.evalModules` directly instead. Decision needed.~~                                            |
+| 11  | Crypto algorithm rationale documentation        | ~~Low~~ done at `abe5144`      | ~~Why these specific algorithms, what threat model they address.~~                                                                        |
+| 12  | `apps` output (vm-test, fmt-check)              | ~~Low~~ done at `1e00553`, removed at `e910e78` (formatting now covered by `checks.*.format`) | ~~Convenience commands.~~                                                                                                                 |
+| 13  | nix-darwin server module (`darwinModules`)      | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open | ~~macOS sshd configuration.~~                                                                                                             |
+| 14  | age/sops-nix integration                        | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~Secret management for SSH keys.~~                                                                                                       |
+| 15  | Git versioning (v0.1.0 tag)                     | ~~Low~~ → TODO_LIST.md High — still open | ~~First release tag.~~                                                                                                                    |
 
 ---
 
@@ -73,16 +73,16 @@ Nothing. All changes evaluate cleanly. `nix flake check --all-systems` passes on
 
 | #   | Area                                                       | Current State                                                                                             | Improvement                                                                                                      |
 | --- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| 1   | **`user` option scope**                                    | `ssh-config.user` sets default user on `*` wildcard only; individual hosts must specify `user` explicitly | Consider auto-inheriting `ssh-config.user` as default for all host blocks (via `lib.mkDefault`)                  |
-| 2   | **Banner file handling**                                   | Banner is written to `environment.etc."ssh/banner".text` which may conflict with other modules            | Use `lib.mkDefault` to allow overrides                                                                           |
-| 3   | **Module option `ssh-config` naming**                      | Uses hyphen which is unconventional in Nix module system (dots are standard)                              | Consider `ssh.client` or `programs.ssh-config` for consistency with HM conventions                               |
-| 4   | **`services.ssh-server` namespace**                        | Custom namespace instead of extending `services.openssh` directly                                         | Could use `services.openssh.settings` directly with a wrapper, but current approach is cleaner for encapsulation |
-| 5   | **No `description` on shared crypto module**               | `crypto.nix` has no module header explaining purpose                                                      | Add header comment with algorithm rationale and version requirements                                             |
-| 6   | **`AuthorizedKeysFile` uses space separator**              | Hardcoded in NixOS module                                                                                 | Should be documented that spaces are the sshd_config separator for this directive                                |
-| 7   | **`builtins.pathExists` in HM module**                     | Runtime path check for OrbStack/Colima configs                                                            | This is evaluated at build time — works correctly but may surprise contributors                                  |
-| 8   | **No `lib.types.nullOr` on bannerText content validation** | Accepts any string                                                                                        | Could validate banner doesn't contain control characters that break sshd                                         |
-| 9   | **Checks only verify evaluation, not runtime**             | `nix flake check` proves modules evaluate, not that sshd actually starts                                  | VM integration tests would close this gap                                                                        |
-| 10  | **`stateVersion` warning in NixOS checks**                 | Test config doesn't set `system.stateVersion`, produces warning                                           | Add `system.stateVersion = "25.05";` to test config for clean output                                             |
+| 1   | **`user` option scope**                                    | ~~`ssh-config.user` sets default user on `*` wildcard only; individual hosts must specify `user` explicitly~~ done at `78a96ec` (hosts inherit `ssh-config.user`) | ~~Consider auto-inheriting `ssh-config.user` as default for all host blocks (via `lib.mkDefault`)~~                  |
+| 2   | **Banner file handling**                                   | ~~Banner is written to `environment.etc."ssh/banner".text` which may conflict with other modules~~ done at `c50883e` (path uses `lib.mkDefault`)            | ~~Use `lib.mkDefault` to allow overrides~~                                                                           |
+| 3   | **Module option `ssh-config` naming**                      | ~~Uses hyphen which is unconventional in Nix module system (dots are standard)~~ done (deferred to hypothetical v2.0 — ROADMAP.md Non-goals) | ~~Consider `ssh.client` or `programs.ssh-config` for consistency with HM conventions~~                               |
+| 4   | **`services.ssh-server` namespace**                        | ~~Custom namespace instead of extending `services.openssh` directly~~ done (decision: keep — cleaner encapsulation, recorded in AGENTS.md)  | ~~Could use `services.openssh.settings` directly with a wrapper, but current approach is cleaner for encapsulation~~ |
+| 5   | **No `description` on shared crypto module**               | ~~`crypto.nix` has no module header explaining purpose~~ **Won't implement — rationale deliberately lives in README, not code (session 6 decision D1).** | ~~Add header comment with algorithm rationale and version requirements~~                                             |
+| 6   | **`AuthorizedKeysFile` uses space separator**              | ~~Hardcoded in NixOS module~~ done (documented inline at `modules/nixos/ssh.nix:89` and in AGENTS.md)                 | ~~Should be documented that spaces are the sshd_config separator for this directive~~                                |
+| 7   | **`builtins.pathExists` in HM module**                     | ~~Runtime path check for OrbStack/Colima configs~~ done (documented in option descriptions and README options table)   | ~~This is evaluated at build time — works correctly but may surprise contributors~~                                  |
+| 8   | **No `lib.types.nullOr` on bannerText content validation** | ~~Accepts any string~~ → TODO_LIST.md Medium — still open                                                            | ~~Could validate banner doesn't contain control characters that break sshd~~                                         |
+| 9   | **Checks only verify evaluation, not runtime**             | ~~`nix flake check` proves modules evaluate, not that sshd actually starts~~ done at `1e00553` (content assertions + VM test), reduced at `e910e78` — remaining gap tracked in TODO_LIST.md | ~~VM integration tests would close this gap~~                                                                        |
+| 10  | **`stateVersion` warning in NixOS checks**                 | ~~Test config doesn't set `system.stateVersion`, produces warning~~ done at `1e00553` (`lib.mkDefault "25.05"`)       | ~~Add `system.stateVersion = "25.05";` to test config for clean output~~                                             |
 
 ---
 
@@ -92,57 +92,57 @@ Nothing. All changes evaluate cleanly. `nix flake check --all-systems` passes on
 
 | #   | Task                                                                               | Effort | Impact                                         |
 | --- | ---------------------------------------------------------------------------------- | ------ | ---------------------------------------------- |
-| 1   | Add GitHub Actions CI (`.github/workflows/check.yml`)                              | 30 min | Prevents broken commits from landing on master |
-| 2   | Update migration proposal to mark completed items                                  | 15 min | Keeps documentation honest and actionable      |
-| 3   | Suppress `system.stateVersion` warning in NixOS test config                        | 2 min  | Clean `nix flake check` output                 |
-| 4   | Add header comment to `crypto.nix` with algorithm rationale + version requirements | 10 min | Future maintainers understand the "why"        |
-| 5   | Commit current uncommitted changes (flake.nix, README, LICENSE)                    | 5 min  | Don't lose work                                |
+| 1   | Add GitHub Actions CI (`.github/workflows/check.yml`)                              | ~~30 min~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22) | ~~Prevents broken commits from landing on master~~ |
+| 2   | Update migration proposal to mark completed items                                  | ~~15 min~~ done (moot — proposal deleted at `2f25e95`) | ~~Keeps documentation honest and actionable~~      |
+| 3   | Suppress `system.stateVersion` warning in NixOS test config                        | ~~2 min~~ done at `1e00553` | ~~Clean `nix flake check` output~~                 |
+| 4   | Add header comment to `crypto.nix` with algorithm rationale + version requirements | ~~10 min~~ **Won't implement — rationale deliberately lives in README, not code (session 6 decision D1).** | ~~Future maintainers understand the "why"~~        |
+| 5   | Commit current uncommitted changes (flake.nix, README, LICENSE)                    | ~~5 min~~ done (landed via subsequent commits) | ~~Don't lose work~~                                |
 
 ### Priority 2 — Quality & Testing
 
 | #   | Task                                                        | Effort | Impact                                     |
 | --- | ----------------------------------------------------------- | ------ | ------------------------------------------ |
-| 6   | Add Home Manager SSH config content verification test       | 1 hr   | Proves generated config text is correct    |
-| 7   | Add NixOS VM integration test (sshd starts, key auth works) | 3 hr   | Gold standard — proves runtime correctness |
-| 8   | Add `lib.mkDefault` to banner text to allow overrides       | 2 min  | Makes module more composable               |
-| 9   | Auto-inherit `ssh-config.user` in all host blocks           | 5 min  | Reduces boilerplate for consumers          |
-| 10  | Add `.editorconfig` for cross-editor consistency            | 5 min  | Prevents tab/space wars                    |
+| 6   | Add Home Manager SSH config content verification test       | ~~1 hr~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~Proves generated config text is correct~~    |
+| 7   | Add NixOS VM integration test (sshd starts, key auth works) | ~~3 hr~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~Gold standard — proves runtime correctness~~ |
+| 8   | Add `lib.mkDefault` to banner text to allow overrides       | ~~2 min~~ done at `c50883e` | ~~Makes module more composable~~               |
+| 9   | Auto-inherit `ssh-config.user` in all host blocks           | ~~5 min~~ done at `78a96ec` | ~~Reduces boilerplate for consumers~~          |
+| 10  | Add `.editorconfig` for cross-editor consistency            | ~~5 min~~ done at `2f25e95` | ~~Prevents tab/space wars~~                    |
 
 ### Priority 3 — Developer Experience
 
 | #   | Task                              | Effort | Impact                          |
 | --- | --------------------------------- | ------ | ------------------------------- |
-| 11  | Add `CONTRIBUTING.md`             | 15 min | Lowers barrier for contributors |
-| 12  | Add `.envrc` (`use flake`)        | 2 min  | Auto-activates dev shell        |
-| 13  | Add `justfile` for common tasks   | 15 min | Standardized developer commands |
-| 14  | Add `CHANGELOG.md`                | 10 min | Track project evolution         |
-| 15  | Add `apps` output for `fmt-check` | 15 min | Convenient CI-local check       |
+| 11  | Add `CONTRIBUTING.md`             | ~~15 min~~ done at `abe5144` | ~~Lowers barrier for contributors~~ |
+| 12  | Add `.envrc` (`use flake`)        | ~~2 min~~ done at `2f25e95` | ~~Auto-activates dev shell~~        |
+| 13  | Add `justfile` for common tasks   | ~~15 min~~ **Won't implement — organizational convention: flake.nix is the task runner; justfiles are deprecated.** | ~~Standardized developer commands~~ |
+| 14  | Add `CHANGELOG.md`                | ~~10 min~~ done at `abe5144` | ~~Track project evolution~~         |
+| 15  | Add `apps` output for `fmt-check` | ~~15 min~~ done at `1e00553`, removed at `e910e78` (formatting now covered by `checks.*.format`) | ~~Convenient CI-local check~~       |
 
 ### Priority 4 — Architecture & Polish
 
 | #   | Task                                                                   | Effort | Impact                                                    |
 | --- | ---------------------------------------------------------------------- | ------ | --------------------------------------------------------- |
-| 16  | Evaluate replacing `home-manager` input with `nixpkgs.lib.evalModules` | 30 min | Reduces flake.lock size if HM input not needed for checks |
-| 17  | Consider renaming `ssh-config` to `ssh.client`                         | 30 min | More conventional Nix module naming                       |
-| 18  | Add crypto algorithm rationale section to README                       | 30 min | Explains threat model and algorithm choices               |
-| 19  | Document `AuthorizedKeysFile` space-separator behavior                 | 5 min  | Prevents confusion about why spaces not commas            |
-| 20  | Add `nix-darwin` server module (`darwinModules`)                       | 1 hr   | Cross-platform server config                              |
+| 16  | Evaluate replacing `home-manager` input with `nixpkgs.lib.evalModules` | ~~30 min~~ done (decision: keep — test fidelity valued; recorded in AGENTS.md/ROADMAP.md) | ~~Reduces flake.lock size if HM input not needed for checks~~ |
+| 17  | Consider renaming `ssh-config` to `ssh.client`                         | ~~30 min~~ done (deferred to hypothetical v2.0 — ROADMAP.md Non-goals) | ~~More conventional Nix module naming~~                       |
+| 18  | Add crypto algorithm rationale section to README                       | ~~30 min~~ done at `abe5144` | ~~Explains threat model and algorithm choices~~               |
+| 19  | Document `AuthorizedKeysFile` space-separator behavior                 | ~~5 min~~ done (inline comment at `modules/nixos/ssh.nix:89` + AGENTS.md) | ~~Prevents confusion about why spaces not commas~~            |
+| 20  | Add `nix-darwin` server module (`darwinModules`)                       | ~~1 hr~~ → ROADMAP.md "Cross-platform reach" — still open | ~~Cross-platform server config~~                              |
 
 ### Priority 5 — Future
 
 | #   | Task                                                                  | Effort | Impact                                 |
 | --- | --------------------------------------------------------------------- | ------ | -------------------------------------- |
-| 21  | Git versioning (v0.1.0 tag)                                           | 5 min  | First release                          |
-| 22  | age/sops-nix integration for secret management                        | 2 hr   | Secure private key distribution        |
-| 23  | Post-quantum signature migration plan (ML-DSA)                        | TBD    | Future-proof when OpenSSH adds support |
-| 24  | Consider `lib.types.nullOr` validation on bannerText                  | 15 min | Prevent invalid sshd configs           |
-| 25  | Explore NixOS `nixos/lib/testing-python.nix` for multi-node SSH tests | 2 hr   | End-to-end client↔server verification  |
+| 21  | Git versioning (v0.1.0 tag)                                           | ~~5 min~~ → TODO_LIST.md High — still open | ~~First release~~                          |
+| 22  | age/sops-nix integration for secret management                        | ~~2 hr~~ → ROADMAP.md "Ecosystem integration" — still open | ~~Secure private key distribution~~        |
+| 23  | Post-quantum signature migration plan (ML-DSA)                        | ~~TBD~~ → ROADMAP.md "Post-quantum completion" — still open | ~~Future-proof when OpenSSH adds support~~ |
+| 24  | Consider `lib.types.nullOr` validation on bannerText                  | ~~15 min~~ → TODO_LIST.md Medium — still open | ~~Prevents invalid sshd configs~~           |
+| 25  | Explore NixOS `nixos/lib/testing-python.nix` for multi-node SSH tests | ~~2 hr~~ → ROADMAP.md "Test depth" — still open | ~~End-to-end client↔server verification~~  |
 
 ---
 
 ## G. Top Question I Cannot Answer
 
-**Should the `home-manager` flake input be kept or removed?**
+~~**Should the `home-manager` flake input be kept or removed?**~~ Resolved: keep — it powers the Home Manager evaluation checks and has caught real issues (decision recorded in AGENTS.md and ROADMAP.md).
 
 - **Keep:** Enables `home-manager.lib.homeManagerConfiguration` in `checks` (current approach). Downstream consumers can use `inputs.nix-ssh-config.inputs.home-manager.follows = "home-manager"`.
 - **Remove:** Reduces flake.lock by ~30 lines. Removes maintenance burden when HM releases break compatibility. The HM check could be rewritten using `nixpkgs.lib.evalModules` directly (bypassing `homeManagerConfiguration`).
