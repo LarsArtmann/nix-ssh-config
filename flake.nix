@@ -33,6 +33,10 @@
       flake = {
         homeManagerModules.ssh = import ./modules/home-manager/ssh.nix;
         nixosModules.ssh = import ./modules/nixos/ssh.nix;
+        examples = {
+          client = import ./examples/client.nix;
+          server = import ./examples/server.nix;
+        };
         sshKeys = {
           lars = builtins.readFile ./ssh-keys/lars-ed25519.pub;
           lars-evo-x2 = builtins.readFile ./ssh-keys/lars-evo-x2-ed25519.pub;
@@ -114,7 +118,15 @@
             extraModules:
             home-manager.lib.homeManagerConfiguration {
               inherit pkgs;
-              modules = [ self.homeManagerModules.ssh ] ++ extraModules;
+              modules = [
+                self.homeManagerModules.ssh
+                {
+                  home.stateVersion = lib.mkDefault "25.05";
+                  home.username = lib.mkDefault "test";
+                  home.homeDirectory = lib.mkDefault "/home/test";
+                }
+              ]
+              ++ extraModules;
             };
 
           hmEval = mkHmEval [
@@ -530,6 +542,15 @@
                 expected = false;
               }
             ];
+
+            # The examples are part of the public surface: import them as real
+            # modules and force the resulting config so drift breaks CI, not a
+            # user's build.
+            examples-evaluate = pkgs.runCommand "examples-evaluate" { } ''
+              ${builtins.deepSeq (mkNixosEval [ self.examples.server ]).config.services.openssh.settings ""}
+              ${builtins.deepSeq (mkHmEval [ self.examples.client ]).config.programs.ssh.settings ""}
+              echo ok > $out
+            '';
 
             format = config.treefmt.build.check self;
           }
