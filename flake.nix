@@ -50,7 +50,9 @@
         let
           crypto = import ./modules/shared/crypto.nix { inherit lib; };
 
-          testKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/uqxUhFQpJaBq+dDd+shObEjKm8YOPimFx7XHgqTFJ lars@Lars-MacBook-Air-2026-04";
+          # Throwaway ed25519 key generated for CI test evals only - never used
+          # anywhere real. Regenerate freely: ssh-keygen -t ed25519 -C <comment>
+          testKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIFVoGCZ+Xlywmk19S5Z9DKF9VvEBU9CWvvz74GrqIfa nix-ssh-config-ci-test";
 
           nixosEval = nixpkgs.lib.nixosSystem {
             inherit system;
