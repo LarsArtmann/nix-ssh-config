@@ -92,8 +92,8 @@ in
         assertion = invalidBannerChars text == [ ];
         message =
           "services.ssh-server.bannerText must not contain control characters "
-          + "(printable characters, newline and tab are allowed); found character codes: "
-          + builtins.toJSON (map (c: lib.toHexString (lib.charToInt c)) (invalidBannerChars text));
+          + "(printable characters, newline and tab are allowed); found: "
+          + builtins.toJSON (invalidBannerChars text);
       };
 
     services.openssh = {

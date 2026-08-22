@@ -396,7 +396,7 @@
           # Forcing config.assertions pulls in unrelated NixOS assertion
           # machinery that does not evaluate on darwin host platforms
           # (shadow et al.), so assertion checks run on Linux only.
-          // lib.optionalAttrs pkgs.stdenv.isLinux {
+          // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
             nixos-module-assertions = assertEq "nixos-module-assertions" [
               {
                 name = "default config satisfies all module assertions";

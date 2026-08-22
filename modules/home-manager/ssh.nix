@@ -77,13 +77,13 @@ in
 
     enableOrbstack = lib.mkOption {
       type = lib.types.bool;
-      default = pkgs.stdenv.isDarwin;
+      default = pkgs.stdenv.hostPlatform.isDarwin;
       description = "Include OrbStack SSH config if available (Darwin only)";
     };
 
     enableColima = lib.mkOption {
       type = lib.types.bool;
-      default = pkgs.stdenv.isDarwin;
+      default = pkgs.stdenv.hostPlatform.isDarwin;
       description = "Include Colima SSH config if available (Darwin only)";
     };
   };
@@ -94,7 +94,7 @@ in
       enableDefaultConfig = false;
 
       includes =
-        lib.optionals pkgs.stdenv.isDarwin (
+        lib.optionals pkgs.stdenv.hostPlatform.isDarwin (
           (lib.optional (
             config.ssh-config.enableOrbstack
             && builtins.pathExists "${config.home.homeDirectory}/.orbstack/ssh/config"
