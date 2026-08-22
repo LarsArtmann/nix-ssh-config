@@ -48,6 +48,8 @@
           ...
         }:
         let
+          crypto = import ./modules/shared/crypto.nix { inherit lib; };
+
           testKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/uqxUhFQpJaBq+dDd+shObEjKm8YOPimFx7XHgqTFJ lars@Lars-MacBook-Air-2026-04";
 
           nixosEval = nixpkgs.lib.nixosSystem {
@@ -92,20 +94,33 @@
 
           sshdSettings = nixosEval.config.services.openssh.settings;
 
-          # Attribute-equality assertion: compares Nix values directly instead of
-          # grepping serialized JSON, so checks never break on formatting drift.
-          # The comparison itself happens at eval time; a mismatch produces a
-          # derivation whose build fails with the diff below.
+          # programs.ssh.settings wraps every block in Home Manager's internal
+          # { before, after, data, header } structure (same as matchBlocks);
+          # the actual SSH directives live under .data. HM-internal: if HM
+          # changes its representation, this helper is what needs updating.
+          hmBlock = block: hmEval.config.programs.ssh.settings.${block}.data;
+
+          # Attribute-equality assertions: compares Nix values directly instead
+          # of grepping serialized JSON, so checks never break on formatting
+          # drift. The comparison itself happens at eval time; any mismatch in
+          # the list produces a derivation whose build fails listing every
+          # mismatched field with its expected/actual diff.
           assertEq =
-            label: actual: expected:
+            label: checks:
             pkgs.runCommand "assert-${label}" { } (
-              if actual == expected then
+              let
+                failures = lib.filter (c: c.actual != c.expected) checks;
+              in
+              if failures == [ ] then
                 "echo ok > $out"
               else
                 ''
                   echo "FAIL: ${label}"
-                  echo "  expected: ${builtins.toJSON expected}"
-                  echo "  actual:   ${builtins.toJSON actual}"
+                  ${lib.concatStringsSep "\n" (
+                    map (
+                      c: ''echo "  ${c.name}: expected ${builtins.toJSON c.expected}, got ${builtins.toJSON c.actual}"''
+                    ) failures
+                  )}
                   exit 1
                 ''
             );
@@ -120,15 +135,131 @@
             '';
 
             home-manager-module-evaluates = pkgs.runCommand "home-manager-module-evaluates" { } ''
-              ${builtins.deepSeq hmEval.config.programs.ssh.matchBlocks ""}
+              ${builtins.deepSeq hmEval.config.programs.ssh.settings ""}
               echo ok > $out
             '';
 
-            nixos-password-auth-disabled =
-              assertEq "password-auth-disabled" sshdSettings.PasswordAuthentication
-                false;
+            hm-global-defaults = assertEq "hm-global-defaults" [
+              {
+                name = "User";
+                actual = (hmBlock "*").User;
+                expected = "test";
+              }
+              {
+                name = "ForwardAgent";
+                actual = (hmBlock "*").ForwardAgent;
+                expected = "no";
+              }
+              {
+                name = "AddKeysToAgent";
+                actual = (hmBlock "*").AddKeysToAgent;
+                expected = "no";
+              }
+              {
+                name = "Compression";
+                actual = (hmBlock "*").Compression;
+                expected = "no";
+              }
+              {
+                name = "ServerAliveInterval";
+                actual = (hmBlock "*").ServerAliveInterval;
+                expected = 60;
+              }
+              {
+                name = "ServerAliveCountMax";
+                actual = (hmBlock "*").ServerAliveCountMax;
+                expected = 3;
+              }
+              {
+                name = "ControlMaster";
+                actual = (hmBlock "*").ControlMaster;
+                expected = "no";
+              }
+              {
+                name = "ControlPersist";
+                actual = (hmBlock "*").ControlPersist;
+                expected = "no";
+              }
+              {
+                name = "HashKnownHosts";
+                actual = (hmBlock "*").HashKnownHosts;
+                expected = "no";
+              }
+              {
+                name = "IdentityFile";
+                actual = (hmBlock "*").IdentityFile;
+                expected = "~/.ssh/id_ed25519";
+              }
+              {
+                name = "KexAlgorithms";
+                actual = (hmBlock "*").KexAlgorithms;
+                expected = crypto.pqKexString;
+              }
+              {
+                name = "Ciphers";
+                actual = (hmBlock "*").Ciphers;
+                expected = crypto.aeadCiphersString;
+              }
+              {
+                name = "MACs";
+                actual = (hmBlock "*").MACs;
+                expected = crypto.etmMacsString;
+              }
+              {
+                name = "HostKeyAlgorithms";
+                actual = (hmBlock "*").HostKeyAlgorithms;
+                expected = crypto.modernHostKeysString;
+              }
+              {
+                name = "PubkeyAcceptedAlgorithms";
+                actual = (hmBlock "*").PubkeyAcceptedAlgorithms;
+                expected = crypto.modernHostKeysString;
+              }
+            ];
 
-            nixos-root-login-disabled = assertEq "root-login-disabled" sshdSettings.PermitRootLogin "no";
+            hm-github-preset = assertEq "hm-github-preset" [
+              {
+                name = "User";
+                actual = (hmBlock "github.com").User;
+                expected = "git";
+              }
+              {
+                name = "Compression";
+                actual = (hmBlock "github.com").Compression;
+                expected = "yes";
+              }
+              {
+                name = "ControlMaster";
+                actual = (hmBlock "github.com").ControlMaster;
+                expected = "auto";
+              }
+              {
+                name = "ControlPersist";
+                actual = (hmBlock "github.com").ControlPersist;
+                expected = "600";
+              }
+              {
+                name = "TCPKeepAlive";
+                actual = (hmBlock "github.com").TCPKeepAlive;
+                expected = "yes";
+              }
+            ];
+
+            nixos-password-auth-disabled = assertEq "password-auth-disabled" [
+              {
+                name = "PasswordAuthentication";
+                actual = sshdSettings.PasswordAuthentication;
+                expected = false;
+              }
+            ];
+
+            nixos-root-login-disabled = assertEq "root-login-disabled" [
+              {
+                name = "PermitRootLogin";
+                actual = sshdSettings.PermitRootLogin;
+                expected = "no";
+              }
+            ];
 
             format = config.treefmt.build.check self;
           };
