@@ -637,12 +637,16 @@
 
                 with subtest("key auth succeeds"):
                     client.succeed("install -m 600 ${self}/tests/test-key /root/test-key")
-                    client.succeed(
-                        "ssh -i /root/test-key"
+                    rc, out = client.execute(
+                        "ssh -vv -i /root/test-key"
                         + " -o StrictHostKeyChecking=accept-new"
                         + " -o UserKnownHostsFile=/root/known_hosts"
-                        + " testuser@server -- true"
+                        + " -o BatchMode=yes"
+                        + " testuser@server -- true 2>&1"
                     )
+                    print("SSH-DEBUG:", out)
+                    rc2, jout = server.execute("journalctl -u sshd --no-pager | tail -30")
+                    print("SSHD-JOURNAL:", jout)
               '';
             };
           };
