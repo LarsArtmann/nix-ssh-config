@@ -21,7 +21,6 @@
 | Fix HM eval check to force `programs.ssh.settings` (currently deepSeq's `matchBlocks`, vacuous since the settings migration) | 🔴 `TODO`    | High   | 10min  | `flake.nix:116` forces `matchBlocks` (empty); real config lives in `settings`                               |
 | Restore content assertions cut in the flake-parts migration (custom port, authorizedKeys, banner, crypto lists, `extraSettings` merge, HM host-block content) | 🔴 `TODO` | High   | 2h     | `flake.nix:109-131` keeps only 2 content checks (password auth, root login); 10 of the 14 pre-migration eval tests were dropped at `e910e78`    |
 | Tag v0.1.0 release                                                                                                   | 🔴 `TODO`    | High   | 2min   | `git tag -l` is empty; requested in all six session reports                                                 |
-| Push the staged CI fix and verify a green `Check` run on GitHub (workflow previously failed on every run: platform mismatch building foreign-system checks) | 🔴 `TODO` | High   | 5min   | `gh run list`: all 9 runs failed; fix verified locally in `check.yml` (`--no-build` eval + native build)     |
 
 ## Medium Impact
 

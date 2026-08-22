@@ -52,7 +52,8 @@ release).
   foreign-system check derivations (e.g. `aarch64-darwin` on an x86_64-linux
   runner), failing every run since inception with "platform mismatch". The
   workflow now evaluates all systems with `--no-build` and builds only the
-  native-system checks
+  native-system checks. Verified green on GitHub — the first passing runs in
+  the repository's history
 
 ### Removed
 
