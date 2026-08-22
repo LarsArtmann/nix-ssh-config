@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-08-22
+
+The global-keys bugfix release. v0.1.0's `services.ssh-server.authorizedKeys`
+never worked at runtime; if you rely on it, pin `v0.1.1` or later.
+
+### Fixed
+
+- **Global authorized keys now actually authorize.** The
+  `/etc/ssh/authorized_keys` file was symlinked into `/nix/store`, and sshd's
+  StrictModes silently rejects any AuthorizedKeysFile whose realpath crosses
+  the world-writable store — every key-based login against a module-configured
+  server failed while the keys looked present on disk. The file is now copied
+  into `/etc` (`mode = "0444"`, the same mechanism upstream NixOS uses for
+  `/etc/ssh/authorized_keys.d/*`). Found by the restored VM integration test
+  on its first run
+
+### Added
+
+- QEMU integration test (`checks.x86_64-linux.nixos-vm-sshd`): boots a real
+  VM, asserts the runtime `sshd -T` hardening, and performs an actual
+  key-based login (restored from the pre-flake-parts suite, which had never
+  tested login)
+- Host convenience options: `proxyJump`, `forwardX11`, `localForwards`,
+  `remoteForwards`, `dynamicForwards` — structured values handed to Home
+  Manager's native renderer
+- `examples.client` / `examples.server` flake outputs (copy-ready modules,
+  exercised by a check on every system)
+- Banner hardening: `bannerText` rejects control characters at evaluation
+  time; the default banner moved to `modules/shared/banner.nix`
+- Markdown link checking (lychee) and a native aarch64-linux CI job
+
+### Changed
+
+- Test assertions are Nix attribute equality (`assertEq`) instead of
+  serialized-JSON grepping; every assertion family was deliberately broken
+  once to prove it fails
+- Test fixtures use a throwaway keypair (`tests/test-key{,.pub}`), never
+  personal keys
+- README's OpenSSH compatibility matrix verified against upstream release
+  notes 6.5 → 10.0, with corrections (ML-KEM available by default since 9.9,
+  sntrup761 disabled by default upstream) and documented nixpkgs pinning
+  guidance
+
 ## [0.1.0] — 2026-08-22
 
 First tagged release. Everything below is the net difference between the

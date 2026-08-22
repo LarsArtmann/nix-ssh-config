@@ -44,5 +44,22 @@ single-machine runner.
 The test suite includes:
 
 - Module evaluation checks (NixOS + Home Manager, all supported systems)
-- Security content assertions (password auth disabled, root login disabled)
+- Content assertions on both modules via Nix attribute equality (`assertEq` in
+  `flake.nix`): crypto lists and forms, host blocks, user inheritance,
+  banner, authorized keys, port passthrough, `extraSettings` overrides,
+  disabled-state no-op, module assertions, examples
+- A QEMU integration test on x86_64-linux (`checks.x86_64-linux.nixos-vm-sshd`):
+  boots a real VM, asserts the runtime `sshd -T` config, and performs an
+  actual key-based login with the throwaway keypair in `tests/`
 - Formatting check via treefmt-nix (runs as part of `nix flake check`)
+
+When adding assertions, prove once that they can fail (break the value
+  deliberately and watch the check go red) — a test that cannot fail is
+  decoration.
+
+## Conventions
+
+- Status reports and planning docs are plain Markdown in `docs/status/` and
+  `docs/planning/` (no HTML reports).
+- There is no `docs/DOMAIN_LANGUAGE.md`: domain terms are defined once, in
+  the README's crypto rationale.

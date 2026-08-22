@@ -14,7 +14,7 @@ nix fmt -- --fail-on-change                # CI-mode: fail if files need formatt
 nix develop                                # Dev shell with nil (Nix LSP)
 ```
 
-CI (`.github/workflows/check.yml`) runs the three check commands above in order. All must pass.
+CI (`.github/workflows/check.yml`) has two jobs: `check` (x86_64-linux, runs the three commands above plus a lychee markdown-link check) and `check-aarch64` (native arm64 runner, same gate). All steps must pass.
 
 ### Supported systems
 
@@ -31,8 +31,11 @@ CI (`.github/workflows/check.yml`) runs the three check commands above in order.
 ```
 modules/
 ├── shared/crypto.nix        # Single source of truth for ALL crypto algorithms
+├── shared/banner.nix        # Default legal banner constant (byte-stable)
 ├── home-manager/ssh.nix     # Client config  → homeManagerModules.ssh
 └── nixos/ssh.nix            # Server config  → nixosModules.ssh
+tests/                       # Throwaway CI keypair for eval fixtures + VM test
+examples/                    # Copy-ready client/server modules → examples.*
 ```
 
 - **`modules/shared/crypto.nix`** — Defines four algorithm lists (`pqKex`, `aeadCiphers`, `etmMacs`, `modernHostKeys`) and their comma-joined `*String` variants. Both client and server import this. Any crypto change happens here and propagates to both.
@@ -46,12 +49,13 @@ modules/
 | ---------------------------- | ------------------------------------------------------------------------ |
 | `homeManagerModules.ssh`     | SSH client module (Home Manager)                                         |
 | `nixosModules.ssh`           | SSH server module (NixOS)                                                |
+| `examples.client` / `examples.server` | Ready-to-use example modules, exercised by `checks.*.examples-evaluate` |
 | `sshKeys`                    | Attrset of tracked public keys (`lars`, `lars-evo-x2`) — consumed as `nix-ssh-config.sshKeys.lars` etc. |
-| `checks.<system>.*`          | 4 test derivations (2 module-eval, 2 security content assertions) + `format` (treefmt) |
+| `checks.<system>.*`          | 13 eval/content checks + `format` (treefmt); on x86_64-linux additionally `nixos-vm-sshd` (QEMU integration test) |
 | `devShells.<system>.default` | `mkShellNoCC` with `nil` only — formatting comes from treefmt, not the shell |
 | `formatter.<system>`         | treefmt (via treefmt-nix `flakeModule`, nixfmt enabled)                  |
 
-There is **no** `apps` output and **no** VM integration test at present (the pre-flake-parts test suite was intentionally reduced during migration; restoring coverage is tracked in TODO_LIST.md).
+There is **no** `apps` output. The VM integration test was restored (2026-08-22) and immediately caught a real runtime bug (see the StrictModes gotcha below).
 
 ---
 
@@ -81,13 +85,17 @@ On the server, `config.services.ssh-server.extraSettings` is merged with `//` **
 
 The server uses `lib.optionalAttrs` wrapped around the `environment.etc` attrset, conditioned on whether keys/banner are provided. Do not move the condition onto `.text` — that produces a broken `environment.etc` entry.
 
-### The HM eval check is weaker than it looks
+### Global authorized_keys MUST be a copy, not a symlink (runtime-breaking)
 
-`checks.home-manager-module-evaluates` forces `hmEval.config.programs.ssh.matchBlocks` with `deepSeq`. Since the client migrated to `programs.ssh.settings`, `matchBlocks` is an empty internal attrset — the check proves evaluation but not the generated content. Strengthening it is tracked in TODO_LIST.md.
+`environment.etc."ssh/authorized_keys"` carries `mode = "0444"`. This is load-bearing: any mode other than `"symlink"` makes NixOS **copy** the file into `/etc`, while the default symlinks into `/nix/store`. sshd's StrictModes rejects every `AuthorizedKeysFile` whose realpath crosses the world-writable (1777) `/nix/store` — a symlinked global keys file is silently ignored at runtime ("Authentication refused: bad ownership or modes for directory /nix/store"), all key logins fail. Upstream NixOS uses the same copy trick for `/etc/ssh/authorized_keys.d/*`. The eval check `nixos-authorized-keys` and the VM subtest "not a symlink" both guard this; do not remove the mode.
 
-### Real test key committed in flake.nix
+### `sshd -T` prints PascalCase
 
-The `testKey` used by the test evaluations is a real personal public key. Replacing it with a throwaway is tracked in TODO_LIST.md; until then, do not treat it as disposable test data.
+Modern OpenSSH prints effective config directives in documented PascalCase (`PasswordAuthentication no`), not lowercase. `grep 'passwordauthentication no'` matches nothing — use `grep -i` in tests.
+
+### Home Manager wraps `settings` blocks in an internal structure
+
+`programs.ssh.settings.<block>` is `{ before, after, data, header }`; the actual directives live under `.data` (same as the old `matchBlocks`). The flake's `hmBlock` helper unwraps it. If HM changes representation, that helper is what needs updating.
 
 ---
 
@@ -98,6 +106,8 @@ The `testKey` used by the test evaluations is a real personal public key. Replac
 - **Composability**: the `Banner` path uses `lib.mkDefault` so downstream modules can override it.
 - **User inheritance**: `ssh-config.hosts.*.user` defaults to `null` and inherits from `ssh-config.user` (which defaults to `config.home.username`).
 - **State versions in tests**: use `lib.mkDefault "25.05"` to keep `nix flake check` warning-free.
+- **Test keys are throwaway**: `tests/test-key{,.pub}` (see `tests/README.md`) exist only for CI evals and the VM test. Never embed personal keys in test code.
+- **Kill-switch discipline**: every content assertion was once deliberately broken to prove it fails. Keep that true for new assertions — a test that cannot fail is decoration.
 - **Task automation lives in flake.nix** — no Makefile, no justfile (organizational convention).
 
 ---
