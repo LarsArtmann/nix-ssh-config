@@ -124,8 +124,9 @@
               echo ok > $out
             '';
 
-            nixos-password-auth-disabled = assertEq "password-auth-disabled" sshdSettings.PasswordAuthentication
-              false;
+            nixos-password-auth-disabled =
+              assertEq "password-auth-disabled" sshdSettings.PasswordAuthentication
+                false;
 
             nixos-root-login-disabled = assertEq "root-login-disabled" sshdSettings.PermitRootLogin "no";
 
