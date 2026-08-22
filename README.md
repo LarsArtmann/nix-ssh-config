@@ -91,15 +91,41 @@ Configures SSH client settings via Home Manager.
 
 #### Host Submodule Options
 
-| Option                | Type      | Default | Description                              |
-| --------------------- | --------- | ------- | ---------------------------------------- |
-| `hostname`            | str       | —       | Host IP or hostname                      |
-| `user`                | str\|null | `null`  | Username (defaults to `ssh-config.user`) |
-| `port`                | int\|null | `null`  | SSH port                                 |
-| `identityFile`        | str\|null | `null`  | Path to identity file                    |
-| `serverAliveInterval` | int\|null | `null`  | Keepalive interval (s)                   |
-| `serverAliveCountMax` | int\|null | `null`  | Max keepalive probes                     |
-| `extraOptions`        | attrs     | `{}`    | Additional SSH options                   |
+| Option                | Type      | Default     | Description                                       |
+| --------------------- | --------- | ----------- | ------------------------------------------------- |
+| `hostname`            | str       | —           | Host IP or hostname                               |
+| `user`                | str\|null | `null`      | Username (defaults to `ssh-config.user`)          |
+| `port`                | int\|null | `null`      | SSH port                                          |
+| `identityFile`        | str\|null | `null`      | Path to identity file                             |
+| `serverAliveInterval` | int\|null | `null`      | Keepalive interval (s)                            |
+| `serverAliveCountMax` | int\|null | `null`      | Max keepalive probes                              |
+| `proxyJump`           | str\|null | `null`      | Jump host to route through (`ProxyJump`)          |
+| `forwardX11`          | bool      | `false`     | Forward X11 for this host (`ForwardX11 yes`)      |
+| `localForwards`       | [forward] | `[]`        | Local port forwardings (`LocalForward`)           |
+| `remoteForwards`      | [forward] | `[]`        | Remote port forwardings (`RemoteForward`)         |
+| `dynamicForwards`     | [address] | `[]`        | Dynamic SOCKS forwardings (`DynamicForward`)      |
+| `extraOptions`        | attrs     | `{}`        | Additional SSH options                            |
+
+A **forward** is `{ bind = { address ?, port }; host = { address ?, port }; }`
+and an **address** is `{ address ? = "localhost", port }`. The structured
+shapes are handed to Home Manager's renderer, which emits valid
+`LocalForward [bind]:port [host]:port` lines and repeats the directive per
+list element:
+
+```nix
+ssh-config.hosts.myserver = {
+  hostname = "10.0.0.5";
+  proxyJump = "bastion.example.com";
+  localForwards = [
+    {
+      bind.port = 8080;
+      host.address = "10.0.0.13";
+      host.port = 80;
+    }
+  ];
+  dynamicForwards = [ { port = 1080; } ];
+};
+```
 
 #### Example
 
