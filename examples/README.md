@@ -4,10 +4,10 @@ Ready-to-use module snippets. Copy them or import them directly — both are
 exposed as flake outputs (`nix-ssh-config.examples.client`,
 `nix-ssh-config.examples.server`) and are exercised by CI on every push.
 
-| File        | Target      | Shows                                                                 |
-| ----------- | ----------- | --------------------------------------------------------------------- |
+| File         | Target       | Shows                                                                      |
+| ------------ | ------------ | -------------------------------------------------------------------------- |
 | `client.nix` | Home Manager | Hosts with user inheritance, jump host, X11, port forwarding, escape hatch |
-| `server.nix` | NixOS        | Hardened-by-default server, allow-list, authorized keys, escape hatch    |
+| `server.nix` | NixOS        | Hardened-by-default server, allow-list, authorized keys, escape hatch      |
 
 ## Using an example directly
 

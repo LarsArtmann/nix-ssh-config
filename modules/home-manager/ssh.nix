@@ -230,7 +230,7 @@ in
         }
 
         (lib.mapAttrs (
-          name: hostConfig:
+          _name: hostConfig:
           {
             HostName = hostConfig.hostname;
             User = if hostConfig.user != null then hostConfig.user else config.ssh-config.user;

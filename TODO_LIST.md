@@ -25,10 +25,10 @@ checking, and the native aarch64-linux CI job. Long-term work lives in
 
 ## Resolved decisions
 
-| Decision                                              | Verdict    | Rationale                                                                                                |
-| ----------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------- |
-| Create `docs/DOMAIN_LANGUAGE.md`? (session 7, g/3)    | **Decline** | Every domain term is defined exactly once in README's crypto rationale; a glossary would duplicate (single-home rule). |
-| Canonical status-report format (session 7, g/4)       | **Markdown** | Maintainer has repeatedly chosen `.md` over richer formats; recorded in `CONTRIBUTING.md`.                |
+| Decision                                           | Verdict      | Rationale                                                                                                              |
+| -------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Create `docs/DOMAIN_LANGUAGE.md`? (session 7, g/3) | **Decline**  | Every domain term is defined exactly once in README's crypto rationale; a glossary would duplicate (single-home rule). |
+| Canonical status-report format (session 7, g/4)    | **Markdown** | Maintainer has repeatedly chosen `.md` over richer formats; recorded in `CONTRIBUTING.md`.                             |
 
 ---
 

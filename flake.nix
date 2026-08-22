@@ -587,7 +587,7 @@
               name = "sshd-hardened-config";
 
               nodes.server =
-                { config, pkgs, ... }:
+                { pkgs, ... }:
                 {
                   imports = [ self.nixosModules.ssh ];
                   services.ssh-server = {

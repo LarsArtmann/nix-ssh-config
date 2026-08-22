@@ -54,8 +54,8 @@ The test suite includes:
 - Formatting check via treefmt-nix (runs as part of `nix flake check`)
 
 When adding assertions, prove once that they can fail (break the value
-  deliberately and watch the check go red) — a test that cannot fail is
-  decoration.
+deliberately and watch the check go red) — a test that cannot fail is
+decoration.
 
 ## Conventions
 

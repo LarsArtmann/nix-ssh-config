@@ -15,46 +15,46 @@
 
 ## SSH client (Home Manager module)
 
-| Feature                                        | Status                | Notes                                                                                     |
-| ---------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------- |
-| Per-host match blocks with full sub-options    | 🟢 `FULLY_FUNCTIONAL` | `modules/home-manager/ssh.nix`; host `user` inherits `ssh-config.user`; asserted by `hm-host-blocks` |
-| Hardened global defaults (`*` block)           | 🟢 `FULLY_FUNCTIONAL` | `modules/home-manager/ssh.nix`; agent forwarding off, keepalives, crypto profile — asserted by `hm-global-defaults` |
-| GitHub.com preset (connection pooling, git user) | 🟢 `FULLY_FUNCTIONAL` | asserted by `hm-github-preset`                                                          |
+| Feature                                                    | Status                | Notes                                                                                                                 |
+| ---------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Per-host match blocks with full sub-options                | 🟢 `FULLY_FUNCTIONAL` | `modules/home-manager/ssh.nix`; host `user` inherits `ssh-config.user`; asserted by `hm-host-blocks`                  |
+| Hardened global defaults (`*` block)                       | 🟢 `FULLY_FUNCTIONAL` | `modules/home-manager/ssh.nix`; agent forwarding off, keepalives, crypto profile — asserted by `hm-global-defaults`   |
+| GitHub.com preset (connection pooling, git user)           | 🟢 `FULLY_FUNCTIONAL` | asserted by `hm-github-preset`                                                                                        |
 | `proxyJump`, `forwardX11`, forwards (local/remote/dynamic) | 🟢 `FULLY_FUNCTIONAL` | Structured values passed to HM's native renderer; asserted by `hm-host-advanced`; rendered config verified end-to-end |
-| OrbStack / Colima includes (Darwin)            | 🟢 `FULLY_FUNCTIONAL` | conditional on `builtins.pathExists`                                                      |
-| `~/.ssh/sockets` activation script (mode 700)  | 🟢 `FULLY_FUNCTIONAL` |                                                                                            |
-| Extra config includes (`extraIncludes`)        | 🟢 `FULLY_FUNCTIONAL` |                                                                                            |
+| OrbStack / Colima includes (Darwin)                        | 🟢 `FULLY_FUNCTIONAL` | conditional on `builtins.pathExists`                                                                                  |
+| `~/.ssh/sockets` activation script (mode 700)              | 🟢 `FULLY_FUNCTIONAL` |                                                                                                                       |
+| Extra config includes (`extraIncludes`)                    | 🟢 `FULLY_FUNCTIONAL` |                                                                                                                       |
 
 ## SSH server (NixOS module)
 
-| Feature                                     | Status                | Notes                                                                  |
-| ------------------------------------------- | --------------------- | ---------------------------------------------------------------------- |
-| Hardened sshd defaults (keys-only, no root) | 🟢 `FULLY_FUNCTIONAL` | asserted by `nixos-password-auth-disabled`, `nixos-root-login-disabled` and VM `sshd -T` subtests |
+| Feature                                             | Status                | Notes                                                                                                                                                                            |
+| --------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hardened sshd defaults (keys-only, no root)         | 🟢 `FULLY_FUNCTIONAL` | asserted by `nixos-password-auth-disabled`, `nixos-root-login-disabled` and VM `sshd -T` subtests                                                                                |
 | Global authorized keys (`/etc/ssh/authorized_keys`) | 🟢 `FULLY_FUNCTIONAL` | **copied** into /etc (`mode = "0444"`), not symlinked — symlinks are rejected at runtime by sshd StrictModes; proven by VM key-login subtest (this was broken before 2026-08-22) |
-| Legal banner (overridable, nullable)        | 🟢 `FULLY_FUNCTIONAL` | path uses `lib.mkDefault`; control-char rejection via module assertion; asserted by `nixos-banner` + VM |
-| User allow-list + port config               | 🟢 `FULLY_FUNCTIONAL` | `types.port`, firewall opened; port wiring asserted by `nixos-custom-settings` |
-| `extraSettings` escape hatch                | 🟢 `FULLY_FUNCTIONAL` | typed `str|int|bool`, merges last; override proven by `nixos-custom-settings` |
+| Legal banner (overridable, nullable)                | 🟢 `FULLY_FUNCTIONAL` | path uses `lib.mkDefault`; control-char rejection via module assertion; asserted by `nixos-banner` + VM                                                                          |
+| User allow-list + port config                       | 🟢 `FULLY_FUNCTIONAL` | `types.port`, firewall opened; port wiring asserted by `nixos-custom-settings`                                                                                                   |
+| `extraSettings` escape hatch                        | 🟢 `FULLY_FUNCTIONAL` | typed `str                                                                                                                                                                       |
 
 ## Crypto profile (shared)
 
-| Feature                                  | Status                | Notes                                                            |
-| ---------------------------------------- | --------------------- | ---------------------------------------------------------------- |
-| Post-quantum KEX (ML-KEM hybrid first)  | 🟢 `FULLY_FUNCTIONAL` | `modules/shared/crypto.nix:4-9`; used by both modules            |
-| AEAD-only ciphers                        | 🟢 `FULLY_FUNCTIONAL` | `modules/shared/crypto.nix:11-15`                                |
-| Encrypt-then-MAC MACs only               | 🟢 `FULLY_FUNCTIONAL` | `modules/shared/crypto.nix:17-21`                                |
-| Modern host key algorithms (Ed25519, RSA-SHA2) | 🟢 `FULLY_FUNCTIONAL` | `modules/shared/crypto.nix:23-28`                           |
-| ML-DSA post-quantum signatures           | ⚪ `PLANNED`          | No OpenSSH implementation exists; watch upstream (see ROADMAP)    |
+| Feature                                        | Status                | Notes                                                          |
+| ---------------------------------------------- | --------------------- | -------------------------------------------------------------- |
+| Post-quantum KEX (ML-KEM hybrid first)         | 🟢 `FULLY_FUNCTIONAL` | `modules/shared/crypto.nix:4-9`; used by both modules          |
+| AEAD-only ciphers                              | 🟢 `FULLY_FUNCTIONAL` | `modules/shared/crypto.nix:11-15`                              |
+| Encrypt-then-MAC MACs only                     | 🟢 `FULLY_FUNCTIONAL` | `modules/shared/crypto.nix:17-21`                              |
+| Modern host key algorithms (Ed25519, RSA-SHA2) | 🟢 `FULLY_FUNCTIONAL` | `modules/shared/crypto.nix:23-28`                              |
+| ML-DSA post-quantum signatures                 | ⚪ `PLANNED`          | No OpenSSH implementation exists; watch upstream (see ROADMAP) |
 
 ## Flake & CI
 
-| Feature                              | Status                    | Notes                                                                                |
-| ------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------ |
-| `homeManagerModules.ssh` / `nixosModules.ssh` | 🟢 `FULLY_FUNCTIONAL` | evaluated + content-asserted by checks on 3 systems                                   |
-| `examples.client` / `examples.server` outputs | 🟢 `FULLY_FUNCTIONAL` | imported as real modules by `examples-evaluate` on every system                       |
-| `sshKeys` output (tracked pubkeys)   | 🟢 `FULLY_FUNCTIONAL`      | `lars`, `lars-evo-x2`                                                                |
-| Evaluation + content checks          | 🟢 `FULLY_FUNCTIONAL`      | 13 checks + format per system; all Nix attribute-equality (`assertEq`), each family kill-switch tested |
-| VM integration test (QEMU)           | 🟢 `FULLY_FUNCTIONAL`      | `checks.x86_64-linux.nixos-vm-sshd` — boots VM, `sshd -T` runtime assertions, real key login; caught the global-keys StrictModes bug on first run |
-| Formatting via treefmt-nix           | 🟢 `FULLY_FUNCTIONAL`      | runs as `checks.format` and `nix fmt`                                                  |
-| GitHub Actions CI                    | 🟢 `FULLY_FUNCTIONAL`      | x86_64 job (checks + link check) and native aarch64-linux job; green on GitHub         |
-| Markdown link checking               | 🟢 `FULLY_FUNCTIONAL`      | lychee in CI over all living docs and examples                                         |
-| Dev shell (`nix develop`)            | 🟢 `FULLY_FUNCTIONAL`      | provides `nil` (formatting handled by treefmt)                                         |
+| Feature                                       | Status                | Notes                                                                                                                                             |
+| --------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `homeManagerModules.ssh` / `nixosModules.ssh` | 🟢 `FULLY_FUNCTIONAL` | evaluated + content-asserted by checks on 3 systems                                                                                               |
+| `examples.client` / `examples.server` outputs | 🟢 `FULLY_FUNCTIONAL` | imported as real modules by `examples-evaluate` on every system                                                                                   |
+| `sshKeys` output (tracked pubkeys)            | 🟢 `FULLY_FUNCTIONAL` | `lars`, `lars-evo-x2`                                                                                                                             |
+| Evaluation + content checks                   | 🟢 `FULLY_FUNCTIONAL` | 13 checks + format per system; all Nix attribute-equality (`assertEq`), each family kill-switch tested                                            |
+| VM integration test (QEMU)                    | 🟢 `FULLY_FUNCTIONAL` | `checks.x86_64-linux.nixos-vm-sshd` — boots VM, `sshd -T` runtime assertions, real key login; caught the global-keys StrictModes bug on first run |
+| Formatting via treefmt-nix                    | 🟢 `FULLY_FUNCTIONAL` | runs as `checks.format` and `nix fmt`                                                                                                             |
+| GitHub Actions CI                             | 🟢 `FULLY_FUNCTIONAL` | x86_64 job (checks + link check) and native aarch64-linux job; green on GitHub                                                                    |
+| Markdown link checking                        | 🟢 `FULLY_FUNCTIONAL` | lychee in CI over all living docs and examples                                                                                                    |
+| Dev shell (`nix develop`)                     | 🟢 `FULLY_FUNCTIONAL` | provides `nil` (formatting handled by treefmt)                                                                                                    |

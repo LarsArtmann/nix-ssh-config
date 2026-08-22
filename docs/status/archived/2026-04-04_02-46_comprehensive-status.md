@@ -34,58 +34,58 @@ These are in-progress changes — likely from a concurrent session or manual edi
 
 ## a) FULLY DONE
 
-| #   | Item                               | Details                                                                                                                                                                                                                                                                |
-| --- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Flake scaffolding**              | `flake.nix` (45 lines) — 3 inputs, 4 architectures, clean output structure with `homeManagerModules.ssh`, `nixosModules.ssh`, `sshKeys.lars`, per-system `formatter`                                                                                                   |
-| 2   | **Home Manager SSH client module** | `modules/home-manager/ssh.nix` (147 lines) — 6 options, wildcard defaults block with full crypto suite (post-quantum KEX, AEAD ciphers, ETM MACs, ed25519 preferred), GitHub optimized matchBlock, OrbStack/Colima conditional includes, per-host submodule (7 fields) |
-| 3   | **NixOS SSH server module**        | `modules/nixos/ssh.nix` (165 lines) — 8 options (`authorizedKeys` included), hardened sshd with post-quantum KEX, AEAD-only ciphers, ETM MACs, connection limits, banner, access control, global `/etc/ssh/authorized_keys`                                            |
-| 4   | **Post-quantum key exchange**      | Both client and server configured with `mlkem768x25519-sha256` (ML-KEM hybrid, NIST FIPS 203) as primary KEX algorithm                                                                                                                                                 |
-| 5   | **Ed25519 key migration**          | RSA key deprecated, Ed25519 key added. `sshKeys.lars` in flake now points to `lars-ed25519.pub`. Client defaults to `~/.ssh/id_ed25519`                                                                                                                                |
-| 6   | **Public key exposure**            | `sshKeys.lars` exposed as flake output, pointing to ed25519 key                                                                                                                                                                                                        |
-| 7   | **Global authorized keys**         | `authorizedKeys` option writes to `/etc/ssh/authorized_keys`, included in `AuthorizedKeysFile` path                                                                                                                                                                    |
-| 8   | **Formatting**                     | treefmt-full-flake per-system formatter for 4 architectures                                                                                                                                                                                                            |
-| 9   | **Duplicate code removal**         | Singular module aliases removed                                                                                                                                                                                                                                        |
-| 10  | **.gitignore**                     | Properly ignores private keys, tracks `*.pub`, standard IDE/OS/direnv ignores                                                                                                                                                                                          |
-| 11  | **flake.lock**                     | Dependencies pinned                                                                                                                                                                                                                                                    |
-| 12  | **Server hardening complete**      | Ciphers: AEAD only. MACs: ETM only. KEX: post-quantum + curve25519. Host keys: ed25519 preferred. No X11, no TCP forwarding, no tunnel. MaxAuthTries=3, MaxSessions=2. Banner. Verbose logging                                                                         |
-| 13  | **Client hardening complete**      | Same crypto profile as server. IdentityFile defaults to ed25519. ForwardAgent=false. AddKeysToAgent=no. ControlMaster=no by default                                                                                                                                    |
+| #  | Item                               | Details                                                                                                                                                                                                                                                                |
+| -- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1  | **Flake scaffolding**              | `flake.nix` (45 lines) — 3 inputs, 4 architectures, clean output structure with `homeManagerModules.ssh`, `nixosModules.ssh`, `sshKeys.lars`, per-system `formatter`                                                                                                   |
+| 2  | **Home Manager SSH client module** | `modules/home-manager/ssh.nix` (147 lines) — 6 options, wildcard defaults block with full crypto suite (post-quantum KEX, AEAD ciphers, ETM MACs, ed25519 preferred), GitHub optimized matchBlock, OrbStack/Colima conditional includes, per-host submodule (7 fields) |
+| 3  | **NixOS SSH server module**        | `modules/nixos/ssh.nix` (165 lines) — 8 options (`authorizedKeys` included), hardened sshd with post-quantum KEX, AEAD-only ciphers, ETM MACs, connection limits, banner, access control, global `/etc/ssh/authorized_keys`                                            |
+| 4  | **Post-quantum key exchange**      | Both client and server configured with `mlkem768x25519-sha256` (ML-KEM hybrid, NIST FIPS 203) as primary KEX algorithm                                                                                                                                                 |
+| 5  | **Ed25519 key migration**          | RSA key deprecated, Ed25519 key added. `sshKeys.lars` in flake now points to `lars-ed25519.pub`. Client defaults to `~/.ssh/id_ed25519`                                                                                                                                |
+| 6  | **Public key exposure**            | `sshKeys.lars` exposed as flake output, pointing to ed25519 key                                                                                                                                                                                                        |
+| 7  | **Global authorized keys**         | `authorizedKeys` option writes to `/etc/ssh/authorized_keys`, included in `AuthorizedKeysFile` path                                                                                                                                                                    |
+| 8  | **Formatting**                     | treefmt-full-flake per-system formatter for 4 architectures                                                                                                                                                                                                            |
+| 9  | **Duplicate code removal**         | Singular module aliases removed                                                                                                                                                                                                                                        |
+| 10 | **.gitignore**                     | Properly ignores private keys, tracks `*.pub`, standard IDE/OS/direnv ignores                                                                                                                                                                                          |
+| 11 | **flake.lock**                     | Dependencies pinned                                                                                                                                                                                                                                                    |
+| 12 | **Server hardening complete**      | Ciphers: AEAD only. MACs: ETM only. KEX: post-quantum + curve25519. Host keys: ed25519 preferred. No X11, no TCP forwarding, no tunnel. MaxAuthTries=3, MaxSessions=2. Banner. Verbose logging                                                                         |
+| 13 | **Client hardening complete**      | Same crypto profile as server. IdentityFile defaults to ed25519. ForwardAgent=false. AddKeysToAgent=no. ControlMaster=no by default                                                                                                                                    |
 
 ---
 
 ## b) PARTIALLY DONE
 
-| #   | Item                            | Status                                                    | What's Missing                                                                                                                                                                                                  |
-| --- | ------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~1~~   | ~~**RSA key removal**~~ | ~~Old `lars.pub` staged for deletion, `flake.nix` updated~~ done (committed at `af9dc53`) | ~~Still uncommitted. RSA key deletion + flake update + README update all in working tree but not committed together~~                                                                                               |
-| ~~2~~   | ~~**README documentation**~~ | ~~Updated with post-quantum features and ed25519 references~~ done at `db540d4`, `abe5144` | ~~`authorizedKeysFiles` default in table still doesn't match actual default. Host submodule options incomplete (only 6 of 7 listed). GitHub URL still `yourusername`. `user` default still documented as `"lars"`~~ |
-| ~~3~~   | ~~**Security defaults in README**~~ | ~~Server and client sections rewritten with crypto details~~ done at `abe5144` | ~~No explanation of _why_ specific algorithms were chosen or compatibility matrix (which OpenSSH versions support mlkem768x25519-sha256?)~~                                                                         |
+| #     | Item                                | Status                                                                                     | What's Missing                                                                                                                                                                                                      |
+| ----- | ----------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~1~~ | ~~**RSA key removal**~~             | ~~Old `lars.pub` staged for deletion, `flake.nix` updated~~ done (committed at `af9dc53`)  | ~~Still uncommitted. RSA key deletion + flake update + README update all in working tree but not committed together~~                                                                                               |
+| ~~2~~ | ~~**README documentation**~~        | ~~Updated with post-quantum features and ed25519 references~~ done at `db540d4`, `abe5144` | ~~`authorizedKeysFiles` default in table still doesn't match actual default. Host submodule options incomplete (only 6 of 7 listed). GitHub URL still `yourusername`. `user` default still documented as `"lars"`~~ |
+| ~~3~~ | ~~**Security defaults in README**~~ | ~~Server and client sections rewritten with crypto details~~ done at `abe5144`             | ~~No explanation of _why_ specific algorithms were chosen or compatibility matrix (which OpenSSH versions support mlkem768x25519-sha256?)~~                                                                         |
 
 ---
 
 ## c) NOT STARTED
 
-| #   | Item                                                                                                                  | Priority     | Effort |
-| --- | --------------------------------------------------------------------------------------------------------------------- | ------------ | ------ |
-| ~~1~~   | ~~**LICENSE file** — README claims MIT but file doesn't exist~~ | ~~**Critical**~~ done at `db540d4` | ~~2 min~~  |
-| ~~2~~   | ~~**Automated tests** — No `checks` output, no evaluation tests~~ | ~~High~~ done at `1e00553` (reduced at `e910e78`) | ~~2 hr~~   |
-| ~~3~~   | ~~**CI pipeline** — No GitHub Actions workflow~~ | ~~High~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22) | ~~30 min~~ |
-| ~~4~~   | ~~**Fix README `authorizedKeysFiles` default** — Table says `["%h/.ssh/authorized_keys"]`, actual default has 3 entries~~ | ~~Medium~~ done at `db540d4` | ~~2 min~~  |
-| ~~5~~   | ~~**Fix README GitHub URL** — Still `yourusername`~~ | ~~Medium~~ done at `db540d4` | ~~1 min~~  |
-| ~~6~~   | ~~**Document all host submodule options** — Missing `extraOptions` from table~~ | ~~Medium~~ done (all 8 documented) | ~~5 min~~ |
-| ~~7~~   | ~~**OpenSSH version compatibility docs** — mlkem768x25519-sha256 requires OpenSSH 9.x+. Document minimum versions~~ | ~~Medium~~ done at `abe5144` | ~~15 min~~ |
-| ~~8~~   | ~~**Hardcoded default user `"lars"`** — Should use `config.home.username`~~ | ~~Medium~~ done at `78a96ec` | ~~5 min~~  |
-| ~~9~~   | ~~**Evaluate `home-manager` input necessity**~~ | ~~Medium~~ done (decision: keep — powers the HM eval checks) | ~~10 min~~ |
-| ~~10~~  | ~~**Example configurations** — No `examples/` directory~~ | ~~Medium~~ → TODO_LIST.md Low — still open | ~~30 min~~ |
-| ~~11~~  | ~~**CHANGELOG.md**~~ | ~~Low~~ done at `abe5144` | ~~10 min~~ |
-| ~~12~~  | ~~**CONTRIBUTING.md**~~ | ~~Low~~ done at `abe5144` | ~~15 min~~ |
-| ~~13~~  | ~~**`.editorconfig`**~~ | ~~Low~~ done at `2f25e95` | ~~5 min~~  |
-| ~~14~~  | ~~**Versioning/tags**~~ | ~~Low~~ → TODO_LIST.md High — still open | ~~15 min~~ |
-| ~~15~~  | ~~**NixOS VM integration test**~~ | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~2 hr~~ |
-| ~~16~~  | ~~**Home Manager module test**~~ | ~~Medium~~ done at `1e00553`, reduced at `e910e78` | ~~1 hr~~ |
-| ~~17~~  | ~~**Extract banner text**~~ | ~~Low~~ → TODO_LIST.md Low — still open | ~~10 min~~ |
-| ~~18~~  | ~~**Additional SSH keys**~~ | ~~Low~~ done at `c06d0d4` | ~~2 min~~  |
-| ~~19~~  | ~~**nix-darwin server module**~~ | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open | ~~1 hr~~ |
-| ~~20~~  | ~~**age/sops-nix integration**~~ | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~2 hr~~ |
+| #      | Item                                                                                                                      | Priority                                                                             | Effort     |
+| ------ | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
+| ~~1~~  | ~~**LICENSE file** — README claims MIT but file doesn't exist~~                                                           | ~~**Critical**~~ done at `db540d4`                                                   | ~~2 min~~  |
+| ~~2~~  | ~~**Automated tests** — No `checks` output, no evaluation tests~~                                                         | ~~High~~ done at `1e00553` (reduced at `e910e78`)                                    | ~~2 hr~~   |
+| ~~3~~  | ~~**CI pipeline** — No GitHub Actions workflow~~                                                                          | ~~High~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22)             | ~~30 min~~ |
+| ~~4~~  | ~~**Fix README `authorizedKeysFiles` default** — Table says `["%h/.ssh/authorized_keys"]`, actual default has 3 entries~~ | ~~Medium~~ done at `db540d4`                                                         | ~~2 min~~  |
+| ~~5~~  | ~~**Fix README GitHub URL** — Still `yourusername`~~                                                                      | ~~Medium~~ done at `db540d4`                                                         | ~~1 min~~  |
+| ~~6~~  | ~~**Document all host submodule options** — Missing `extraOptions` from table~~                                           | ~~Medium~~ done (all 8 documented)                                                   | ~~5 min~~  |
+| ~~7~~  | ~~**OpenSSH version compatibility docs** — mlkem768x25519-sha256 requires OpenSSH 9.x+. Document minimum versions~~       | ~~Medium~~ done at `abe5144`                                                         | ~~15 min~~ |
+| ~~8~~  | ~~**Hardcoded default user `"lars"`** — Should use `config.home.username`~~                                               | ~~Medium~~ done at `78a96ec`                                                         | ~~5 min~~  |
+| ~~9~~  | ~~**Evaluate `home-manager` input necessity**~~                                                                           | ~~Medium~~ done (decision: keep — powers the HM eval checks)                         | ~~10 min~~ |
+| ~~10~~ | ~~**Example configurations** — No `examples/` directory~~                                                                 | ~~Medium~~ → TODO_LIST.md Low — still open                                           | ~~30 min~~ |
+| ~~11~~ | ~~**CHANGELOG.md**~~                                                                                                      | ~~Low~~ done at `abe5144`                                                            | ~~10 min~~ |
+| ~~12~~ | ~~**CONTRIBUTING.md**~~                                                                                                   | ~~Low~~ done at `abe5144`                                                            | ~~15 min~~ |
+| ~~13~~ | ~~**`.editorconfig`**~~                                                                                                   | ~~Low~~ done at `2f25e95`                                                            | ~~5 min~~  |
+| ~~14~~ | ~~**Versioning/tags**~~                                                                                                   | ~~Low~~ → TODO_LIST.md High — still open                                             | ~~15 min~~ |
+| ~~15~~ | ~~**NixOS VM integration test**~~                                                                                         | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~2 hr~~   |
+| ~~16~~ | ~~**Home Manager module test**~~                                                                                          | ~~Medium~~ done at `1e00553`, reduced at `e910e78`                                   | ~~1 hr~~   |
+| ~~17~~ | ~~**Extract banner text**~~                                                                                               | ~~Low~~ → TODO_LIST.md Low — still open                                              | ~~10 min~~ |
+| ~~18~~ | ~~**Additional SSH keys**~~                                                                                               | ~~Low~~ done at `c06d0d4`                                                            | ~~2 min~~  |
+| ~~19~~ | ~~**nix-darwin server module**~~                                                                                          | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open                             | ~~1 hr~~   |
+| ~~20~~ | ~~**age/sops-nix integration**~~                                                                                          | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open                            | ~~2 hr~~   |
 
 ---
 
@@ -133,33 +133,33 @@ These appear to be an incomplete key migration — the RSA key is staged for del
 
 ## f) Top 25 Things We Should Get Done Next
 
-| #   | Task                                                                                    | Priority     | Effort | Category  |
-| --- | --------------------------------------------------------------------------------------- | ------------ | ------ | --------- |
-| ~~1~~   | ~~Add MIT LICENSE file~~ | ~~**Critical**~~ done at `db540d4` | ~~2 min~~  | ~~Legal~~     |
-| ~~2~~   | ~~Commit the pending RSA→Ed25519 migration (stage flake.nix + README + lars.pub deletion)~~ | ~~**High**~~ done at `af9dc53` | ~~2 min~~  | ~~Migration~~ |
-| ~~3~~   | ~~Fix README `authorizedKeysFiles` default value in options table~~ | ~~**High**~~ done at `db540d4` | ~~2 min~~  | ~~Docs~~      |
-| ~~4~~   | ~~Document all 7 host submodule fields in README table~~ | ~~**High**~~ done (all 8 documented) | ~~5 min~~  | ~~Docs~~ |
-| ~~5~~   | ~~Add OpenSSH minimum version compatibility notes to README~~ | ~~**High**~~ done at `abe5144` | ~~15 min~~ | ~~Docs~~      |
-| ~~6~~   | ~~Add `checks` output to flake.nix (module evaluation tests)~~ | ~~**High**~~ done at `1e00553`, `e910e78` | ~~1 hr~~ | ~~Quality~~ |
-| ~~7~~   | ~~Add GitHub Actions CI workflow~~ | ~~**High**~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22) | ~~30 min~~ | ~~CI~~ |
-| ~~8~~   | ~~Change default `user` from `"lars"` to `config.home.username`~~ | ~~Medium~~ done at `78a96ec` | ~~5 min~~  | ~~Config~~    |
-| ~~9~~   | ~~Evaluate/remove `home-manager` input if unused~~ | ~~Medium~~ done (decision: keep — powers the HM eval checks) | ~~10 min~~ | ~~Cleanup~~ |
-| ~~10~~  | ~~Update README GitHub URL from `yourusername`~~ | ~~Medium~~ done at `db540d4` | ~~1 min~~  | ~~Docs~~      |
-| ~~11~~  | ~~Add NixOS module evaluation test~~ | ~~Medium~~ done (`nixos-module-evaluates`, `flake.nix:110`) | ~~1 hr~~ | ~~Testing~~ |
-| ~~12~~  | ~~Add Home Manager module evaluation test~~ | ~~Medium~~ done (`home-manager-module-evaluates`, `flake.nix:115`) | ~~1 hr~~ | ~~Testing~~ |
-| ~~13~~  | ~~Document crypto algorithm rationale and threat model~~ | ~~Medium~~ done at `abe5144` | ~~30 min~~ | ~~Docs~~      |
-| ~~14~~  | ~~Add fallback identity file handling or document prerequisite~~ | ~~Medium~~ **Won't implement — `identityFile` is nullable and documented; key provisioning is outside module scope.** | ~~15 min~~ | ~~Config~~ |
-| ~~15~~  | ~~Extract banner text to separate file/constant~~ | ~~Medium~~ → TODO_LIST.md Low — still open | ~~10 min~~ | ~~Refactor~~ |
-| ~~16~~  | ~~Add example configurations in `examples/`~~ | ~~Medium~~ → TODO_LIST.md Low — still open | ~~30 min~~ | ~~Docs~~ |
-| ~~17~~  | ~~Add NixOS VM integration test (sshd starts, key auth works)~~ | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~2 hr~~ | ~~Testing~~ |
-| ~~18~~  | ~~Add CONTRIBUTING.md~~ | ~~Low~~ done at `abe5144` | ~~15 min~~ | ~~Docs~~      |
-| ~~19~~  | ~~Add CHANGELOG.md~~ | ~~Low~~ done at `abe5144` | ~~10 min~~ | ~~Docs~~      |
-| ~~20~~  | ~~Add `.editorconfig`~~ | ~~Low~~ done at `2f25e95` | ~~5 min~~   | ~~Quality~~   |
-| ~~21~~  | ~~Add git versioning (v0.1.0 tag)~~ | ~~Low~~ → TODO_LIST.md High — still open | ~~5 min~~ | ~~Process~~ |
-| ~~22~~  | ~~Add more SSH keys as needed~~ | ~~Low~~ done at `c06d0d4` | ~~2 min~~   | ~~Config~~    |
-| ~~23~~  | ~~Consider nix-darwin server module~~ | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open | ~~1 hr~~ | ~~Feature~~ |
-| ~~24~~  | ~~Consider age/sops-nix integration for private key management~~ | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~2 hr~~ | ~~Feature~~ |
-| ~~25~~  | ~~Add `apps` output for CLI tools (key rotation, config lint)~~ | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~3 hr~~ | ~~Feature~~ |
+| #      | Task                                                                                        | Priority                                                                                                              | Effort     | Category      |
+| ------ | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------- | ------------- |
+| ~~1~~  | ~~Add MIT LICENSE file~~                                                                    | ~~**Critical**~~ done at `db540d4`                                                                                    | ~~2 min~~  | ~~Legal~~     |
+| ~~2~~  | ~~Commit the pending RSA→Ed25519 migration (stage flake.nix + README + lars.pub deletion)~~ | ~~**High**~~ done at `af9dc53`                                                                                        | ~~2 min~~  | ~~Migration~~ |
+| ~~3~~  | ~~Fix README `authorizedKeysFiles` default value in options table~~                         | ~~**High**~~ done at `db540d4`                                                                                        | ~~2 min~~  | ~~Docs~~      |
+| ~~4~~  | ~~Document all 7 host submodule fields in README table~~                                    | ~~**High**~~ done (all 8 documented)                                                                                  | ~~5 min~~  | ~~Docs~~      |
+| ~~5~~  | ~~Add OpenSSH minimum version compatibility notes to README~~                               | ~~**High**~~ done at `abe5144`                                                                                        | ~~15 min~~ | ~~Docs~~      |
+| ~~6~~  | ~~Add `checks` output to flake.nix (module evaluation tests)~~                              | ~~**High**~~ done at `1e00553`, `e910e78`                                                                             | ~~1 hr~~   | ~~Quality~~   |
+| ~~7~~  | ~~Add GitHub Actions CI workflow~~                                                          | ~~**High**~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22)                                          | ~~30 min~~ | ~~CI~~        |
+| ~~8~~  | ~~Change default `user` from `"lars"` to `config.home.username`~~                           | ~~Medium~~ done at `78a96ec`                                                                                          | ~~5 min~~  | ~~Config~~    |
+| ~~9~~  | ~~Evaluate/remove `home-manager` input if unused~~                                          | ~~Medium~~ done (decision: keep — powers the HM eval checks)                                                          | ~~10 min~~ | ~~Cleanup~~   |
+| ~~10~~ | ~~Update README GitHub URL from `yourusername`~~                                            | ~~Medium~~ done at `db540d4`                                                                                          | ~~1 min~~  | ~~Docs~~      |
+| ~~11~~ | ~~Add NixOS module evaluation test~~                                                        | ~~Medium~~ done (`nixos-module-evaluates`, `flake.nix:110`)                                                           | ~~1 hr~~   | ~~Testing~~   |
+| ~~12~~ | ~~Add Home Manager module evaluation test~~                                                 | ~~Medium~~ done (`home-manager-module-evaluates`, `flake.nix:115`)                                                    | ~~1 hr~~   | ~~Testing~~   |
+| ~~13~~ | ~~Document crypto algorithm rationale and threat model~~                                    | ~~Medium~~ done at `abe5144`                                                                                          | ~~30 min~~ | ~~Docs~~      |
+| ~~14~~ | ~~Add fallback identity file handling or document prerequisite~~                            | ~~Medium~~ **Won't implement — `identityFile` is nullable and documented; key provisioning is outside module scope.** | ~~15 min~~ | ~~Config~~    |
+| ~~15~~ | ~~Extract banner text to separate file/constant~~                                           | ~~Medium~~ → TODO_LIST.md Low — still open                                                                            | ~~10 min~~ | ~~Refactor~~  |
+| ~~16~~ | ~~Add example configurations in `examples/`~~                                               | ~~Medium~~ → TODO_LIST.md Low — still open                                                                            | ~~30 min~~ | ~~Docs~~      |
+| ~~17~~ | ~~Add NixOS VM integration test (sshd starts, key auth works)~~                             | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md)                                  | ~~2 hr~~   | ~~Testing~~   |
+| ~~18~~ | ~~Add CONTRIBUTING.md~~                                                                     | ~~Low~~ done at `abe5144`                                                                                             | ~~15 min~~ | ~~Docs~~      |
+| ~~19~~ | ~~Add CHANGELOG.md~~                                                                        | ~~Low~~ done at `abe5144`                                                                                             | ~~10 min~~ | ~~Docs~~      |
+| ~~20~~ | ~~Add `.editorconfig`~~                                                                     | ~~Low~~ done at `2f25e95`                                                                                             | ~~5 min~~  | ~~Quality~~   |
+| ~~21~~ | ~~Add git versioning (v0.1.0 tag)~~                                                         | ~~Low~~ → TODO_LIST.md High — still open                                                                              | ~~5 min~~  | ~~Process~~   |
+| ~~22~~ | ~~Add more SSH keys as needed~~                                                             | ~~Low~~ done at `c06d0d4`                                                                                             | ~~2 min~~  | ~~Config~~    |
+| ~~23~~ | ~~Consider nix-darwin server module~~                                                       | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open                                                              | ~~1 hr~~   | ~~Feature~~   |
+| ~~24~~ | ~~Consider age/sops-nix integration for private key management~~                            | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open                                                             | ~~2 hr~~   | ~~Feature~~   |
+| ~~25~~ | ~~Add `apps` output for CLI tools (key rotation, config lint)~~                             | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open                                                             | ~~3 hr~~   | ~~Feature~~   |
 
 ---
 

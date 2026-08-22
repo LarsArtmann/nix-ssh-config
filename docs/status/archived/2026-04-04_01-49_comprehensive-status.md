@@ -1,23 +1,23 @@
 # Status Report — 2026-04-04_01-49
 
-**Project:** nix-ssh-config  
-**Branch:** master  
-**Commit:** e134229 — remove standalone module exports as they are no longer needed  
+**Project:** nix-ssh-config\
+**Branch:** master\
+**Commit:** e134229 — remove standalone module exports as they are no longer needed\
 **Report by:** Crush (GLM-5.1)
 
 ---
 
 ## a) FULLY DONE
 
-| #   | Item                       | Details                                                                                                                                                                                                                                      |
-| --- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Duplicate code removed** | Dropped `homeManagerModule` / `nixosModule` singular aliases from `flake.nix:38-39`. These were redundant wrappers around `homeManagerModules.ssh` / `nixosModules.ssh`. Committed as `e134229`.                                             |
-| 2   | **Duplicate code audit**   | Reviewed all 4 source files (`flake.nix`, `modules/nixos/ssh.nix`, `modules/home-manager/ssh.nix`, `README.md`). No other meaningful duplication exists — the two modules serve fundamentally different purposes (SSH client vs SSH server). |
-| 3   | **SSH client module**      | Home Manager module (`modules/home-manager/ssh.nix`) fully functional — supports hosts, GitHub optimized config, OrbStack/Colima integration, control master paths, extra includes.                                                          |
-| 4   | **SSH server module**      | NixOS module (`modules/nixos/ssh.nix`) fully functional — hardened sshd with ciphers, KEX, connection limits, banner, user allow-listing, key-only auth.                                                                                     |
-| 5   | **Flake outputs**          | Exports `homeManagerModules.ssh`, `nixosModules.ssh`, `sshKeys.lars`, and per-system `formatter`. Clean and minimal.                                                                                                                         |
-| 6   | **Formatting**             | treefmt-full-flake integrated, per-system formatter defined for 4 architectures.                                                                                                                                                             |
-| 7   | **Public key exposure**    | `sshKeys.lars` available as flake output for declarative consumption.                                                                                                                                                                        |
+| # | Item                       | Details                                                                                                                                                                                                                                      |
+| - | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | **Duplicate code removed** | Dropped `homeManagerModule` / `nixosModule` singular aliases from `flake.nix:38-39`. These were redundant wrappers around `homeManagerModules.ssh` / `nixosModules.ssh`. Committed as `e134229`.                                             |
+| 2 | **Duplicate code audit**   | Reviewed all 4 source files (`flake.nix`, `modules/nixos/ssh.nix`, `modules/home-manager/ssh.nix`, `README.md`). No other meaningful duplication exists — the two modules serve fundamentally different purposes (SSH client vs SSH server). |
+| 3 | **SSH client module**      | Home Manager module (`modules/home-manager/ssh.nix`) fully functional — supports hosts, GitHub optimized config, OrbStack/Colima integration, control master paths, extra includes.                                                          |
+| 4 | **SSH server module**      | NixOS module (`modules/nixos/ssh.nix`) fully functional — hardened sshd with ciphers, KEX, connection limits, banner, user allow-listing, key-only auth.                                                                                     |
+| 5 | **Flake outputs**          | Exports `homeManagerModules.ssh`, `nixosModules.ssh`, `sshKeys.lars`, and per-system `formatter`. Clean and minimal.                                                                                                                         |
+| 6 | **Formatting**             | treefmt-full-flake integrated, per-system formatter defined for 4 architectures.                                                                                                                                                             |
+| 7 | **Public key exposure**    | `sshKeys.lars` available as flake output for declarative consumption.                                                                                                                                                                        |
 
 ---
 
@@ -29,18 +29,18 @@ Nothing partially done — all identified work items are either complete or not 
 
 ## c) NOT STARTED
 
-| #   | Item                                                                                                                  | Priority | Effort |
-| --- | --------------------------------------------------------------------------------------------------------------------- | -------- | ------ |
-| ~~1~~   | ~~**README update** — Remove any references to `homeManagerModule` / `nixosModule` (singular) if they exist in docs~~ | ~~Low~~ done (README uses only the plural forms) | ~~Tiny~~   |
-| ~~2~~   | ~~**Nix flake check CI** — No GitHub Actions or CI pipeline defined~~ | ~~Medium~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22) | ~~Medium~~ |
-| ~~3~~   | ~~**Tests** — No automated tests exist (nix flakes can be tested with `nix flake check`, lib tests, or example configs)~~ | ~~High~~ done at `1e00553` (reduced at `e910e78`) | ~~Medium~~ |
-| ~~4~~   | ~~**LICENSE file** — README mentions "MIT - See LICENSE file" but no LICENSE file exists~~ | ~~Medium~~ done at `db540d4` | ~~Tiny~~   |
-| ~~5~~   | ~~**Additional SSH keys** — Only `lars.pub` exists; structure supports more but none added~~ | ~~Low~~ done at `c06d0d4` | ~~Tiny~~   |
-| ~~6~~   | ~~**NixOS VM test** — No integration test spinning up a VM and verifying sshd config~~ | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~Large~~ |
-| ~~7~~   | ~~**Example configs** — No `examples/` directory with ready-to-use configurations~~ | ~~Low~~ → TODO_LIST.md Low — still open | ~~Small~~  |
-| ~~8~~   | ~~**CHANGELOG** — No changelog tracking~~ | ~~Low~~ done at `abe5144` | ~~Tiny~~   |
-| ~~9~~   | ~~**Contributing guide** — No CONTRIBUTING.md~~ | ~~Low~~ done at `abe5144` | ~~Tiny~~   |
-| ~~10~~  | ~~**Home Manager module tests** — No verification that generated `~/.ssh/config` is correct~~ | ~~Medium~~ done at `1e00553`, reduced at `e910e78` | ~~Medium~~ |
+| #      | Item                                                                                                                      | Priority                                                                             | Effort     |
+| ------ | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
+| ~~1~~  | ~~**README update** — Remove any references to `homeManagerModule` / `nixosModule` (singular) if they exist in docs~~     | ~~Low~~ done (README uses only the plural forms)                                     | ~~Tiny~~   |
+| ~~2~~  | ~~**Nix flake check CI** — No GitHub Actions or CI pipeline defined~~                                                     | ~~Medium~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22)           | ~~Medium~~ |
+| ~~3~~  | ~~**Tests** — No automated tests exist (nix flakes can be tested with `nix flake check`, lib tests, or example configs)~~ | ~~High~~ done at `1e00553` (reduced at `e910e78`)                                    | ~~Medium~~ |
+| ~~4~~  | ~~**LICENSE file** — README mentions "MIT - See LICENSE file" but no LICENSE file exists~~                                | ~~Medium~~ done at `db540d4`                                                         | ~~Tiny~~   |
+| ~~5~~  | ~~**Additional SSH keys** — Only `lars.pub` exists; structure supports more but none added~~                              | ~~Low~~ done at `c06d0d4`                                                            | ~~Tiny~~   |
+| ~~6~~  | ~~**NixOS VM test** — No integration test spinning up a VM and verifying sshd config~~                                    | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~Large~~  |
+| ~~7~~  | ~~**Example configs** — No `examples/` directory with ready-to-use configurations~~                                       | ~~Low~~ → TODO_LIST.md Low — still open                                              | ~~Small~~  |
+| ~~8~~  | ~~**CHANGELOG** — No changelog tracking~~                                                                                 | ~~Low~~ done at `abe5144`                                                            | ~~Tiny~~   |
+| ~~9~~  | ~~**Contributing guide** — No CONTRIBUTING.md~~                                                                           | ~~Low~~ done at `abe5144`                                                            | ~~Tiny~~   |
+| ~~10~~ | ~~**Home Manager module tests** — No verification that generated `~/.ssh/config` is correct~~                             | ~~Medium~~ done at `1e00553`, reduced at `e910e78`                                   | ~~Medium~~ |
 
 ---
 
@@ -80,33 +80,33 @@ Nothing. The project is clean, builds on master, no broken state.
 
 ## f) Top 25 Things We Should Get Done Next
 
-| #   | Task                                                                                         | Priority     | Effort | Category |
-| --- | -------------------------------------------------------------------------------------------- | ------------ | ------ | -------- |
-| ~~1~~   | ~~Add MIT LICENSE file~~ | ~~**Critical**~~ done at `db540d4` | ~~2 min~~  | ~~Legal~~    |
-| ~~2~~   | ~~Verify README uses only `homeManagerModules.ssh` / `nixosModules.ssh` (not singular aliases)~~ | ~~High~~ done (verified) | ~~2 min~~ | ~~Docs~~     |
-| ~~3~~   | ~~Update README GitHub URL from `yourusername` to actual user/org~~ | ~~High~~ done at `db540d4` | ~~1 min~~  | ~~Docs~~     |
-| ~~4~~   | ~~Add `nix flake check` validation (checks output)~~ | ~~High~~ done at `1e00553`, `e910e78` | ~~30 min~~ | ~~Quality~~ |
-| ~~5~~   | ~~Add GitHub Actions CI (`nix flake check`, `nix fmt --check`)~~ | ~~High~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22) | ~~30 min~~ | ~~CI~~ |
-| ~~6~~   | ~~Add NixOS module evaluation test~~ | ~~High~~ done (`nixos-module-evaluates`, `flake.nix:110`) | ~~1 hr~~ | ~~Testing~~ |
-| ~~7~~   | ~~Add Home Manager module evaluation test~~ | ~~High~~ done (`home-manager-module-evaluates`, `flake.nix:115`) | ~~1 hr~~ | ~~Testing~~ |
-| ~~8~~   | ~~Change default `user` from `"lars"` to `config.home.username` or remove default~~ | ~~Medium~~ done at `78a96ec` | ~~5 min~~ | ~~Config~~ |
-| ~~9~~   | ~~Evaluate if `home-manager` input is actually needed~~ | ~~Medium~~ done (decision: keep — powers the HM eval checks) | ~~10 min~~ | ~~Cleanup~~ |
-| ~~10~~  | ~~Extract banner text to separate file~~ | ~~Medium~~ → TODO_LIST.md Low — still open | ~~10 min~~ | ~~Refactor~~ |
-| ~~11~~  | ~~Add `checks` output to flake.nix~~ | ~~Medium~~ done at `1e00553`, `e910e78` | ~~30 min~~ | ~~Quality~~ |
-| ~~12~~  | ~~Add example configurations in `examples/` directory~~ | ~~Medium~~ → TODO_LIST.md Low — still open | ~~30 min~~ | ~~Docs~~ |
-| ~~13~~  | ~~Add NixOS VM integration test (sshd actually starts)~~ | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md) | ~~2 hr~~ | ~~Testing~~ |
-| ~~14~~  | ~~Add CONTRIBUTING.md~~ | ~~Low~~ done at `abe5144` | ~~15 min~~ | ~~Docs~~      |
-| ~~15~~  | ~~Add CHANGELOG.md~~ | ~~Low~~ done at `abe5144` | ~~10 min~~ | ~~Docs~~      |
-| ~~16~~  | ~~Add `.editorconfig`~~ | ~~Low~~ done at `2f25e95` | ~~5 min~~  | ~~Quality~~   |
-| ~~17~~  | ~~Add more SSH keys to `ssh-keys/`~~ | ~~Low~~ done at `c06d0d4` | ~~2 min~~  | ~~Config~~    |
-| ~~18~~  | ~~Document crypto algorithm choices and review schedule~~ | ~~Low~~ done at `abe5144` (review cadence → ROADMAP.md) | ~~15 min~~ | ~~Docs~~ |
-| ~~19~~  | ~~Add `flake.nix` comments explaining system architecture choices~~ | ~~Low~~ done (inline comments + AGENTS.md) | ~~10 min~~ | ~~Docs~~ |
-| ~~20~~  | ~~Consider adding `darwinModules` for nix-darwin server config~~ | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open | ~~1 hr~~ | ~~Feature~~ |
-| ~~21~~  | ~~Add SSH config validation (check generated config syntax)~~ | ~~Low~~ → ROADMAP.md "Test depth" — still open | ~~1 hr~~ | ~~Testing~~ |
-| ~~22~~  | ~~Consider age/sops-nix integration for SSH key management~~ | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~2 hr~~ | ~~Feature~~ |
-| ~~23~~  | ~~Add versioning scheme (tags, releases)~~ | ~~Low~~ → TODO_LIST.md High — still open | ~~15 min~~ | ~~Process~~ |
-| ~~24~~  | ~~Document migration path for users of the removed singular aliases~~ | ~~Low~~ **Won't implement — the singular aliases were removed before any release shipped; no consumers exist.** | ~~10 min~~ | ~~Docs~~ |
-| ~~25~~  | ~~Add `apps` output for useful CLI tools (key rotation, config lint)~~ | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open | ~~3 hr~~ | ~~Feature~~ |
+| #      | Task                                                                                             | Priority                                                                                                        | Effort     | Category     |
+| ------ | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ---------- | ------------ |
+| ~~1~~  | ~~Add MIT LICENSE file~~                                                                         | ~~**Critical**~~ done at `db540d4`                                                                              | ~~2 min~~  | ~~Legal~~    |
+| ~~2~~  | ~~Verify README uses only `homeManagerModules.ssh` / `nixosModules.ssh` (not singular aliases)~~ | ~~High~~ done (verified)                                                                                        | ~~2 min~~  | ~~Docs~~     |
+| ~~3~~  | ~~Update README GitHub URL from `yourusername` to actual user/org~~                              | ~~High~~ done at `db540d4`                                                                                      | ~~1 min~~  | ~~Docs~~     |
+| ~~4~~  | ~~Add `nix flake check` validation (checks output)~~                                             | ~~High~~ done at `1e00553`, `e910e78`                                                                           | ~~30 min~~ | ~~Quality~~  |
+| ~~5~~  | ~~Add GitHub Actions CI (`nix flake check`, `nix fmt --check`)~~                                 | ~~High~~ done at `ecd73a4` (platform-mismatch breakage fixed 2026-08-22)                                        | ~~30 min~~ | ~~CI~~       |
+| ~~6~~  | ~~Add NixOS module evaluation test~~                                                             | ~~High~~ done (`nixos-module-evaluates`, `flake.nix:110`)                                                       | ~~1 hr~~   | ~~Testing~~  |
+| ~~7~~  | ~~Add Home Manager module evaluation test~~                                                      | ~~High~~ done (`home-manager-module-evaluates`, `flake.nix:115`)                                                | ~~1 hr~~   | ~~Testing~~  |
+| ~~8~~  | ~~Change default `user` from `"lars"` to `config.home.username` or remove default~~              | ~~Medium~~ done at `78a96ec`                                                                                    | ~~5 min~~  | ~~Config~~   |
+| ~~9~~  | ~~Evaluate if `home-manager` input is actually needed~~                                          | ~~Medium~~ done (decision: keep — powers the HM eval checks)                                                    | ~~10 min~~ | ~~Cleanup~~  |
+| ~~10~~ | ~~Extract banner text to separate file~~                                                         | ~~Medium~~ → TODO_LIST.md Low — still open                                                                      | ~~10 min~~ | ~~Refactor~~ |
+| ~~11~~ | ~~Add `checks` output to flake.nix~~                                                             | ~~Medium~~ done at `1e00553`, `e910e78`                                                                         | ~~30 min~~ | ~~Quality~~  |
+| ~~12~~ | ~~Add example configurations in `examples/` directory~~                                          | ~~Medium~~ → TODO_LIST.md Low — still open                                                                      | ~~30 min~~ | ~~Docs~~     |
+| ~~13~~ | ~~Add NixOS VM integration test (sshd actually starts)~~                                         | ~~Medium~~ done at `1e00553`, removed at `e910e78` (restore tracked in TODO_LIST.md)                            | ~~2 hr~~   | ~~Testing~~  |
+| ~~14~~ | ~~Add CONTRIBUTING.md~~                                                                          | ~~Low~~ done at `abe5144`                                                                                       | ~~15 min~~ | ~~Docs~~     |
+| ~~15~~ | ~~Add CHANGELOG.md~~                                                                             | ~~Low~~ done at `abe5144`                                                                                       | ~~10 min~~ | ~~Docs~~     |
+| ~~16~~ | ~~Add `.editorconfig`~~                                                                          | ~~Low~~ done at `2f25e95`                                                                                       | ~~5 min~~  | ~~Quality~~  |
+| ~~17~~ | ~~Add more SSH keys to `ssh-keys/`~~                                                             | ~~Low~~ done at `c06d0d4`                                                                                       | ~~2 min~~  | ~~Config~~   |
+| ~~18~~ | ~~Document crypto algorithm choices and review schedule~~                                        | ~~Low~~ done at `abe5144` (review cadence → ROADMAP.md)                                                         | ~~15 min~~ | ~~Docs~~     |
+| ~~19~~ | ~~Add `flake.nix` comments explaining system architecture choices~~                              | ~~Low~~ done (inline comments + AGENTS.md)                                                                      | ~~10 min~~ | ~~Docs~~     |
+| ~~20~~ | ~~Consider adding `darwinModules` for nix-darwin server config~~                                 | ~~Low~~ → ROADMAP.md "Cross-platform reach" — still open                                                        | ~~1 hr~~   | ~~Feature~~  |
+| ~~21~~ | ~~Add SSH config validation (check generated config syntax)~~                                    | ~~Low~~ → ROADMAP.md "Test depth" — still open                                                                  | ~~1 hr~~   | ~~Testing~~  |
+| ~~22~~ | ~~Consider age/sops-nix integration for SSH key management~~                                     | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open                                                       | ~~2 hr~~   | ~~Feature~~  |
+| ~~23~~ | ~~Add versioning scheme (tags, releases)~~                                                       | ~~Low~~ → TODO_LIST.md High — still open                                                                        | ~~15 min~~ | ~~Process~~  |
+| ~~24~~ | ~~Document migration path for users of the removed singular aliases~~                            | ~~Low~~ **Won't implement — the singular aliases were removed before any release shipped; no consumers exist.** | ~~10 min~~ | ~~Docs~~     |
+| ~~25~~ | ~~Add `apps` output for useful CLI tools (key rotation, config lint)~~                           | ~~Low~~ → ROADMAP.md "Ecosystem integration" — still open                                                       | ~~3 hr~~   | ~~Feature~~  |
 
 ---
 

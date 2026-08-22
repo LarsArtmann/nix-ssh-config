@@ -45,15 +45,15 @@ examples/                    # Copy-ready client/server modules → examples.*
 
 ### Flake outputs
 
-| Output                       | What                                                                     |
-| ---------------------------- | ------------------------------------------------------------------------ |
-| `homeManagerModules.ssh`     | SSH client module (Home Manager)                                         |
-| `nixosModules.ssh`           | SSH server module (NixOS)                                                |
-| `examples.client` / `examples.server` | Ready-to-use example modules, exercised by `checks.*.examples-evaluate` |
-| `sshKeys`                    | Attrset of tracked public keys (`lars`, `lars-evo-x2`) — consumed as `nix-ssh-config.sshKeys.lars` etc. |
-| `checks.<system>.*`          | 13 eval/content checks + `format` (treefmt); on x86_64-linux additionally `nixos-vm-sshd` (QEMU integration test) |
-| `devShells.<system>.default` | `mkShellNoCC` with `nil` only — formatting comes from treefmt, not the shell |
-| `formatter.<system>`         | treefmt (via treefmt-nix `flakeModule`, nixfmt enabled)                  |
+| Output                                | What                                                                                                              |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `homeManagerModules.ssh`              | SSH client module (Home Manager)                                                                                  |
+| `nixosModules.ssh`                    | SSH server module (NixOS)                                                                                         |
+| `examples.client` / `examples.server` | Ready-to-use example modules, exercised by `checks.*.examples-evaluate`                                           |
+| `sshKeys`                             | Attrset of tracked public keys (`lars`, `lars-evo-x2`) — consumed as `nix-ssh-config.sshKeys.lars` etc.           |
+| `checks.<system>.*`                   | 13 eval/content checks + `format` (treefmt); on x86_64-linux additionally `nixos-vm-sshd` (QEMU integration test) |
+| `devShells.<system>.default`          | `mkShellNoCC` with `nil` only — formatting comes from treefmt, not the shell                                      |
+| `formatter.<system>`                  | treefmt (via treefmt-nix `flakeModule`, nixfmt enabled)                                                           |
 
 There is **no** `apps` output. The VM integration test was restored (2026-08-22) and immediately caught a real runtime bug (see the StrictModes gotcha below).
 
@@ -65,11 +65,11 @@ There is **no** `apps` output. The VM integration test was restored (2026-08-22)
 
 `services.openssh.settings` treats keys differently depending on whether they are **explicit NixOS options** or **freeform keys**:
 
-| Directive                                       | Form expected                                          | Why                                    |
-| ----------------------------------------------- | ------------------------------------------------------ | -------------------------------------- |
-| `Ciphers`, `Macs`, `KexAlgorithms`              | **Nix list** — NixOS joins with commas                 | Explicit options                       |
-| `HostKeyAlgorithms`, `PubkeyAcceptedAlgorithms` | **Pre-joined string** (`crypto.modernHostKeysString`)  | Freeform keys                          |
-| `AuthorizedKeysFile`                            | **Space-separated string**                             | `sshd_config` format (multiple paths)   |
+| Directive                                       | Form expected                                         | Why                                   |
+| ----------------------------------------------- | ----------------------------------------------------- | ------------------------------------- |
+| `Ciphers`, `Macs`, `KexAlgorithms`              | **Nix list** — NixOS joins with commas                | Explicit options                      |
+| `HostKeyAlgorithms`, `PubkeyAcceptedAlgorithms` | **Pre-joined string** (`crypto.modernHostKeysString`) | Freeform keys                         |
+| `AuthorizedKeysFile`                            | **Space-separated string**                            | `sshd_config` format (multiple paths) |
 
 This is why `crypto.nix` exports both list and `*String` variants. The server module uses lists for Ciphers/Macs/KexAlgorithms but strings for HostKeyAlgorithms/PubkeyAcceptedAlgorithms. Getting this wrong produces malformed `sshd_config`. Documented inline at `modules/nixos/ssh.nix`.
 
@@ -139,11 +139,11 @@ Public keys are tracked in `ssh-keys/*.pub`; private keys are gitignored. The `s
 
 ## Documentation map
 
-| File           | Owns                                                    |
-| -------------- | ------------------------------------------------------- |
-| `README.md`    | End-user intro, module reference, security rationale     |
-| `FEATURES.md`  | Honest feature inventory by status                       |
-| `TODO_LIST.md` | Open, bounded work items                                 |
-| `ROADMAP.md`   | Long-term themes, non-goals                              |
-| `CHANGELOG.md` | What changed per version                                 |
-| `docs/status/`  | Point-in-time session reports — all fully annotated and moved to `docs/status/archived/` (open follow-ups live in TODO_LIST.md / ROADMAP.md) |
+| File           | Owns                                                                                                                                         |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `README.md`    | End-user intro, module reference, security rationale                                                                                         |
+| `FEATURES.md`  | Honest feature inventory by status                                                                                                           |
+| `TODO_LIST.md` | Open, bounded work items                                                                                                                     |
+| `ROADMAP.md`   | Long-term themes, non-goals                                                                                                                  |
+| `CHANGELOG.md` | What changed per version                                                                                                                     |
+| `docs/status/` | Point-in-time session reports — all fully annotated and moved to `docs/status/archived/` (open follow-ups live in TODO_LIST.md / ROADMAP.md) |
