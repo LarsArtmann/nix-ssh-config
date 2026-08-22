@@ -18,3 +18,18 @@ jobs:
       - run: nix flake check --all-systems --no-build
       - run: nix flake check
       - run: nix fmt -- --fail-on-change
+      - name: Check markdown links
+        run: nix run nixpkgs#lychee -- --no-progress --max-retries 3 README.md CONTRIBUTING.md AGENTS.md CHANGELOG.md FEATURES.md ROADMAP.md TODO_LIST.md docs examples
+
+  check-aarch64:
+    # Native arm64 runner (free for public repos) so the aarch64-linux
+    # checks, including QEMU-free eval assertions, build and run for real
+    # instead of only being evaluated on x86_64.
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - run: nix flake check --all-systems --no-build
+      - run: nix flake check
+      - run: nix fmt -- --fail-on-change
