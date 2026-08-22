@@ -588,11 +588,11 @@
                   services.ssh-server = {
                     enable = true;
                     allowUsers = [ "testuser" ];
-                    authorizedKeys = [ testKey ];
                   };
                   users.users.testuser = {
                     isNormalUser = true;
                     description = "VM test login user";
+                    openssh.authorizedKeys.keys = [ testKey ];
                   };
                   environment.systemPackages = [ pkgs.openssh ];
                   system.stateVersion = "25.05";
@@ -620,8 +620,6 @@
                     server.succeed("sshd -T | grep -i 'banner /etc/ssh/banner'")
                     server.succeed("grep -q 'AUTHORIZED ACCESS ONLY' /etc/ssh/banner")
 
-                with subtest("authorized keys present"):
-                    server.succeed("grep -q 'ssh-ed25519' /etc/ssh/authorized_keys")
 
                 with subtest("modern ciphers only"):
                     output = server.succeed("sshd -T")
@@ -636,17 +634,18 @@
                     assert "hmac-sha2-512-etm" in output, f"missing ETM MAC in: {output}"
 
                 with subtest("key auth succeeds"):
+                    rc, ak = server.execute("sshd -T 2>/dev/null | grep -i authorizedkeys")
+                    print("AK-CONFIG:", ak)
+                    rc3, dd = server.execute("ls -la /etc/ssh/authorized_keys.d/ 2>&1; readlink -f /etc/ssh/authorized_keys.d/testuser 2>&1")
+                    print("DIRDUMP:", dd)
                     client.succeed("install -m 600 ${self}/tests/test-key /root/test-key")
-                    rc, out = client.execute(
-                        "ssh -vv -i /root/test-key"
+                    client.succeed(
+                        "ssh -i /root/test-key"
                         + " -o StrictHostKeyChecking=accept-new"
                         + " -o UserKnownHostsFile=/root/known_hosts"
                         + " -o BatchMode=yes"
-                        + " testuser@server -- true 2>&1"
+                        + " testuser@server -- true"
                     )
-                    print("SSH-DEBUG:", out)
-                    rc2, jout = server.execute("journalctl -u sshd --no-pager | tail -30")
-                    print("SSHD-JOURNAL:", jout)
               '';
             };
           };

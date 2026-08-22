@@ -143,7 +143,16 @@ in
 
     environment.etc =
       (lib.optionalAttrs (config.services.ssh-server.authorizedKeys != [ ]) {
-        "ssh/authorized_keys".text = lib.concatStringsSep "\n" config.services.ssh-server.authorizedKeys;
+        # mode "0444" makes NixOS COPY this file into /etc instead of
+        # symlinking it into /nix/store. This is load-bearing: sshd's
+        # StrictModes rejects any AuthorizedKeysFile whose path crosses the
+        # world-writable (1777) /nix/store, so a symlinked global keys file
+        # is silently ignored at runtime. Upstream NixOS uses the same
+        # copy trick for /etc/ssh/authorized_keys.d/*.
+        "ssh/authorized_keys" = {
+          mode = "0444";
+          text = lib.concatStringsSep "\n" config.services.ssh-server.authorizedKeys;
+        };
       })
       // (lib.optionalAttrs (config.services.ssh-server.bannerText != null) {
         "ssh/banner".text = config.services.ssh-server.bannerText;
