@@ -1,4 +1,5 @@
-{lib}: let
+{ lib }:
+let
   join = lib.concatStringsSep ",";
 
   pqKex = [
@@ -26,8 +27,14 @@
     "rsa-sha2-512"
     "rsa-sha2-256"
   ];
-in {
-  inherit pqKex aeadCiphers etmMacs modernHostKeys;
+in
+{
+  inherit
+    pqKex
+    aeadCiphers
+    etmMacs
+    modernHostKeys
+    ;
 
   pqKexString = join pqKex;
   aeadCiphersString = join aeadCiphers;

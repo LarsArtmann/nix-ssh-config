@@ -117,15 +117,13 @@
               echo ok > $out
             '';
 
-            nixos-password-auth-disabled = assertContains
-              "password-auth-disabled"
-              (builtins.toJSON sshdSettings)
-              ''"PasswordAuthentication":false'';
+            nixos-password-auth-disabled =
+              assertContains "password-auth-disabled" (builtins.toJSON sshdSettings)
+                ''"PasswordAuthentication":false'';
 
-            nixos-root-login-disabled = assertContains
-              "root-login-disabled"
-              (builtins.toJSON sshdSettings)
-              ''"PermitRootLogin":"no"'';
+            nixos-root-login-disabled =
+              assertContains "root-login-disabled" (builtins.toJSON sshdSettings)
+                ''"PermitRootLogin":"no"'';
 
             format = config.treefmt.build.check self;
           };

@@ -3,9 +3,11 @@
   lib,
   pkgs,
   ...
-}: let
-  crypto = import ../shared/crypto.nix {inherit lib;};
-in {
+}:
+let
+  crypto = import ../shared/crypto.nix { inherit lib; };
+in
+{
   options.services.ssh-server = {
     enable = lib.mkEnableOption "SSH server with hardening";
 
@@ -17,7 +19,7 @@ in {
 
     allowUsers = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [];
+      default = [ ];
       description = "List of users allowed to SSH";
     };
 
@@ -35,7 +37,7 @@ in {
 
     authorizedKeys = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [];
+      default = [ ];
       description = "List of SSH public keys to authorize globally";
     };
 
@@ -50,8 +52,14 @@ in {
     };
 
     extraSettings = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.oneOf [lib.types.str lib.types.int lib.types.bool]);
-      default = {};
+      type = lib.types.attrsOf (
+        lib.types.oneOf [
+          lib.types.str
+          lib.types.int
+          lib.types.bool
+        ]
+      );
+      default = { };
       description = "Additional OpenSSH settings (string, int, or bool values)";
     };
 
@@ -87,48 +95,45 @@ in {
       #   Freeform keys (HostKeyAlgorithms, PubkeyAcceptedAlgorithms) require
       #   pre-joined comma-separated strings.
       #   AuthorizedKeysFile uses space-separated paths (sshd_config format).
-      settings =
-        {
-          PasswordAuthentication = config.services.ssh-server.passwordAuthentication;
-          PermitRootLogin =
-            if config.services.ssh-server.allowRootLogin
-            then "yes"
-            else "no";
-          PermitEmptyPasswords = false;
+      settings = {
+        PasswordAuthentication = config.services.ssh-server.passwordAuthentication;
+        PermitRootLogin = if config.services.ssh-server.allowRootLogin then "yes" else "no";
+        PermitEmptyPasswords = false;
 
-          PubkeyAuthentication = true;
-          PubkeyAcceptedAlgorithms = crypto.modernHostKeysString;
-          AuthorizedKeysFile = lib.concatStringsSep " " config.services.ssh-server.authorizedKeysFiles;
-          X11Forwarding = false;
-          AllowTcpForwarding = false;
-          PermitTunnel = false;
+        PubkeyAuthentication = true;
+        PubkeyAcceptedAlgorithms = crypto.modernHostKeysString;
+        AuthorizedKeysFile = lib.concatStringsSep " " config.services.ssh-server.authorizedKeysFiles;
+        X11Forwarding = false;
+        AllowTcpForwarding = false;
+        PermitTunnel = false;
 
-          AllowUsers = lib.mkIf (config.services.ssh-server.allowUsers != []) config.services.ssh-server.allowUsers;
+        AllowUsers = lib.mkIf (
+          config.services.ssh-server.allowUsers != [ ]
+        ) config.services.ssh-server.allowUsers;
 
-          MaxAuthTries = 3;
-          MaxSessions = 2;
-          ClientAliveInterval = 300;
-          ClientAliveCountMax = 2;
+        MaxAuthTries = 3;
+        MaxSessions = 2;
+        ClientAliveInterval = 300;
+        ClientAliveCountMax = 2;
 
-          Ciphers = crypto.aeadCiphers;
-          Macs = crypto.etmMacs;
-          HostKeyAlgorithms = crypto.modernHostKeysString;
-          KexAlgorithms = crypto.pqKex;
+        Ciphers = crypto.aeadCiphers;
+        Macs = crypto.etmMacs;
+        HostKeyAlgorithms = crypto.modernHostKeysString;
+        KexAlgorithms = crypto.pqKex;
 
-          LogLevel = "VERBOSE";
+        LogLevel = "VERBOSE";
 
-          Banner = lib.mkIf (config.services.ssh-server.bannerText != null) (lib.mkDefault "/etc/ssh/banner");
-        }
-        // config.services.ssh-server.extraSettings;
+        Banner = lib.mkIf (config.services.ssh-server.bannerText != null) (lib.mkDefault "/etc/ssh/banner");
+      }
+      // config.services.ssh-server.extraSettings;
 
       openFirewall = true;
-      ports = [config.services.ssh-server.port];
+      ports = [ config.services.ssh-server.port ];
     };
 
     environment.etc =
-      (lib.optionalAttrs (config.services.ssh-server.authorizedKeys != []) {
-        "ssh/authorized_keys".text =
-          lib.concatStringsSep "\n" config.services.ssh-server.authorizedKeys;
+      (lib.optionalAttrs (config.services.ssh-server.authorizedKeys != [ ]) {
+        "ssh/authorized_keys".text = lib.concatStringsSep "\n" config.services.ssh-server.authorizedKeys;
       })
       // (lib.optionalAttrs (config.services.ssh-server.bannerText != null) {
         "ssh/banner".text = config.services.ssh-server.bannerText;

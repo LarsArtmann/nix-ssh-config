@@ -8,7 +8,7 @@
 
 ## Summary
 
-Full codebase improvement session focused on Nix infrastructure: added 14 evaluation tests + 1 NixOS VM integration test (QEMU), improved type models, fixed module composability, added CI/DX tooling, and cleaned up stale artifacts. All 29 check derivations pass across 3 architectures.
+Full codebase improvement session focused on Nix infrastructure: ~~added 14 evaluation tests + 1 NixOS VM integration test (QEMU), improved type models, fixed module composability, added CI/DX tooling, and cleaned up stale artifacts. All 29 check derivations pass across 3 architectures.~~ Correction (2026-08-22): the flake-parts migration at `e910e78` later removed the VM test and cut the suite to 4 checks + format per system, and every CI run to date failed on a platform mismatch (fix staged, see TODO_LIST.md).
 
 ---
 
@@ -36,7 +36,7 @@ Full codebase improvement session focused on Nix infrastructure: added 14 evalua
 
 | #   | What                       | Status                                                                                                                                                                                                                                                      | What's Left                             |
 | --- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| 1   | **Test helper extraction** | Evaluated extracting tests to `tests/` directory. Decided against — flake.nix tests are tightly coupled to `self`, `home-manager`, `forEachSystem`. Extraction would require passing all as arguments, adding complexity with no real benefit at 340 lines. | Revisit if flake.nix exceeds 500 lines. |
+| 1   | **Test helper extraction** | ~~Evaluated extracting tests to `tests/` directory. Decided against — flake.nix tests are tightly coupled to `self`, `home-manager`, `forEachSystem`. Extraction would require passing all as arguments, adding complexity with no real benefit at 340 lines.~~ **Won't implement — moot: the flake-parts migration (`e910e78`) reduced flake.nix to 139 lines, far below the 500-line threshold.** | ~~Revisit if flake.nix exceeds 500 lines.~~ |
 
 ---
 
@@ -44,11 +44,11 @@ Full codebase improvement session focused on Nix infrastructure: added 14 evalua
 
 | #   | What                                        | Priority | Effort | Notes                                                                         |
 | --- | ------------------------------------------- | -------- | ------ | ----------------------------------------------------------------------------- |
-| 1   | nix-darwin server module (`darwinModules`)  | Low      | 1 hr   | macOS sshd configuration. Different module system than NixOS.                 |
-| 2   | age/sops-nix integration                    | Low      | 2 hr   | Secret management for SSH keys. Requires design decision on key distribution. |
-| 3   | Post-quantum signature migration (ML-DSA)   | Future   | TBD    | No OpenSSH implementation timeline exists. Watch upstream.                    |
-| 4   | Home Manager OrbStack/Colima test on Darwin | Low      | 30 min | Can't test on Linux; needs Darwin CI runner or mock.                          |
-| 5   | Git versioning (v0.1.0 tag)                 | Low      | 2 min  | Ready to tag after commit.                                                    |
+| 1   | nix-darwin server module (`darwinModules`)  | ~~macOS sshd configuration. Different module system than NixOS.~~ → ROADMAP.md "Cross-platform reach" — still open                 |
+| 2   | age/sops-nix integration                    | ~~Secret management for SSH keys. Requires design decision on key distribution.~~ → ROADMAP.md "Ecosystem integration" — still open |
+| 3   | Post-quantum signature migration (ML-DSA)   | ~~No OpenSSH implementation timeline exists. Watch upstream.~~ → ROADMAP.md "Post-quantum completion" — still open                    |
+| 4   | Home Manager OrbStack/Colima test on Darwin | ~~Can't test on Linux; needs Darwin CI runner or mock.~~ → ROADMAP.md "Cross-platform reach" — still open                          |
+| 5   | Git versioning (v0.1.0 tag)                 | ~~Ready to tag after commit.~~ → TODO_LIST.md High — still open                                                    |
 
 ---
 
@@ -65,13 +65,13 @@ Full codebase improvement session focused on Nix infrastructure: added 14 evalua
 
 | #   | Area                                 | Current State                                                       | Improvement                                                                     |
 | --- | ------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| 1   | **flake.nix size**                   | 340 lines — tests dominate                                          | Extract `mkHmEval`, `nixosEval*` helpers to `tests/lib.nix` if it grows further |
-| 2   | **HM `.data` implementation detail** | `getBlock` helper accesses `.data` on matchBlocks                   | Home Manager internal structure; could break on HM update. Document as fragile. |
-| 3   | **`assertContains` JSON fragility**  | Matches raw JSON like `"PasswordAuthentication":false`              | Could use `nix eval` for pure Nix comparisons instead of shell grep             |
-| 4   | **VM test only on x86_64-linux**     | QEMU test skipped on aarch64-darwin and aarch64-linux               | Add aarch64-linux VM test if CI has aarch64 runners                             |
-| 5   | **testKey hardcoded**                | Uses real key in flake.nix                                          | Should generate a throwaway test key, or use `self.sshKeys`                     |
-| 6   | **No `nix-darwin` test**             | Home Manager tests run on all systems, but no darwin-specific tests | Add darwin VM test with UTM (complex, low priority)                             |
-| 7   | **`ssh-config` naming convention**   | Uses hyphen, Nix convention is dots                                 | Breaking change to rename — defer until v2.0 if ever                            |
+| 1   | **flake.nix size**                   | ~~340 lines — tests dominate~~ done (moot — 139 lines after `e910e78`) | ~~Extract `mkHmEval`, `nixosEval*` helpers to `tests/lib.nix` if it grows further~~ |
+| 2   | **HM `.data` implementation detail** | ~~`getBlock` helper accesses `.data` on matchBlocks~~ done (the whole `getBlock` helper was removed at `e910e78`) | ~~Home Manager internal structure; could break on HM update. Document as fragile.~~ |
+| 3   | **`assertContains` JSON fragility**  | ~~Matches raw JSON like `"PasswordAuthentication":false`~~ → TODO_LIST.md Medium — still open | ~~Could use `nix eval` for pure Nix comparisons instead of shell grep~~ |
+| 4   | **VM test only on x86_64-linux**     | ~~QEMU test skipped on aarch64-darwin and aarch64-linux~~ done (moot — VM test removed at `e910e78`; restore tracked in TODO_LIST.md) | ~~Add aarch64-linux VM test if CI has aarch64 runners~~ |
+| 5   | **testKey hardcoded**                | ~~Uses real key in flake.nix~~ → TODO_LIST.md Medium — still open | ~~Should generate a throwaway test key, or use `self.sshKeys`~~ |
+| 6   | **No `nix-darwin` test**             | ~~Home Manager tests run on all systems, but no darwin-specific tests~~ → ROADMAP.md "Cross-platform reach" — still open | ~~Add darwin VM test with UTM (complex, low priority)~~ |
+| 7   | **`ssh-config` naming convention**   | ~~Uses hyphen, Nix convention is dots~~ done (deferred to hypothetical v2.0 — ROADMAP.md Non-goals) | ~~Breaking change to rename — defer until v2.0 if ever~~ |
 
 ---
 
@@ -81,62 +81,62 @@ Full codebase improvement session focused on Nix infrastructure: added 14 evalua
 
 | #   | Task                                                    | Effort | Impact                       |
 | --- | ------------------------------------------------------- | ------ | ---------------------------- |
-| 1   | Tag v0.1.0 release                                      | 2 min  | First versioned release      |
-| 2   | Push to GitHub and verify CI passes                     | 5 min  | Confirms CI works end-to-end |
-| 3   | Add aarch64-linux VM test (if CI supports it)           | 30 min | Cross-architecture coverage  |
-| 4   | Generate throwaway test key instead of using real key   | 10 min | Security hygiene             |
-| 5   | Replace JSON grep assertions with Nix-level comparisons | 30 min | Less fragile tests           |
+| 1   | Tag v0.1.0 release                                      | ~~2 min~~ → TODO_LIST.md High — still open      | ~~First versioned release~~      |
+| 2   | Push to GitHub and verify CI passes                     | ~~5 min~~ done (pushed — but every CI run failed on platform mismatch; fix staged 2026-08-22, green run tracked in TODO_LIST.md) | ~~Confirms CI works end-to-end~~ |
+| 3   | Add aarch64-linux VM test (if CI supports it)           | ~~30 min~~ done (moot — VM test removed at `e910e78`) | ~~Cross-architecture coverage~~  |
+| 4   | Generate throwaway test key instead of using real key   | ~~10 min~~ → TODO_LIST.md Medium — still open | ~~Security hygiene~~             |
+| 5   | Replace JSON grep assertions with Nix-level comparisons | ~~30 min~~ → TODO_LIST.md Medium — still open | ~~Less fragile tests~~           |
 
 ### Priority 2 — Architecture (2 hr)
 
 | #   | Task                                                        | Effort | Impact                 |
 | --- | ----------------------------------------------------------- | ------ | ---------------------- |
-| 6   | Consider `darwinModules` output for macOS sshd              | 1 hr   | Cross-platform server  |
-| 7   | Extract test helpers if flake.nix > 500 lines               | 30 min | Maintainability        |
-| 8   | Add `lib.types.submodule` for bannerText (content + enable) | 15 min | Better API than null   |
-| 9   | Validate bannerText doesn't contain control characters      | 15 min | Prevents sshd breakage |
+| 6   | Consider `darwinModules` output for macOS sshd              | ~~1 hr~~ → ROADMAP.md "Cross-platform reach" — still open  | ~~Cross-platform server~~  |
+| 7   | Extract test helpers if flake.nix > 500 lines               | ~~30 min~~ done (moot — flake.nix is 139 lines after `e910e78`) | ~~Maintainability~~        |
+| 8   | Add `lib.types.submodule` for bannerText (content + enable) | ~~15 min~~ → TODO_LIST.md Medium — still open | ~~Better API than null~~   |
+| 9   | Validate bannerText doesn't contain control characters      | ~~15 min~~ → TODO_LIST.md Medium — still open | ~~Prevents sshd breakage~~ |
 
 ### Priority 3 — Features (3 hr)
 
 | #   | Task                                           | Effort | Impact                  |
 | --- | ---------------------------------------------- | ------ | ----------------------- |
-| 10  | Add `forwardX11` option to host submodule      | 5 min  | X11 forwarding per-host |
-| 11  | Add `proxyJump` option to host submodule       | 5 min  | Jump host support       |
-| 12  | Add `dynamicForwards` option to host submodule | 10 min | SOCKS proxy support     |
-| 13  | Add `localForwards` option to host submodule   | 10 min | Tunnel support          |
-| 14  | Add `remoteForwards` option to host submodule  | 10 min | Reverse tunnel support  |
+| 10  | Add `forwardX11` option to host submodule      | ~~5 min~~ → TODO_LIST.md Medium (host submodule options) — still open | ~~X11 forwarding per-host~~ |
+| 11  | Add `proxyJump` option to host submodule       | ~~5 min~~ → TODO_LIST.md Medium (host submodule options) — still open | ~~Jump host support~~       |
+| 12  | Add `dynamicForwards` option to host submodule | ~~10 min~~ → TODO_LIST.md Medium (host submodule options) — still open | ~~SOCKS proxy support~~     |
+| 13  | Add `localForwards` option to host submodule   | ~~10 min~~ → TODO_LIST.md Medium (host submodule options) — still open | ~~Tunnel support~~          |
+| 14  | Add `remoteForwards` option to host submodule  | ~~10 min~~ → TODO_LIST.md Medium (host submodule options) — still open | ~~Reverse tunnel support~~  |
 
 ### Priority 4 — Quality (1 hr)
 
 | #   | Task                                                             | Effort | Impact                        |
 | --- | ---------------------------------------------------------------- | ------ | ----------------------------- |
-| 15  | Add test for `extraOptions` in host blocks                       | 5 min  | Covers `extraOptions` path    |
-| 16  | Add test for OrbStack/Colima include logic                       | 15 min | Darwin-specific coverage      |
-| 17  | Add test for `identityFile` override per-host                    | 5 min  | Covers per-host identity      |
-| 18  | Add test for GitHub.com matchBlock                               | 5 min  | Covers hardcoded GitHub block |
-| 19  | Add property test: all crypto algorithms are valid OpenSSH names | 15 min | Prevents typos                |
-| 20  | Add test: sshd -T output matches expected config exactly         | 15 min | Full runtime validation       |
+| 15  | Add test for `extraOptions` in host blocks                       | ~~5 min~~ → TODO_LIST.md High (restore content assertions) — still open | ~~Covers `extraOptions` path~~    |
+| 16  | Add test for OrbStack/Colima include logic                       | ~~15 min~~ → ROADMAP.md "Cross-platform reach" — still open | ~~Darwin-specific coverage~~      |
+| 17  | Add test for `identityFile` override per-host                    | ~~5 min~~ → TODO_LIST.md High (restore content assertions) — still open | ~~Covers per-host identity~~      |
+| 18  | Add test for GitHub.com matchBlock                               | ~~5 min~~ → TODO_LIST.md High (restore content assertions) — still open | ~~Covers hardcoded GitHub block~~ |
+| 19  | Add property test: all crypto algorithms are valid OpenSSH names | ~~15 min~~ → TODO_LIST.md High (restore content assertions) — still open | ~~Prevents typos~~                |
+| 20  | Add test: sshd -T output matches expected config exactly         | ~~15 min~~ → ROADMAP.md "Test depth" — still open | ~~Full runtime validation~~       |
 
 ### Priority 5 — Polish (30 min)
 
 | #   | Task                                           | Effort | Impact                         |
 | --- | ---------------------------------------------- | ------ | ------------------------------ |
-| 21  | Add `nix run .#check` app that runs all checks | 5 min  | Convenience                    |
-| 22  | Add flake overlay with openssh package         | 15 min | Pinned OpenSSH version         |
-| 23  | Consider `nixos-generate-config` integration   | 10 min | Auto-generate from sshd config |
+| 21  | Add `nix run .#check` app that runs all checks | ~~5 min~~ **Won't implement — `nix flake check` is already a single command.** | ~~Convenience~~                    |
+| 22  | Add flake overlay with openssh package         | ~~15 min~~ → ROADMAP.md "Ecosystem integration" — still open | ~~Pinned OpenSSH version~~         |
+| 23  | Consider `nixos-generate-config` integration   | ~~10 min~~ → ROADMAP.md "Ecosystem integration" — still open | ~~Auto-generate from sshd config~~ |
 
 ### Priority 6 — Future
 
 | #   | Task                                           | Effort | Impact                  |
 | --- | ---------------------------------------------- | ------ | ----------------------- |
-| 24  | age/sops-nix integration for secret management | 2 hr   | Secure key distribution |
-| 25  | ML-DSA signature migration plan                | TBD    | Post-quantum auth       |
+| 24  | age/sops-nix integration for secret management | ~~2 hr~~ → ROADMAP.md "Ecosystem integration" — still open | ~~Secure key distribution~~ |
+| 25  | ML-DSA signature migration plan                | ~~TBD~~ → ROADMAP.md "Post-quantum completion" — still open | ~~Post-quantum auth~~       |
 
 ---
 
 ## G. Top Question I Cannot Answer
 
-**Should the `home-manager` flake input be kept long-term?**
+~~**Should the `home-manager` flake input be kept long-term?**~~ Resolved: kept — it powers the Home Manager evaluation checks via `homeManagerConfiguration` and has caught real issues; decision recorded in AGENTS.md and ROADMAP.md.
 
 The current `home-manager` input is used exclusively for `home-manager.lib.homeManagerConfiguration` in the HM evaluation tests. The alternative is to use `nixpkgs.lib.evalModules` directly, which would:
 
@@ -200,9 +200,11 @@ $ nix flake check --all-systems --verbose 2>&1 | grep "checking derivation check
 
 29 check derivations across 3 architectures (aarch64-darwin, x86_64-linux, aarch64-linux):
 
-- 14 per-system evaluation tests × 3 systems = 42 evaluation checks
-- 1 VM integration test (x86_64-linux only)
-- All pass.
+- ~~14 per-system evaluation tests × 3 systems = 42 evaluation checks~~
+- ~~1 VM integration test (x86_64-linux only)~~
+- ~~All pass.~~
+
+> **2026-08-22 correction:** these counts describe the pre-flake-parts suite. The migration at `e910e78` removed the VM test and the content-assertion tests; the current suite is 4 checks + format per system (see FEATURES.md). Additionally, every CI run since inception failed on a platform mismatch until the workflow fix staged on 2026-08-22 (see TODO_LIST.md).
 
 ---
 

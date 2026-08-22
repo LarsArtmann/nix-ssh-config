@@ -12,5 +12,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
-      - run: nix flake check --all-systems
+      # --all-systems alone cannot BUILD foreign-system check derivations
+      # (e.g. aarch64-darwin on an x86_64-linux runner -> "platform mismatch"),
+      # so evaluate every system, then build+run the native checks only.
+      - run: nix flake check --all-systems --no-build
+      - run: nix flake check
       - run: nix fmt -- --fail-on-change

@@ -3,9 +3,11 @@
   lib,
   pkgs,
   ...
-}: let
-  crypto = import ../shared/crypto.nix {inherit lib;};
-in {
+}:
+let
+  crypto = import ../shared/crypto.nix { inherit lib; };
+in
+{
   options.ssh-config = {
     enable = lib.mkEnableOption "SSH client configuration";
 
@@ -23,51 +25,53 @@ in {
     };
 
     hosts = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule {
-        options = {
-          hostname = lib.mkOption {
-            type = lib.types.str;
-            description = "Host IP or hostname";
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options = {
+            hostname = lib.mkOption {
+              type = lib.types.str;
+              description = "Host IP or hostname";
+            };
+            user = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Username for this host (defaults to ssh-config.user)";
+            };
+            port = lib.mkOption {
+              type = lib.types.nullOr lib.types.port;
+              default = null;
+              description = "SSH port";
+            };
+            identityFile = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Path to identity file";
+            };
+            serverAliveInterval = lib.mkOption {
+              type = lib.types.nullOr lib.types.int;
+              default = null;
+              description = "Keepalive interval in seconds";
+            };
+            serverAliveCountMax = lib.mkOption {
+              type = lib.types.nullOr lib.types.int;
+              default = null;
+              description = "Max keepalive probes";
+            };
+            extraOptions = lib.mkOption {
+              type = lib.types.attrsOf lib.types.str;
+              default = { };
+              description = "Additional SSH options (merged directly into the host block using upstream directive names)";
+            };
           };
-          user = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "Username for this host (defaults to ssh-config.user)";
-          };
-          port = lib.mkOption {
-            type = lib.types.nullOr lib.types.port;
-            default = null;
-            description = "SSH port";
-          };
-          identityFile = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "Path to identity file";
-          };
-          serverAliveInterval = lib.mkOption {
-            type = lib.types.nullOr lib.types.int;
-            default = null;
-            description = "Keepalive interval in seconds";
-          };
-          serverAliveCountMax = lib.mkOption {
-            type = lib.types.nullOr lib.types.int;
-            default = null;
-            description = "Max keepalive probes";
-          };
-          extraOptions = lib.mkOption {
-            type = lib.types.attrsOf lib.types.str;
-            default = {};
-            description = "Additional SSH options (merged directly into the host block using upstream directive names)";
-          };
-        };
-      });
-      default = {};
+        }
+      );
+      default = { };
       description = "SSH host configurations";
     };
 
     extraIncludes = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [];
+      default = [ ];
       description = "Additional SSH config files to include";
     };
 
@@ -91,12 +95,14 @@ in {
 
       includes =
         lib.optionals pkgs.stdenv.isDarwin (
-          (lib.optional (config.ssh-config.enableOrbstack
-            && builtins.pathExists "${config.home.homeDirectory}/.orbstack/ssh/config")
-          "~/.orbstack/ssh/config")
-          ++ (lib.optional (config.ssh-config.enableColima
-            && builtins.pathExists "${config.home.homeDirectory}/.colima/ssh_config")
-          "~/.colima/ssh_config")
+          (lib.optional (
+            config.ssh-config.enableOrbstack
+            && builtins.pathExists "${config.home.homeDirectory}/.orbstack/ssh/config"
+          ) "~/.orbstack/ssh/config")
+          ++ (lib.optional (
+            config.ssh-config.enableColima
+            && builtins.pathExists "${config.home.homeDirectory}/.colima/ssh_config"
+          ) "~/.colima/ssh_config")
         )
         ++ config.ssh-config.extraIncludes;
 
@@ -140,24 +146,26 @@ in {
           };
         }
 
-        (lib.mapAttrs (name: hostConfig:
+        (lib.mapAttrs (
+          name: hostConfig:
           {
             HostName = hostConfig.hostname;
-            User =
-              if hostConfig.user != null
-              then hostConfig.user
-              else config.ssh-config.user;
+            User = if hostConfig.user != null then hostConfig.user else config.ssh-config.user;
           }
-          // lib.optionalAttrs (hostConfig.port != null) {Port = hostConfig.port;}
-          // lib.optionalAttrs (hostConfig.identityFile != null) {IdentityFile = hostConfig.identityFile;}
-          // lib.optionalAttrs (hostConfig.serverAliveInterval != null) {ServerAliveInterval = hostConfig.serverAliveInterval;}
-          // lib.optionalAttrs (hostConfig.serverAliveCountMax != null) {ServerAliveCountMax = hostConfig.serverAliveCountMax;}
-          // lib.optionalAttrs (hostConfig.extraOptions != {}) hostConfig.extraOptions)
-        config.ssh-config.hosts)
+          // lib.optionalAttrs (hostConfig.port != null) { Port = hostConfig.port; }
+          // lib.optionalAttrs (hostConfig.identityFile != null) { IdentityFile = hostConfig.identityFile; }
+          // lib.optionalAttrs (hostConfig.serverAliveInterval != null) {
+            ServerAliveInterval = hostConfig.serverAliveInterval;
+          }
+          // lib.optionalAttrs (hostConfig.serverAliveCountMax != null) {
+            ServerAliveCountMax = hostConfig.serverAliveCountMax;
+          }
+          // lib.optionalAttrs (hostConfig.extraOptions != { }) hostConfig.extraOptions
+        ) config.ssh-config.hosts)
       ];
     };
 
-    home.activation.createSshSockets = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    home.activation.createSshSockets = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       $DRY_RUN_CMD mkdir -p $VERBOSE_ARG "${config.home.homeDirectory}/.ssh/sockets"
       $DRY_RUN_CMD chmod 700 "${config.home.homeDirectory}/.ssh/sockets"
     '';

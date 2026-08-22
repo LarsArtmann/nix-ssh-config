@@ -225,16 +225,18 @@ All algorithm choices follow a **conservative + post-quantum** strategy:
 
 ```
 .
-├── flake.nix                 # Flake entry point
+├── flake.nix                      # Flake entry point (flake-parts)
 ├── modules/
 │   ├── shared/
-│   │   └── crypto.nix        # Shared cryptographic algorithm definitions
+│   │   └── crypto.nix             # Shared cryptographic algorithm definitions
 │   ├── home-manager/
-│   │   └── ssh.nix           # Client configuration
+│   │   └── ssh.nix                # Client configuration
 │   └── nixos/
-│       └── ssh.nix           # Server configuration
-└── ssh-keys/
-    └── lars-ed25519.pub      # Ed25519 public key
+│       └── ssh.nix                # Server configuration
+├── ssh-keys/                      # Tracked public keys (private keys are gitignored)
+│   ├── lars-ed25519.pub
+│   └── lars-evo-x2-ed25519.pub
+└── .github/workflows/check.yml    # CI
 ```
 
 ## License

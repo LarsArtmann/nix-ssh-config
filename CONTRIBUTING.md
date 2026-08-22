@@ -15,16 +15,22 @@ echo "use flake" > .envrc && direnv allow
 ## Making Changes
 
 1. Edit modules in `modules/`
-2. Run checks: `nix flake check --all-systems`
-3. Format: `nix fmt`
-4. Submit a PR
+2. Evaluate all systems: `nix flake check --all-systems --no-build`
+3. Build + run the native checks: `nix flake check`
+4. Format: `nix fmt`
+5. Submit a PR
 
 ## Checks
 
-All PRs must pass:
+All PRs must pass (mirrored by CI):
 
-- `nix flake check --all-systems` — module evaluation + VM integration test
+- `nix flake check --all-systems --no-build` — module evaluation on all supported systems
+- `nix flake check` — builds and runs the current system's checks
 - `nix fmt -- --fail-on-change` — formatting
+
+Note: `nix flake check --all-systems` without `--no-build` tries to build
+foreign-system check derivations and fails with a platform mismatch on any
+single-machine runner.
 
 ## Architecture
 
@@ -37,7 +43,6 @@ All PRs must pass:
 
 The test suite includes:
 
-- Module evaluation tests (all architectures)
-- NixOS VM integration test (boots QEMU, validates sshd config)
-- Home Manager config content verification
-- Security defaults assertions (no password auth, no root login, etc.)
+- Module evaluation checks (NixOS + Home Manager, all supported systems)
+- Security content assertions (password auth disabled, root login disabled)
+- Formatting check via treefmt-nix (runs as part of `nix flake check`)
