@@ -416,7 +416,12 @@
               {
                 name = "DynamicForward (structured, defaults applied)";
                 actual = (hmBlock "full").DynamicForward;
-                expected = [ { address = "localhost"; port = 1080; } ];
+                expected = [
+                  {
+                    address = "localhost";
+                    port = 1080;
+                  }
+                ];
               }
             ];
 

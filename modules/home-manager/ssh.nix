@@ -16,8 +16,7 @@ let
     lib.types.submodule {
       options = {
         address = lib.mkOption {
-          type =
-            if action == "bind" then lib.types.str else lib.types.nullOr lib.types.str;
+          type = if action == "bind" then lib.types.str else lib.types.nullOr lib.types.str;
           default = if action == "bind" then "localhost" else null;
           example = "example.org";
           description = "The address to ${action} to.";
