@@ -55,9 +55,9 @@
           crypto = import ./modules/shared/crypto.nix { inherit lib; };
           banner = import ./modules/shared/banner.nix;
 
-          # Throwaway ed25519 key generated for CI test evals only - never used
-          # anywhere real. Regenerate freely: ssh-keygen -t ed25519 -C <comment>
-          testKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIFVoGCZ+Xlywmk19S5Z9DKF9VvEBU9CWvvz74GrqIfa nix-ssh-config-ci-test";
+          # Throwaway ed25519 keypair (tests/test-key{,.pub}) generated for CI
+          # only - never used anywhere real. See tests/README.md.
+          testKey = builtins.readFile ./tests/test-key.pub;
 
           # Nix string escapes have no \xNN form; JSON \u escapes produce the
           # raw control characters this eval deliberately injects.
@@ -572,6 +572,79 @@
                 expected = true;
               }
             ];
+          }
+          # QEMU integration test: boots a real VM, starts sshd, and proves
+          # the hardened config holds at runtime (sshd -T) plus actual
+          # key-based login. Restored from the pre-flake-parts test (removed
+          # at e910e78), now with a working key-auth subtest.
+          // lib.optionalAttrs (system == "x86_64-linux") {
+            nixos-vm-sshd = pkgs.testers.nixosTest {
+              name = "sshd-hardened-config";
+
+              nodes.server =
+                { config, pkgs, ... }:
+                {
+                  imports = [ self.nixosModules.ssh ];
+                  services.ssh-server = {
+                    enable = true;
+                    allowUsers = [ "testuser" ];
+                    authorizedKeys = [ testKey ];
+                  };
+                  users.users.testuser = {
+                    isNormalUser = true;
+                    description = "VM test login user";
+                  };
+                  environment.systemPackages = [ pkgs.openssh ];
+                  system.stateVersion = "25.05";
+                };
+
+              nodes.client =
+                { pkgs, ... }:
+                {
+                  environment.systemPackages = [ pkgs.openssh ];
+                  system.stateVersion = "25.05";
+                };
+
+              testScript = ''
+                start_all()
+                server.wait_for_unit("sshd.service")
+                server.wait_for_open_port(22)
+
+                with subtest("password auth disabled"):
+                    server.succeed("sshd -T | grep -i 'passwordauthentication no'")
+
+                with subtest("root login disabled"):
+                    server.succeed("sshd -T | grep -i 'permitrootlogin no'")
+
+                with subtest("banner configured"):
+                    server.succeed("sshd -T | grep -i 'banner /etc/ssh/banner'")
+                    server.succeed("grep -q 'AUTHORIZED ACCESS ONLY' /etc/ssh/banner")
+
+                with subtest("authorized keys present"):
+                    server.succeed("grep -q 'ssh-ed25519' /etc/ssh/authorized_keys")
+
+                with subtest("modern ciphers only"):
+                    output = server.succeed("sshd -T")
+                    assert "chacha20-poly1305" in output, f"missing chacha20 cipher in: {output}"
+
+                with subtest("post-quantum kex configured"):
+                    output = server.succeed("sshd -T")
+                    assert "mlkem768x25519-sha256" in output, f"missing ML-KEM KEX in: {output}"
+
+                with subtest("etm macs only"):
+                    output = server.succeed("sshd -T")
+                    assert "hmac-sha2-512-etm" in output, f"missing ETM MAC in: {output}"
+
+                with subtest("key auth succeeds"):
+                    client.succeed("install -m 600 ${self}/tests/test-key /root/test-key")
+                    client.succeed(
+                        "ssh -i /root/test-key"
+                        + " -o StrictHostKeyChecking=accept-new"
+                        + " -o UserKnownHostsFile=/root/known_hosts"
+                        + " testuser@server -- true"
+                    )
+              '';
+            };
           };
 
           devShells.default = pkgs.mkShellNoCC {
