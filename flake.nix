@@ -510,6 +510,11 @@
                 actual = nixosEval.config.environment.etc."ssh/authorized_keys".text;
                 expected = testKey;
               }
+              {
+                name = "etc mode forces a copy (a symlink would be rejected by sshd StrictModes)";
+                actual = nixosEval.config.environment.etc."ssh/authorized_keys".mode;
+                expected = "0444";
+              }
             ];
 
             nixos-custom-settings = assertEq "nixos-custom-settings" [
@@ -588,11 +593,11 @@
                   services.ssh-server = {
                     enable = true;
                     allowUsers = [ "testuser" ];
+                    authorizedKeys = [ testKey ];
                   };
                   users.users.testuser = {
                     isNormalUser = true;
                     description = "VM test login user";
-                    openssh.authorizedKeys.keys = [ testKey ];
                   };
                   environment.systemPackages = [ pkgs.openssh ];
                   system.stateVersion = "25.05";
@@ -633,11 +638,11 @@
                     output = server.succeed("sshd -T")
                     assert "hmac-sha2-512-etm" in output, f"missing ETM MAC in: {output}"
 
+                with subtest("authorized keys present and not a symlink"):
+                    server.succeed("grep -q 'ssh-ed25519' /etc/ssh/authorized_keys")
+                    server.succeed("test -f /etc/ssh/authorized_keys && ! test -L /etc/ssh/authorized_keys")
+
                 with subtest("key auth succeeds"):
-                    rc, ak = server.execute("sshd -T 2>/dev/null | grep -i authorizedkeys")
-                    print("AK-CONFIG:", ak)
-                    rc3, dd = server.execute("ls -la /etc/ssh/authorized_keys.d/ 2>&1; readlink -f /etc/ssh/authorized_keys.d/testuser 2>&1")
-                    print("DIRDUMP:", dd)
                     client.succeed("install -m 600 ${self}/tests/test-key /root/test-key")
                     client.succeed(
                         "ssh -i /root/test-key"
