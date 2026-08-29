@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and `docs-check-count` requires FEATURES.md's per-system content-check
   counts to match the actual checks — the drift class behind "13 checks" and
   stale option tables now fails CI mechanically
+- Client runtime proof: `hm-ssh-g-preview` runs `ssh -G` against the rendered
+  `~/.ssh/config` and asserts the effective settings a real client would use
+  (hostname, user, port plus the full AEAD cipher, ETM MAC and post-quantum
+  KEX lists), and `hm-rendered-config` pins the generated file's section
+  headers and crypto directive text
+- VM golden snapshot: `tests/sshd-t-golden.txt` captures the effective
+  `sshd -T` output of every directive the server module controls; the VM
+  test fails with a precise key-by-key diff if runtime behavior drifts
 
 ### Changed
 

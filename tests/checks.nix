@@ -30,6 +30,37 @@
       # raw control characters this eval deliberately injects.
       bannerWithControlChars = builtins.fromJSON ''"ok line\n\u0007bell\u0001soh"'';
 
+      # Directives the server module emits, snapshotted from a real
+      # `sshd -T` run inside the VM test (tests/sshd-t-golden.txt). Runtime
+      # drift in any of these fails the VM run; changing the module means
+      # regenerating the golden on purpose (delete its contents, run the VM
+      # test, copy the GOLDEN block from the transcript).
+      sshdGoldenKeys = [
+        "allowtcpforwarding"
+        "allowusers"
+        "authorizedkeysfile"
+        "banner"
+        "ciphers"
+        "clientalivecountmax"
+        "clientaliveinterval"
+        "hostkeyalgorithms"
+        "kbdinteractiveauthentication"
+        "kexalgorithms"
+        "loglevel"
+        "macs"
+        "maxauthtries"
+        "maxsessions"
+        "passwordauthentication"
+        "permitemptypasswords"
+        "permitrootlogin"
+        "permittunnel"
+        "port"
+        "pubkeyacceptedalgorithms"
+        "pubkeyauthentication"
+        "x11forwarding"
+      ];
+      sshdGolden = builtins.readFile ../tests/sshd-t-golden.txt;
+
       mkNixosEval =
         extraModules:
         nixpkgs.lib.nixosSystem {
@@ -285,13 +316,40 @@
     {
 
       checks = {
-        nixos-module-evaluates = pkgs.runCommand "nixos-module-evaluates" { } ''
-          ${builtins.deepSeq nixosEval.config.services.openssh.settings ""}
-          echo ok > $out
-        '';
+        # Client runtime proof: ssh -G resolves the rendered ~/.ssh/config
+        # the way a real client would, proving the HM module's output is a
+        # valid ssh_config that produces the intended effective settings —
+        # not merely a correct-looking attrset.
+        hm-ssh-g-preview =
+          pkgs.runCommand "hm-ssh-g-preview"
+            {
+              buildInputs = [ pkgs.openssh ];
+            }
+            ''
+              cfg=${hmEval.config.home.file.".ssh/config".source}
+              effective=$(ssh -F "$cfg" -G test 2>/dev/null)
+              echo "$effective" | grep -qx "hostname example.com"
+              echo "$effective" | grep -qx "user admin"
+              echo "$effective" | grep -qx "port 22"
+              echo "$effective" | grep -qx "ciphers ${crypto.aeadCiphersString}"
+              echo "$effective" | grep -qx "kexalgorithms ${crypto.pqKexString}"
+              echo "$effective" | grep -qx "macs ${crypto.etmMacsString}"
+              echo ok > $out
+            '';
 
-        home-manager-module-evaluates = pkgs.runCommand "home-manager-module-evaluates" { } ''
-          ${builtins.deepSeq hmEval.config.programs.ssh.settings ""}
+        # Rendered config text assertions: pin the actual file contents HM
+        # generates (section headers, directive casing, crypto strings) —
+        # things the attrset-level checks cannot see.
+        hm-rendered-config = pkgs.runCommand "hm-rendered-config" { } ''
+          cfg=$(cat ${hmEval.config.home.file.".ssh/config".source})
+          echo "$cfg" | grep -q '^Host \*$'
+          echo "$cfg" | grep -q '^Host github\.com$'
+          echo "$cfg" | grep -q '^Host test$'
+          echo "$cfg" | grep -q 'KexAlgorithms ${crypto.pqKexString}'
+          echo "$cfg" | grep -q 'Ciphers ${crypto.aeadCiphersString}'
+          echo "$cfg" | grep -q 'MACs ${crypto.etmMacsString}'
+          echo "$cfg" | grep -q 'HostKeyAlgorithms ${crypto.modernHostKeysString}'
+          echo "$cfg" | grep -q 'IdentityFile '
           echo ok > $out
         '';
 
@@ -868,6 +926,38 @@
                 assert "AUTHORIZED ACCESS ONLY" in output, (
                     f"banner not delivered to client: {output}"
                 )
+
+            # Golden snapshot: the effective sshd config, filtered to the
+            # directives our module controls, must stay identical to the
+            # committed snapshot. Catches accidental default drift that
+            # per-directive greps cannot see (new lines need the key added
+            # to sshdGoldenKeys).
+            with subtest("sshd -T matches the committed golden snapshot"):
+                status, output = server.execute("sshd -T 2>&1")
+                assert status == 0, f"sshd -T failed: {output}"
+                golden_keys = ${builtins.toJSON sshdGoldenKeys}
+                current = {}
+                for line in output.splitlines():
+                    parts = line.split(None, 1)
+                    if len(parts) == 2 and parts[0].lower() in golden_keys:
+                        current[parts[0].lower()] = parts[1]
+                golden = ${builtins.toJSON sshdGolden}
+                if golden == "":
+                    print("GOLDEN-BEGIN")
+                    for k in sorted(current):
+                        print(f"{k} {current[k]}")
+                    print("GOLDEN-END")
+                else:
+                    expected = {}
+                    for gline in golden.splitlines():
+                        gkey, gval = gline.split(" ", 1)
+                        expected[gkey] = gval
+                    drift = {
+                        k: [current.get(k), expected.get(k)]
+                        for k in set(current) | set(expected)
+                        if current.get(k) != expected.get(k)
+                    }
+                    assert current == expected, f"sshd -T drifted from golden: {drift}"
           '';
         };
       };
