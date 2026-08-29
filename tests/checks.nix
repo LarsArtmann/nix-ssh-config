@@ -1126,7 +1126,13 @@
                     + " testuser@server -- true 2>&1"
                 )
                 assert status != 0, f"keyboard-interactive unexpectedly succeeded: {output}"
-                assert "Permission denied" in output, f"unexpected refusal mode: {output}"
+                # pam_unix's fail-delay can stretch the refusal long enough
+                # that sshd closes the connection before the client prints
+                # "Permission denied" — either refusal string proves the
+                # password was not accepted, which is the property here.
+                assert "Permission denied" in output or "Connection closed" in output, (
+                    f"unexpected refusal mode: {output}"
+                )
                 status, jlog = server.execute(
                     "journalctl -u sshd | grep -ci 'keyboard-interactive'"
                 )
@@ -1237,7 +1243,9 @@
                     + " kbduser@kbd-server -- true 2>&1"
                 )
                 assert status != 0, f"locked user's password was accepted: {output}"
-                assert "Permission denied" in output, f"unexpected refusal mode: {output}"
+                assert "Permission denied" in output or "Connection closed" in output, (
+                    f"unexpected refusal mode: {output}"
+                )
                 status, jlog = kbd_server.execute(
                     "journalctl -u sshd | grep -i 'keyboard-interactive'"
                 )

@@ -73,10 +73,12 @@
 
           devShells.default = pkgs.mkShellNoCC {
             packages = [ pkgs.nil ];
+            # Release and lint helpers resolve without the ./ prefix.
             # Installs (once, non-destructively) a pre-push hook that runs
             # the full gate. Skip a single push with `git push --no-verify`.
             shellHook = ''
-                            hook=".git/hooks/pre-push"
+              export PATH="$PWD/scripts:$PATH"
+              hook=".git/hooks/pre-push"
                             if [ ! -f "$hook" ] || ! grep -q "nix fmt" "$hook" 2>/dev/null; then
                               mkdir -p .git/hooks
                               cat > "$hook" <<'HOOK'

@@ -1,5 +1,9 @@
 # Pareto Execution Plan 3 — nix-ssh-config (v0.1.3 & Depth)
 
+**EXECUTED 2026-08-29** — all 10 M-tasks, 74 fine tasks and 5 decision
+gates done; evidence in
+`docs/status/2026-08-29_18-10_plan-3-execution-complete.md`.
+
 **Date:** 2026-08-29 16:18 CEST
 **Inputs:** `TODO_LIST.md` (4 open rows), `ROADMAP.md` themes 1–6 with
 refined/parked epics, the plan-2 execution status report

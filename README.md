@@ -1,6 +1,7 @@
 # nix-ssh-config
 
 [![Check](https://github.com/LarsArtmann/nix-ssh-config/actions/workflows/check.yml/badge.svg)](https://github.com/LarsArtmann/nix-ssh-config/actions/workflows/check.yml)
+[![checks-summary](https://github.com/LarsArtmann/nix-ssh-config/actions/workflows/check.yml/badge.svg?branch=master&job=checks-summary)](https://github.com/LarsArtmann/nix-ssh-config/actions/workflows/check.yml)
 [![Release](https://img.shields.io/github/v/release/LarsArtmann/nix-ssh-config)](https://github.com/LarsArtmann/nix-ssh-config/releases)
 
 Modular, reusable SSH configuration for Nix-based systems. Provides hardened SSH client and server configurations as Nix modules.

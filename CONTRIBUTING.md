@@ -66,9 +66,12 @@ Settings → Branches → Add classic branch protection rule for `master`
       (repo convention, not enforcement).
 - [ ] Leave **restrict pushes** off: the release script pushes tags from
       a local checkout, so force-push protection only, not push lockdown.
-- [ ] Revisit after Dependabot groups land: enable auto-merge
-      (Settings → General → Pull Requests → Allow auto-merge) so green
-      grouped PRs merge without manual polling.
+- [ ] Post-protection: enable auto-merge (Settings → General → Pull
+      Requests → **Allow auto-merge**), then Dependabot can be switched
+      from "auto-commit" to "auto-rebase + auto-merge" (its manifest
+      `schedule.day`/groups already live in `.github/dependabot.yml`).
+      With `checks-summary` required, a green grouped PR merges without
+      manual polling; squashing keeps the one-change-per-commit history.
 
 ## Architecture
 
