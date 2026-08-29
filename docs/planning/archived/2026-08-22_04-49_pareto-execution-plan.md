@@ -19,33 +19,33 @@ Open follow-ups live in `TODO_LIST.md` / `ROADMAP.md`.
 and the client module's only test is vacuous. Fixing those two things changes every
 consumer's first impression and halves the untested surface:
 
-| ID | What                           | Why it is 51%                                                                                                                                                                                    | Effort |
-| -- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| M1 | **Publish & prove green CI**   | Push the staged CI fix; watch the first-ever green `Check` run. Red CI = "broken project" signal to every visitor; green = trustworthy.                                                          | 30min  |
-| M2 | **Real Home Manager coverage** | `checks.home-manager-module-evaluates` deepSeq's an empty `matchBlocks`. Point it at `programs.ssh.settings` + assert the `*` block content — the client module goes from 0% to actually tested. | 30min  |
+| ID  | What                           | Why it is 51%                                                                                                                                                                                    | Effort |
+| --- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| M1  | **Publish & prove green CI**   | Push the staged CI fix; watch the first-ever green `Check` run. Red CI = "broken project" signal to every visitor; green = trustworthy.                                                          | 30min  |
+| M2  | **Real Home Manager coverage** | `checks.home-manager-module-evaluates` deepSeq's an empty `matchBlocks`. Point it at `programs.ssh.settings` + assert the `*` block content — the client module goes from 0% to actually tested. | 30min  |
 
 ### The 4% that delivers 64% (adds ~2h, 2 tasks)
 
 **Verified security defaults.** The whole selling point is "hardened by default" — right now
 only 2 of the hardening claims are asserted, and a real personal key sits in test code:
 
-| ID | What                         | Why the next 13%                                                                                                                                                                             | Effort |
-| -- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| M3 | **Test hygiene**             | Throwaway test key (no personal keys in test code), remove the `pkgs` lint warning, render-check the archived reports.                                                                       | 30min  |
-| M4 | **NixOS content assertions** | Assert what we advertise: crypto lists, custom port, authorizedKeys file, banner, `extraSettings` override, disabled-state no-op. Restores 6 of the 10 dropped checks for the server module. | 100min |
+| ID  | What                         | Why the next 13%                                                                                                                                                                             | Effort |
+| --- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| M3  | **Test hygiene**             | Throwaway test key (no personal keys in test code), remove the `pkgs` lint warning, render-check the archived reports.                                                                       | 30min  |
+| M4  | **NixOS content assertions** | Assert what we advertise: crypto lists, custom port, authorizedKeys file, banner, `extraSettings` override, disabled-state no-op. Restores 6 of the 10 dropped checks for the server module. | 100min |
 
 ### The 20% that delivers 80% (adds ~3.5h, 5 tasks)
 
 **Releasability.** With both modules honestly tested and docs verified against upstream,
 the project can ship its first version:
 
-| ID | What                                  | Why the next 16%                                                                                                                    | Effort |
-| -- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| M5 | **HM content assertions**             | Host blocks, user inheritance, identityFile, extraOptions, github.com preset — client-side content finally verified.                | 60min  |
-| M6 | **Nix-level assertions**              | Replace fragile JSON-grep with attribute equality — tests stop breaking on formatting.                                              | 30min  |
-| M7 | **Pre-release verification**          | OpenSSH compatibility matrix checked against upstream release notes (most-quotable README claim); nixpkgs pinning strategy decided. | 30min  |
-| M9 | **Banner hardening**                  | Control-character validation (prevents sshd breakage) + extract the 15-line default to a constant.                                  | 45min  |
-| M8 | **Tag v0.1.0** _(gated on M1–M7, M9)_ | First versioned release — consumers can finally pin. CHANGELOG cut + annotated tag.                                                 | 30min  |
+| ID  | What                                  | Why the next 16%                                                                                                                    | Effort |
+| --- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| M5  | **HM content assertions**             | Host blocks, user inheritance, identityFile, extraOptions, github.com preset — client-side content finally verified.                | 60min  |
+| M6  | **Nix-level assertions**              | Replace fragile JSON-grep with attribute equality — tests stop breaking on formatting.                                              | 30min  |
+| M7  | **Pre-release verification**          | OpenSSH compatibility matrix checked against upstream release notes (most-quotable README claim); nixpkgs pinning strategy decided. | 30min  |
+| M9  | **Banner hardening**                  | Control-character validation (prevents sshd breakage) + extract the 15-line default to a constant.                                  | 45min  |
+| M8  | **Tag v0.1.0** _(gated on M1–M7, M9)_ | First versioned release — consumers can finally pin. CHANGELOG cut + annotated tag.                                                 | 30min  |
 
 ### The other 20% → 100% (~5h + roadmap epics)
 
@@ -62,10 +62,10 @@ Depth, convenience, and reach:
 
 **Decisions (BLOCKED, need maintainer — 5min each):**
 
-| ID | Question                          | Recommendation                                                                                                                  |
-| -- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| D2 | Create `docs/DOMAIN_LANGUAGE.md`? | **Decline** — every domain term is defined exactly once in README's crypto rationale; a glossary duplicates (single-home rule). **Resolved: declined** (recorded in `TODO_LIST.md` Resolved decisions; `CONTRIBUTING.md` Conventions). |
-| D3 | Canonical status-report format?   | **`.md`** — user has twice explicitly overridden the skill's HTML default. **Resolved: Markdown** (recorded in `TODO_LIST.md` Resolved decisions; `CONTRIBUTING.md` Conventions). |
+| ID  | Question                          | Recommendation                                                                                                                                                                                                                         |
+| --- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D2  | Create `docs/DOMAIN_LANGUAGE.md`? | **Decline** — every domain term is defined exactly once in README's crypto rationale; a glossary duplicates (single-home rule). **Resolved: declined** (recorded in `TODO_LIST.md` Resolved decisions; `CONTRIBUTING.md` Conventions). |
+| D3  | Canonical status-report format?   | **`.md`** — user has twice explicitly overridden the skill's HTML default. **Resolved: Markdown** (recorded in `TODO_LIST.md` Resolved decisions; `CONTRIBUTING.md` Conventions).                                                      |
 
 **Deliberately NOT repo TODOs** (tracked in session 7 report, they concern global tooling, not this repo): generalize docs-health annotation tooling for `## A.`-style sections (upstream skill PR, 1h); make "CI red" a standing docs-health VERIFY input (process change).
 
@@ -73,29 +73,29 @@ Depth, convenience, and reach:
 
 ## Step 2 — Comprehensive Plan (30–100min tasks, sorted by importance/impact/effort/customer-value)
 
-| #  | ID  | Task (bundle)                                                                 | Covers TODO(s)   | Pareto tier | Impact | Effort  | Customer value                                      |
-| -- | --- | ----------------------------------------------------------------------------- | ---------------- | ----------- | ------ | ------- | --------------------------------------------------- |
-| 1  | M1  | Publish & prove: push branch, watch first CI run, record result               | T4               | 1%          | High   | 30min   | Trust signal — repo stops looking broken            |
-| 2  | M2  | Real HM coverage: fix deepSeq target + `*` block content assertions           | T1               | 1%          | High   | 30min   | Client module actually tested                       |
-| 3  | M3  | Test hygiene: throwaway key, remove `pkgs` binding, render-check reports      | T5, T14, T13     | 4%          | Med    | 30min   | No personal keys in test code; clean lint           |
-| 4  | M4  | NixOS content assertions: crypto, port, keys, banner, extraSettings, disabled | T2 (server half) | 4%          | High   | 100min  | "Hardened by default" becomes verified, not claimed |
-| 5  | M5  | HM content assertions: hosts, inheritance, identityFile, extraOptions, github | T2 (client half) | 20%         | High   | 60min   | Generated client config verified                    |
-| 6  | M6  | Nix-level assertions replacing JSON-grep                                      | T6               | 20%         | Med    | 30min   | Tests robust to formatting drift                    |
-| 7  | M7  | Pre-release verification: OpenSSH matrix vs upstream + nixpkgs pin decision   | T12, T21         | 20%         | Med    | 30min   | README's most-quotable claim becomes true           |
-| 8  | M9  | Banner hardening: control-char validation + extract constant                  | T9, T11          | 20%         | Med    | 45min   | Prevents sshd breakage via banner                   |
-| 9  | M8  | Release v0.1.0: CHANGELOG cut + annotated tag **(gated on M1–M7, M9)**        | T3               | 20%         | High   | 30min   | Consumers can pin a version                         |
-| 10 | M10 | Host submodule options: proxyJump, forwardX11, 3× forwards + tests + docs     | T8               | other 20%   | Med    | 60min   | Covers the most common advanced SSH needs           |
-| 11 | M11 | `examples/` directory: client, server, combined, README                       | T10              | other 20%   | Low    | 30min   | Adoption barrier drops                              |
-| 12 | M12 | VM integration test restore (QEMU, sshd -T, key auth)                         | T7               | other 20%   | Med    | 100min  | Runtime proof, not just eval proof                  |
-| 13 | M13 | CI: markdown link-checker step                                                | T16              | other 20%   | Low    | 30min   | Docs stop rotting silently                          |
-| 14 | M14 | CI: aarch64-linux native job (runner permitting)                              | T17              | other 20%   | Low    | 30min   | arm64 natively checked                              |
-| 15 | D2  | Decision: `docs/DOMAIN_LANGUAGE.md`?                                          | —                | gate        | Low    | 5min    | Closes open question g/3                            |
-| 16 | D3  | Decision: canonical status-report format                                      | —                | gate        | Low    | 5min    | Ends format flip-flopping                           |
-| 17 | E1  | Epic: `darwinModules` output (macOS sshd)                                     | ROADMAP          | backlog     | Low    | ~60min  | Cross-platform server (refine before TODO)          |
-| 18 | E2  | Epic: age/sops-nix secret integration                                         | ROADMAP          | backlog     | Low    | ~2h     | Private key distribution (needs design decision)    |
-| 19 | E3  | Epic: flake overlay pinning OpenSSH                                           | ROADMAP          | backlog     | Low    | ~30min  | Pinned OpenSSH version                              |
-| 20 | E4  | Epic: multi-node client↔server NixOS test                                     | ROADMAP          | backlog     | Low    | ~2h     | End-to-end handshake proof                          |
-| 21 | E5  | Epic: ML-DSA signature watch                                                  | ROADMAP          | backlog     | —      | passive | Post-quantum auth when OpenSSH ships it             |
+| #   | ID  | Task (bundle)                                                                 | Covers TODO(s)   | Pareto tier | Impact | Effort  | Customer value                                      |
+| --- | --- | ----------------------------------------------------------------------------- | ---------------- | ----------- | ------ | ------- | --------------------------------------------------- |
+| 1   | M1  | Publish & prove: push branch, watch first CI run, record result               | T4               | 1%          | High   | 30min   | Trust signal — repo stops looking broken            |
+| 2   | M2  | Real HM coverage: fix deepSeq target + `*` block content assertions           | T1               | 1%          | High   | 30min   | Client module actually tested                       |
+| 3   | M3  | Test hygiene: throwaway key, remove `pkgs` binding, render-check reports      | T5, T14, T13     | 4%          | Med    | 30min   | No personal keys in test code; clean lint           |
+| 4   | M4  | NixOS content assertions: crypto, port, keys, banner, extraSettings, disabled | T2 (server half) | 4%          | High   | 100min  | "Hardened by default" becomes verified, not claimed |
+| 5   | M5  | HM content assertions: hosts, inheritance, identityFile, extraOptions, github | T2 (client half) | 20%         | High   | 60min   | Generated client config verified                    |
+| 6   | M6  | Nix-level assertions replacing JSON-grep                                      | T6               | 20%         | Med    | 30min   | Tests robust to formatting drift                    |
+| 7   | M7  | Pre-release verification: OpenSSH matrix vs upstream + nixpkgs pin decision   | T12, T21         | 20%         | Med    | 30min   | README's most-quotable claim becomes true           |
+| 8   | M9  | Banner hardening: control-char validation + extract constant                  | T9, T11          | 20%         | Med    | 45min   | Prevents sshd breakage via banner                   |
+| 9   | M8  | Release v0.1.0: CHANGELOG cut + annotated tag **(gated on M1–M7, M9)**        | T3               | 20%         | High   | 30min   | Consumers can pin a version                         |
+| 10  | M10 | Host submodule options: proxyJump, forwardX11, 3× forwards + tests + docs     | T8               | other 20%   | Med    | 60min   | Covers the most common advanced SSH needs           |
+| 11  | M11 | `examples/` directory: client, server, combined, README                       | T10              | other 20%   | Low    | 30min   | Adoption barrier drops                              |
+| 12  | M12 | VM integration test restore (QEMU, sshd -T, key auth)                         | T7               | other 20%   | Med    | 100min  | Runtime proof, not just eval proof                  |
+| 13  | M13 | CI: markdown link-checker step                                                | T16              | other 20%   | Low    | 30min   | Docs stop rotting silently                          |
+| 14  | M14 | CI: aarch64-linux native job (runner permitting)                              | T17              | other 20%   | Low    | 30min   | arm64 natively checked                              |
+| 15  | D2  | Decision: `docs/DOMAIN_LANGUAGE.md`?                                          | —                | gate        | Low    | 5min    | Closes open question g/3                            |
+| 16  | D3  | Decision: canonical status-report format                                      | —                | gate        | Low    | 5min    | Ends format flip-flopping                           |
+| 17  | E1  | Epic: `darwinModules` output (macOS sshd)                                     | ROADMAP          | backlog     | Low    | ~60min  | Cross-platform server (refine before TODO)          |
+| 18  | E2  | Epic: age/sops-nix secret integration                                         | ROADMAP          | backlog     | Low    | ~2h     | Private key distribution (needs design decision)    |
+| 19  | E3  | Epic: flake overlay pinning OpenSSH                                           | ROADMAP          | backlog     | Low    | ~30min  | Pinned OpenSSH version                              |
+| 20  | E4  | Epic: multi-node client↔server NixOS test                                     | ROADMAP          | backlog     | Low    | ~2h     | End-to-end handshake proof                          |
+| 21  | E5  | Epic: ML-DSA signature watch                                                  | ROADMAP          | backlog     | —      | passive | Post-quantum auth when OpenSSH ships it             |
 
 **Sort rationale:** trust (M1) before truth (M2) before verified security (M4) before release (M8); convenience and depth follow the release because they are additive, not blocking. D-gates close questions whenever the maintainer answers; they cost 5min and unblock nothing else, so they float.
 
@@ -105,15 +105,15 @@ Depth, convenience, and reach:
 
 ### Tier 1% → 51%
 
-| #  | Fine task                                                                | Parent | Effort | Verify by                                     |
-| -- | ------------------------------------------------------------------------ | ------ | ------ | --------------------------------------------- |
-| F1 | Push master to origin                                                    | M1     | 2min   | `git status` clean, remote updated            |
-| F2 | Watch the `Check` run to completion (`gh run watch`)                     | M1     | 10min  | run conclusion = success                      |
-| F3 | Record result; update TODO_LIST/CHANGELOG if green                       | M1     | 10min  | TODO row removed, CHANGELOG entry             |
-| F4 | Fix HM check: deepSeq `programs.ssh.settings`, not `matchBlocks`         | M2     | 5min   | `nix flake check` passes                      |
-| F5 | Assert `*` block content (KexAlgorithms/Ciphers/MACs strings, agent off) | M2     | 10min  | new check passes; flip a value to see it fail |
-| F6 | Assert `github.com` block (User git, ControlMaster auto)                 | M2     | 5min   | new check passes                              |
-| F7 | Full local gate: eval-all + native + fmt                                 | M2     | 5min   | all three green                               |
+| #   | Fine task                                                                | Parent | Effort | Verify by                                     |
+| --- | ------------------------------------------------------------------------ | ------ | ------ | --------------------------------------------- |
+| F1  | Push master to origin                                                    | M1     | 2min   | `git status` clean, remote updated            |
+| F2  | Watch the `Check` run to completion (`gh run watch`)                     | M1     | 10min  | run conclusion = success                      |
+| F3  | Record result; update TODO_LIST/CHANGELOG if green                       | M1     | 10min  | TODO row removed, CHANGELOG entry             |
+| F4  | Fix HM check: deepSeq `programs.ssh.settings`, not `matchBlocks`         | M2     | 5min   | `nix flake check` passes                      |
+| F5  | Assert `*` block content (KexAlgorithms/Ciphers/MACs strings, agent off) | M2     | 10min  | new check passes; flip a value to see it fail |
+| F6  | Assert `github.com` block (User git, ControlMaster auto)                 | M2     | 5min   | new check passes                              |
+| F7  | Full local gate: eval-all + native + fmt                                 | M2     | 5min   | all three green                               |
 
 ### Tier 4% → 64%
 

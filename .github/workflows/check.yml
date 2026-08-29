@@ -28,6 +28,17 @@ jobs:
       - run: nix fmt -- --fail-on-change
       - name: Check markdown links
         run: nix run nixpkgs#lychee -- --no-progress --max-retries 3 README.md CONTRIBUTING.md AGENTS.md CHANGELOG.md FEATURES.md ROADMAP.md TODO_LIST.md docs examples
+      # Annotation grammar integrity: every ~~ opened in a doc must be
+      # closed (code spans/fences excluded — literal tildes there don't
+      # strike). Multi-line strikes are legal, so the count is per file.
+      - name: Check strikethrough balance in docs
+        run: |
+          bad=0
+          for f in $(git ls-files '*.md'); do
+            n=$(awk '/^```/{f=!f; next} !f' "$f" | sed 's/`[^`]*`//g' | grep -o '~~' | wc -l)
+            if [ $((n % 2)) -ne 0 ]; then echo "UNBALANCED: $f ($n)"; bad=1; fi
+          done
+          exit $bad
 
   check-aarch64:
     # Native arm64 runner (free for public repos) so the aarch64-linux

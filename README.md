@@ -1,5 +1,8 @@
 # nix-ssh-config
 
+[![Check](https://github.com/LarsArtmann/nix-ssh-config/actions/workflows/check.yml/badge.svg)](https://github.com/LarsArtmann/nix-ssh-config/actions/workflows/check.yml)
+[![Release](https://img.shields.io/github/v/release/LarsArtmann/nix-ssh-config)](https://github.com/LarsArtmann/nix-ssh-config/releases)
+
 Modular, reusable SSH configuration for Nix-based systems. Provides hardened SSH client and server configurations as Nix modules.
 
 ## Features
@@ -157,18 +160,18 @@ Configures OpenSSH server (sshd) with hardening.
 
 #### Options
 
-| Option                                       | Type      | Default        | Description                  |
-| -------------------------------------------- | --------- | -------------- | ---------------------------- |
-| `services.ssh-server.enable`                 | bool      | `false`        | Enable SSH server            |
-| `services.ssh-server.port`                   | int       | `22`           | Listen port                  |
-| `services.ssh-server.allowUsers`             | list      | `[]`           | Allowed users                |
-| `services.ssh-server.allowRootLogin`         | bool      | `false`        | Allow root login             |
-| `services.ssh-server.passwordAuthentication` | bool      | `false`        | Allow passwords              |
-| `services.ssh-server.kbdInteractiveAuthentication` | bool | `passwordAuthentication` | Allow keyboard-interactive (defaults to follow `passwordAuthentication`; set `true` explicitly for PAM-backed 2FA) |
-| `services.ssh-server.authorizedKeys`         | list      | `[]`           | SSH public keys to authorize (file is **copied** into `/etc`, not symlinked — sshd StrictModes rejects store symlinks) |
-| `services.ssh-server.authorizedKeysFiles`    | list      | (see below)    | Key file paths               |
-| `services.ssh-server.extraSettings`          | attrs     | `{}`           | Extra OpenSSH settings       |
-| `services.ssh-server.bannerText`             | str\|null | default banner | SSH banner (null to disable; control characters are rejected at evaluation time) |
+| Option                                             | Type      | Default                  | Description                                                                                                            |
+| -------------------------------------------------- | --------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `services.ssh-server.enable`                       | bool      | `false`                  | Enable SSH server                                                                                                      |
+| `services.ssh-server.port`                         | int       | `22`                     | Listen port                                                                                                            |
+| `services.ssh-server.allowUsers`                   | list      | `[]`                     | Allowed users                                                                                                          |
+| `services.ssh-server.allowRootLogin`               | bool      | `false`                  | Allow root login                                                                                                       |
+| `services.ssh-server.passwordAuthentication`       | bool      | `false`                  | Allow passwords                                                                                                        |
+| `services.ssh-server.kbdInteractiveAuthentication` | bool      | `passwordAuthentication` | Allow keyboard-interactive (defaults to follow `passwordAuthentication`; set `true` explicitly for PAM-backed 2FA)     |
+| `services.ssh-server.authorizedKeys`               | list      | `[]`                     | SSH public keys to authorize (file is **copied** into `/etc`, not symlinked — sshd StrictModes rejects store symlinks) |
+| `services.ssh-server.authorizedKeysFiles`          | list      | (see below)              | Key file paths                                                                                                         |
+| `services.ssh-server.extraSettings`                | attrs     | `{}`                     | Extra OpenSSH settings                                                                                                 |
+| `services.ssh-server.bannerText`                   | str\|null | default banner           | SSH banner (null to disable; control characters are rejected at evaluation time)                                       |
 
 Default `authorizedKeysFiles`:
 

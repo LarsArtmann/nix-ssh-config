@@ -53,7 +53,17 @@
           ...
         }:
         {
-          treefmt.programs.nixfmt.enable = true;
+          treefmt = {
+            programs.nixfmt.enable = true;
+            programs.prettier = {
+              enable = true;
+              settings = {
+                proseWrap = "preserve";
+              };
+            };
+            # Keep-a-changelog file stays byte-stable; append-only by policy.
+            settings.excludes = [ "CHANGELOG.md" ];
+          };
 
           devShells.default = pkgs.mkShellNoCC {
             packages = [ pkgs.nil ];

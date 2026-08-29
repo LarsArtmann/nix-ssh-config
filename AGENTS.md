@@ -54,15 +54,15 @@ examples/                    # Copy-ready client/server modules → examples.*
 
 ### Flake outputs
 
-| Output                                | What                                                                                                              |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `homeManagerModules.ssh`              | SSH client module (Home Manager)                                                                                  |
-| `nixosModules.ssh`                    | SSH server module (NixOS)                                                                                         |
-| `examples.client` / `examples.server` | Ready-to-use example modules, exercised by `checks.*.examples-evaluate`                                           |
-| `sshKeys`                             | Attrset of tracked public keys (`lars`, `lars-evo-x2`) — consumed as `nix-ssh-config.sshKeys.lars` etc.           |
+| Output                                | What                                                                                                                                                                                                                                                          |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `homeManagerModules.ssh`              | SSH client module (Home Manager)                                                                                                                                                                                                                              |
+| `nixosModules.ssh`                    | SSH server module (NixOS)                                                                                                                                                                                                                                     |
+| `examples.client` / `examples.server` | Ready-to-use example modules, exercised by `checks.*.examples-evaluate`                                                                                                                                                                                       |
+| `sshKeys`                             | Attrset of tracked public keys (`lars`, `lars-evo-x2`) — consumed as `nix-ssh-config.sshKeys.lars` etc.                                                                                                                                                       |
 | `checks.<system>.*`                   | 18 eval/content checks (19 on Linux: assertion checks are Linux-only) + `format`/`treefmt`; on x86_64-linux additionally `nixos-vm-sshd` (QEMU integration test). `docs-option-inventory`/`docs-check-count` red-flag README/FEATURES drift when these change |
-| `devShells.<system>.default`          | `mkShellNoCC` with `nil` only — formatting comes from treefmt, not the shell                                      |
-| `formatter.<system>`                  | treefmt (via treefmt-nix `flakeModule`, nixfmt enabled)                                                           |
+| `devShells.<system>.default`          | `mkShellNoCC` with `nil` only — formatting comes from treefmt, not the shell                                                                                                                                                                                  |
+| `formatter.<system>`                  | treefmt (via treefmt-nix `flakeModule`, nixfmt enabled)                                                                                                                                                                                                       |
 
 There is **no** `apps` output. The VM integration test was restored (2026-08-22) and immediately caught a real runtime bug (see the StrictModes gotcha below).
 
@@ -108,7 +108,7 @@ Modern OpenSSH prints effective config directives in documented PascalCase (`Pas
 
 ### VM testScript: `succeed` swallows output, `execute` returns it
 
-In `nixosTest` scripts, `machine.succeed(cmd)` returns only stdout and hides failures behind an exception; `machine.execute(cmd)` returns `(status, output)` and is the only way to assert on a command's *failure* text (e.g. the exact `Permission denied (publickey)` message). Append `2>&1` inside the command or ssh's stderr never reaches `output`.
+In `nixosTest` scripts, `machine.succeed(cmd)` returns only stdout and hides failures behind an exception; `machine.execute(cmd)` returns `(status, output)` and is the only way to assert on a command's _failure_ text (e.g. the exact `Permission denied (publickey)` message). Append `2>&1` inside the command or ssh's stderr never reaches `output`.
 
 ### `cache.home.lan` 502s are machine-local, not a repo problem
 

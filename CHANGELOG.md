@@ -41,6 +41,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   FlakeHub opted out) so a cache outage slows a run instead of failing it
 - CI automation: Dependabot keeps the pinned Actions SHAs current, and a
   weekly workflow opens a labeled `nix flake update` PR for manual review
+- Docs hygiene is now self-enforcing: prettier joins nixfmt in treefmt
+  (`nix fmt` formats Markdown/JSON/YAML; the CI `format` check verifies it),
+  replacing the unused `dprint.json` whose WASM plugins cannot load in the
+  sandboxed CI. `CHANGELOG.md` itself is excluded (append-only by policy).
+  README gains CI/release badges, and a strikethrough-balance lint guards
+  the report annotation grammar
 
 ## [0.1.2] — 2026-08-29
 

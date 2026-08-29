@@ -81,6 +81,13 @@ decoration.
 - Status reports and planning docs are plain Markdown in `docs/status/` and
   `docs/planning/` (no HTML reports). Fully resolved reports are annotated
   inline (strikethrough + evidence) and `git mv`'d into `docs/status/archived/`.
+- The annotation grammar: `~~item~~ done at \`hash\``for resolved items,`→ TODO_LIST — still open`(or`→ ROADMAP`) for routed items, and
+`**Won't implement — reason.**` for rejected ones. Multi-line
+  strikethroughs are legal in prose lists.
+- Strikethrough balance is enforced mechanically: CI (and the local
+  equivalent — an awk scan counting `~~` markers per file, code spans and
+  fences excluded) fails on any unbalanced pair. The render-check step that
+  used to be manual is now a gate.
 - There is no `docs/DOMAIN_LANGUAGE.md`: domain terms are defined once, in
   the README's crypto rationale.
 
@@ -91,6 +98,6 @@ decoration.
    and its headline feature was runtime-broken within the hour).
 2. Date the `CHANGELOG.md` `[Unreleased]` section.
 3. Create an annotated tag and push it together with `master`.
-4. Create the GitHub *Release object* (`gh release create`) — tags alone do
+4. Create the GitHub _Release object_ (`gh release create`) — tags alone do
    not produce one, and compare links in the CHANGELOG 404 until pushed.
 5. Watch CI on GitHub (both jobs) after the push.
