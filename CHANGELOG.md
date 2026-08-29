@@ -28,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   flake-parts module). `flake.nix` shrinks to ~60 lines of inputs, outputs,
   formatting and the dev shell; adding a test no longer means spelunking a
   900-line file. All check names and counts are unchanged
+- CI: a `checks-summary` job aggregates both architecture gates into a
+  single required status; caching is explicitly best-effort (`continue-on-error`,
+  FlakeHub opted out) so a cache outage slows a run instead of failing it
+- CI automation: Dependabot keeps the pinned Actions SHAs current, and a
+  weekly workflow opens a labeled `nix flake update` PR for manual review
 
 ## [0.1.2] — 2026-08-29
 

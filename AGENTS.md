@@ -110,6 +110,10 @@ Modern OpenSSH prints effective config directives in documented PascalCase (`Pas
 
 In `nixosTest` scripts, `machine.succeed(cmd)` returns only stdout and hides failures behind an exception; `machine.execute(cmd)` returns `(status, output)` and is the only way to assert on a command's *failure* text (e.g. the exact `Permission denied (publickey)` message). Append `2>&1` inside the command or ssh's stderr never reaches `output`.
 
+### `cache.home.lan` 502s are machine-local, not a repo problem
+
+Local builds may show `unable to download 'https://cache.home.lan/monitor365/...': HTTP error 502` retries. Root cause: the maintainer's LAN nix substituter is down — that substituter comes from machine-local nix.conf, nothing in this repo. Nix retries 5×, disables the cache for 60s, and proceeds from cache.nixos.org; builds stay green. CI has the same best-effort policy by design: the `magic-nix-cache-action` step runs with `continue-on-error: true`, so a cache outage slows the run but never turns it red (decided 2026-08-29, M5 of plan 2).
+
 ---
 
 ## Conventions

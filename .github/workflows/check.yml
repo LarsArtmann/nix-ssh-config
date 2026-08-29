@@ -11,7 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41 # main
+      # Caching is best-effort: if the cache action or its backend is down,
+      # Nix still builds everything from cache.nixos.org and source — the
+      # run gets slower, it does not go red (cache fallback policy).
       - uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98 # main
+        continue-on-error: true
+        with:
+          # A public repo needs no FlakeHub auth; opting out removes the
+          # per-run "Unable to authenticate to FlakeHub" warning noise.
+          use-flakehub: false
       # --all-systems alone cannot BUILD foreign-system check derivations
       # (e.g. aarch64-darwin on an x86_64-linux runner -> "platform mismatch"),
       # so evaluate every system, then build+run the native checks only.
@@ -30,6 +38,24 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41 # main
       - uses: DeterminateSystems/magic-nix-cache-action@55718cd9ebf1737a061487d5ada21abf31e99a98 # main
+        continue-on-error: true
+        with:
+          use-flakehub: false
       - run: nix flake check --all-systems --no-build
       - run: nix flake check
       - run: nix fmt -- --fail-on-change
+
+  checks-summary:
+    # Single gate aggregating both architectures: branch protection can
+    # require just this one check.
+    needs: [check, check-aarch64]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Fail if any architecture check failed
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] || [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "One or more architecture checks failed"
+            exit 1
+          fi
+          echo "All architecture checks passed"

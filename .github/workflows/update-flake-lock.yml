@@ -1,0 +1,33 @@
+name: Update flake.lock
+
+# Weekly dependency freshness: opens (or updates) a PR bumping flake.lock.
+# The PR is labeled and runs the Check workflow; merging is the maintainer's
+# call. Also runnable manually via workflow_dispatch.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Mondays 06:00 UTC
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41 # main
+      - uses: DeterminateSystems/update-flake-lock@f21d5f4a9e57815a4941a2e7c3860f4664cb3a96 # main
+        with:
+          pr-title: "chore(deps): weekly nix flake update"
+          pr-body: |
+            Automated weekly `nix flake update`.
+
+            Merge only if the Check workflow is green on this PR.
+          pr-labels: |
+            dependencies
+            automated
+          token: ${{ secrets.GITHUB_TOKEN }}
