@@ -154,6 +154,73 @@
       # state: the module must contribute nothing to openssh or /etc.
       nixosDisabledEval = mkNixosEval [ ];
 
+      # Port property evals: types.port is 0–65535, so out-of-range values
+      # must make the config throw at eval time — both on the top-level
+      # port option and on the listenAddresses sub-module's port field.
+      nixosPortOverflowEval = mkNixosEval [
+        {
+          services.ssh-server = {
+            enable = true;
+            port = 65536;
+          };
+        }
+      ];
+      nixosPortNegativeEval = mkNixosEval [
+        {
+          services.ssh-server = {
+            enable = true;
+            port = -1;
+          };
+        }
+      ];
+      nixosListenPortOverflowEval = mkNixosEval [
+        {
+          services.ssh-server = {
+            enable = true;
+            listenAddresses = [
+              {
+                addr = "127.0.0.1";
+                port = 65536;
+              }
+            ];
+          };
+        }
+      ];
+      nixosListenPortNegativeEval = mkNixosEval [
+        {
+          services.ssh-server = {
+            enable = true;
+            listenAddresses = [
+              {
+                addr = "127.0.0.1";
+                port = -1;
+              }
+            ];
+          };
+        }
+      ];
+
+      # Same property on the client side: a host block's port is also
+      # types.port, so out-of-range values must throw during the HM eval.
+      hmPortOverflowEval = mkHmEval [
+        {
+          ssh-config = {
+            enable = true;
+            hosts.bad.hostname = "bad.example.com";
+            hosts.bad.port = 65536;
+          };
+        }
+      ];
+      hmPortNegativeEval = mkHmEval [
+        {
+          ssh-config = {
+            enable = true;
+            hosts.bad.hostname = "bad.example.com";
+            hosts.bad.port = -1;
+          };
+        }
+      ];
+
       mkHmEval =
         extraModules:
         home-manager.lib.homeManagerConfiguration {
@@ -257,6 +324,17 @@
               exit 1
             ''
         );
+
+      # Eval-failure property: forcing `force` must throw. builtins.tryEval
+      # catches the option type's throw, so `success` must be false — a
+      # true means the module silently accepted invalid input. The force
+      # path must be the option's actual consumer (e.g. services.openssh
+      # .ports) so the property covers the wiring, not just the type.
+      mustThrow = name: force: {
+        inherit name;
+        actual = (builtins.tryEval (builtins.deepSeq force "")).success;
+        expected = false;
+      };
 
       # Docs-drift guard: README's option tables must match the modules'
       # real option inventories exactly (both directions — a documented
@@ -621,6 +699,17 @@
             actual = nixosKbdIndependentEval.config.services.openssh.settings.KbdInteractiveAuthentication;
             expected = true;
           }
+          {
+            # Upstream nixpkgs ties security.pam.services.sshd.unixAuth to
+            # PasswordAuthentication; with passwords off that degrades the
+            # sshd PAM auth stack to pam_deny and every kbd-interactive
+            # prompt is refused before PAM questions the user (found by
+            # the VM prompt-path positive control). An explicit kbd
+            # opt-in must keep the unix auth module in the stack.
+            name = "explicit kbd opt-in keeps PAM unixAuth on (passwords off)";
+            actual = nixosKbdIndependentEval.config.security.pam.services.sshd.unixAuth;
+            expected = true;
+          }
         ];
 
         nixos-root-login-disabled = assertEq "root-login-disabled" [
@@ -775,6 +864,22 @@
           }
         ];
 
+        # Port property tests: out-of-range ports must be rejected at
+        # eval time, on every option that carries a port (top-level port,
+        # listenAddresses sub-module, client host blocks). Forcing the
+        # openssh side proves the wiring, not just the type declaration.
+        nixos-port-bounds = assertEq "nixos-port-bounds" [
+          (mustThrow "port = 65536 is rejected" nixosPortOverflowEval.config.services.openssh.ports)
+          (mustThrow "port = -1 is rejected" nixosPortNegativeEval.config.services.openssh.ports)
+          (mustThrow "listenAddresses sub-port 65536 is rejected" nixosListenPortOverflowEval.config.services.openssh.listenAddresses)
+          (mustThrow "listenAddresses sub-port -1 is rejected" nixosListenPortNegativeEval.config.services.openssh.listenAddresses)
+        ];
+
+        hm-port-bounds = assertEq "hm-port-bounds" [
+          (mustThrow "host port = 65536 is rejected" hmPortOverflowEval.config.programs.ssh.matchBlocks)
+          (mustThrow "host port = -1 is rejected" hmPortNegativeEval.config.programs.ssh.matchBlocks)
+        ];
+
         # The examples are part of the public surface: import them as real
         # modules and force the resulting config so drift breaks CI, not a
         # user's build.
@@ -856,29 +961,63 @@
         nixos-vm-sshd = pkgs.testers.nixosTest {
           name = "sshd-hardened-config";
 
-          nodes.server =
-            { pkgs, ... }:
-            {
-              imports = [ self.nixosModules.ssh ];
-              services.ssh-server = {
-                enable = true;
-                allowUsers = [ "testuser" ];
-                authorizedKeys = [ testKey ];
+          nodes = {
+            server =
+              { pkgs, ... }:
+              {
+                imports = [ self.nixosModules.ssh ];
+                services.ssh-server = {
+                  enable = true;
+                  allowUsers = [ "testuser" ];
+                  authorizedKeys = [ testKey ];
+                };
+                users.users.testuser = {
+                  isNormalUser = true;
+                  description = "VM test login user";
+                };
+                environment.systemPackages = [ pkgs.openssh ];
+                system.stateVersion = "25.05";
               };
-              users.users.testuser = {
-                isNormalUser = true;
-                description = "VM test login user";
-              };
-              environment.systemPackages = [ pkgs.openssh ];
-              system.stateVersion = "25.05";
-            };
 
-          nodes.client =
-            { pkgs, ... }:
-            {
-              environment.systemPackages = [ pkgs.openssh ];
-              system.stateVersion = "25.05";
-            };
+            # Variant node for the prompt-path proof: kbd-interactive is
+            # deliberately enabled (the PAM-backed 2FA recipe) while the
+            # user's account is LOCKED ("!" hash — no password can ever
+            # match). A real prompt exchange must happen here and must
+            # still refuse the wrong password.
+            kbd-server =
+              { pkgs, ... }:
+              {
+                imports = [ self.nixosModules.ssh ];
+                services.ssh-server = {
+                  enable = true;
+                  allowUsers = [ "kbduser" ];
+                  authorizedKeys = [ testKey ];
+                  passwordAuthentication = false;
+                  kbdInteractiveAuthentication = true;
+                  usePam = true;
+                };
+                users.users.kbduser = {
+                  isNormalUser = true;
+                  description = "locked kbd-interactive test user";
+                  hashedPassword = "!";
+                };
+                environment.systemPackages = [
+                  pkgs.openssh
+                  pkgs.sshpass
+                ];
+                system.stateVersion = "25.05";
+              };
+
+            client =
+              { pkgs, ... }:
+              {
+                environment.systemPackages = [
+                  pkgs.openssh
+                  pkgs.sshpass
+                ];
+                system.stateVersion = "25.05";
+              };
+          };
 
           testScript = ''
             start_all()
@@ -907,6 +1046,31 @@
                 assert status != 0, "non-publickey auth unexpectedly succeeded"
                 assert "Permission denied (publickey)" in output, (
                     f"server offered more than publickey: {output}"
+                )
+
+            # The last unproven headline claim, end-to-end: a real
+            # keyboard-interactive prompt exchange is refused on the
+            # hardened default config — not merely missing from the
+            # advertised method list. sshpass drives an actual exchange
+            # attempt; the sshd journal must show the prompt path was
+            # never reached.
+            with subtest("keyboard-interactive exchange is refused"):
+                status, output = client.execute(
+                    "sshpass -p 'definitely-wrong'"
+                    + " ssh -o PubkeyAuthentication=no"
+                    + " -o PreferredAuthentications=keyboard-interactive"
+                    + " -o NumberOfPasswordPrompts=1"
+                    + " -o StrictHostKeyChecking=accept-new"
+                    + " -o UserKnownHostsFile=/root/known_hosts"
+                    + " testuser@server -- true 2>&1"
+                )
+                assert status != 0, f"keyboard-interactive unexpectedly succeeded: {output}"
+                assert "Permission denied" in output, f"unexpected refusal mode: {output}"
+                status, jlog = server.execute(
+                    "journalctl -u sshd | grep -ci 'keyboard-interactive'"
+                )
+                assert jlog.strip() == "0", (
+                    f"hardened server ran a kbd-interactive exchange: {jlog}"
                 )
 
             with subtest("root login disabled"):
@@ -1001,6 +1165,32 @@
                 assert status == 0, f"key login failed: {output}"
                 assert "AUTHORIZED ACCESS ONLY" in output, (
                     f"banner not delivered to client: {output}"
+                )
+
+            # Positive control for the prompt path: on the variant node
+            # where kbd-interactive + PAM are deliberately enabled, the
+            # exchange must REALLY happen (the journal shows it) and a
+            # locked account must still refuse the probed password. The
+            # kill-switch for the refusal subtest above: give kbduser the
+            # probed password and this subtest goes red, proving the test
+            # detects a config where passwords work.
+            with subtest("enabled prompt path refuses a locked user"):
+                status, output = client.execute(
+                    "sshpass -p 'definitely-wrong'"
+                    + " ssh -o PubkeyAuthentication=no"
+                    + " -o PreferredAuthentications=keyboard-interactive"
+                    + " -o NumberOfPasswordPrompts=1"
+                    + " -o StrictHostKeyChecking=accept-new"
+                    + " -o UserKnownHostsFile=/root/known_hosts"
+                    + " kbduser@kbd-server -- true 2>&1"
+                )
+                assert status != 0, f"locked user's password was accepted: {output}"
+                assert "Permission denied" in output, f"unexpected refusal mode: {output}"
+                status, jlog = kbd_server.execute(
+                    "journalctl -u sshd | grep -i 'keyboard-interactive'"
+                )
+                assert "keyboard-interactive" in jlog, (
+                    f"no real kbd-interactive exchange in the auth log: {jlog}"
                 )
 
             # Golden snapshot: the effective sshd config, filtered to the

@@ -80,6 +80,13 @@ in
         the sshd PAM service permits them) even when PasswordAuthentication
         is no, breaking keys-only. Enable it explicitly only for PAM-backed
         two-factor authentication.
+
+        When explicitly enabled, this module also sets
+        `security.pam.services.sshd.unixAuth = true`: upstream ties that
+        flag to `PasswordAuthentication`, which otherwise leaves the sshd
+        PAM auth stack as plain `pam_deny` — every keyboard-interactive
+        prompt would be refused before any module could question the
+        user. Requires `usePam` not set to `false`.
       '';
     };
 
@@ -229,6 +236,19 @@ in
         port = if l.port != null then l.port else config.services.ssh-server.port;
       }) config.services.ssh-server.listenAddresses;
     };
+
+    # Explicit prompt-path opt-in must be able to actually prompt. Upstream
+    # nixpkgs couples security.pam.services.sshd.unixAuth to
+    # PasswordAuthentication, so on a keys-only host (the point of this
+    # module) the sshd PAM auth stack degrades to pam_deny and EVERY
+    # keyboard-interactive prompt is refused before PAM can question the
+    # user — found by the VM positive-control subtest (prompt-path proof).
+    # mkForce because upstream defines a bare (priority-100) `false`; our
+    # gate still respects `usePam = false` (no sshd PAM service wanted).
+    security.pam.services.sshd.unixAuth = lib.mkIf (
+      config.services.ssh-server.kbdInteractiveAuthentication
+      && config.services.ssh-server.usePam != false
+    ) (lib.mkForce true);
 
     environment.etc =
       (lib.optionalAttrs (config.services.ssh-server.authorizedKeys != [ ]) {

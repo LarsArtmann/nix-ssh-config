@@ -16,12 +16,16 @@
 
 ### Test depth
 
-| Status | Item                                                                                                                                                                                                           | Evidence                                                  |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 🔴     | Property tests: every `types.port` option rejects 65536 and −1 (eval-failure tests)                                                                                                                            | `modules/*.nix` port options                              |
-| 🔴     | Positive prompt-path VM test: `kbdInteractiveAuthentication = true` + `usePAM = true` + locked user; drive keyboard-interactive under `sshpass`, assert refusal. Design ready in `ROADMAP.md` theme 3 (~90min) | `tests/checks.nix` VM testScript; ROADMAP theme 3         |
-| 🔴     | Table-driven fixture host in the HM eval (decided yes 2026-08-29): loop hosts × options instead of one "full" host. Adopt when the next host-level option lands                                                | `tests/checks.nix` `hmEval` fixture                       |
-| 🔴     | HM client module inside the NixOS VM (HM-in-NixOS evaluation) so the module — not just a plain ssh client — gets runtime proof. Needs a design pass first                                                      | `tests/checks.nix` VM nodes; ROADMAP theme 3 "multi-node" |
+| Status | Item                                                                                                                                                            | Evidence                                                  |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 🔴     | Table-driven fixture host in the HM eval (decided yes 2026-08-29): loop hosts × options instead of one "full" host. Adopt when the next host-level option lands | `tests/checks.nix` `hmEval` fixture                       |
+| 🔴     | HM client module inside the NixOS VM (HM-in-NixOS evaluation) so the module — not just a plain ssh client — gets runtime proof. Needs a design pass first       | `tests/checks.nix` VM nodes; ROADMAP theme 3 "multi-node" |
+
+Executed 2026-08-29 (plan 3, M3): property tests (`nixos-port-bounds`,
+`hm-port-bounds` via `builtins.tryEval`) and the prompt-path VM positive
+control — the control immediately caught the PAM `unixAuth` coupling bug
+(keys-only + explicit kbd-interactive was `pam_deny`-denied end-to-end),
+fixed in the module and re-proven; see CHANGELOG.
 
 ## Resolved decisions
 

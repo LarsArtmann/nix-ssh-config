@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **PAM-backed two-factor auth actually prompts now.** Enabling
+  `services.ssh-server.kbdInteractiveAuthentication` for 2FA was silently
+  broken on current nixpkgs: upstream ties the sshd PAM service's
+  `unixAuth` flag to `PasswordAuthentication`, so a keys-only host's sshd
+  PAM auth stack degraded to plain `pam_deny` and every
+  keyboard-interactive prompt was refused before PAM could question the
+  user. The module now forces `security.pam.services.sshd.unixAuth = true`
+  when the prompt path is explicitly enabled (and `usePam` is not `false`).
+  Found by the new VM prompt-path positive control; guarded by a new
+  `nixos-kbd-interactive` eval assertion
+
+### Added
+
+- Prompt-path runtime proof: a second VM sshd node deliberately enables
+  the keyboard-interactive + PAM recipe for a LOCKED test user; the test
+  drives `sshpass` end-to-end, requires a real `keyboard-interactive/pam`
+  exchange in the sshd journal, and requires the wrong password to be
+  refused — while the hardened default node must refuse the exchange
+  outright (no kbd-interactive lines in its journal). The positive
+  control's kill-switch (give the user the probed password → subtest red)
+  is exactly what exposed the PAM bug above
+- Port property tests: `nixos-port-bounds` and `hm-port-bounds` prove via
+  `builtins.tryEval` that out-of-range ports (`65536`, `-1`) are rejected
+  at evaluation time on every port-carrying option — server `port`,
+  `listenAddresses` sub-ports, and client host blocks — forcing the real
+  consumer wiring, not just the type declarations
+
 ## [0.1.3] — 2026-08-29
 
 ### Added
