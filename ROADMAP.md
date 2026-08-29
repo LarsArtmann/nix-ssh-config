@@ -12,9 +12,12 @@ module alone.
 
 Raw ideas:
 
-- `darwinModules` output configuring macOS sshd via nix-darwin (different module
-  system than NixOS; effort concentrated in mapping the hardened settings to
-  launchd-based sshd)
+- `darwinModules` output configuring macOS sshd via nix-darwin — parked with
+  reason (2026-08-29): effort is a settings _mapping_ onto nix-darwin's
+  services.openssh surface plus launchd specifics, and the repo has no Darwin
+  CI runner to prove it at runtime (the whole point after v0.1.0). First
+  bounded step when revived: a mapping table nix-darwin settings ← our
+  crypto/hardening profile, reviewed without code
 - Darwin CI coverage for the OrbStack/Colima include logic (needs a Darwin
   runner or a mock of `builtins.pathExists`)
 
@@ -22,10 +25,22 @@ Raw ideas:
 
 Raw ideas:
 
-- age / sops-nix integration for private key distribution (requires a design
-  decision on how keys reach machines)
+- age / sops-nix integration for private key distribution. Design skeleton:
+  (a) never ship private keys in this flake (public output, public repo);
+  (b) scope = a _guide_ + example wiring sops-nix secrets for the client's
+  identity files, not a new module option; (c) open question: per-host
+  key placement via `age.identityPaths` vs HM `sops.secrets` — decide when
+  the first consumer needs it
 - Flake overlay pinning a specific OpenSSH version alongside the crypto profile
+  — decision: parked. Pinning delays security updates and cuts against the
+  "profile works over any modern OpenSSH" story; the compatibility matrix +
+  `ssh -Q` runtime check already catch support gaps. Revisit only when an
+  algorithm we need is newer than what nixpkgs ships
 - `nixos-generate-config` interplay study (avoid fighting imperative sshd config)
+  — parked with reason: our module only writes `services.openssh.settings` and
+  two `/etc` files, all of which nixos-generate-config leaves alone; no fight
+  observed in any consumer (2026-08-29). Reopen only if a consumer reports
+  generated hardware-configuration interference.
 - Retire downstream workarounds once a tagged release ships them: after v0.1.2,
   drop `nix-international-telephony`'s now-redundant
   `extraSettings.KbdInteractiveAuthentication = false` workaround and its
@@ -36,15 +51,25 @@ Raw ideas:
 Raw ideas:
 
 - Multi-node NixOS test: this flake's client connecting to this flake's server,
-  end-to-end (exercise the crypto profile against a real handshake)
+  end-to-end — PARTIALLY DONE (2026-08-29): the VM already proves a real
+  client↔server handshake with negotiated ML-KEM, wrong-key rejection and
+  banner delivery; the remaining delta is putting the Home Manager _client
+  module itself_ inside the VM (HM-in-NixOS evaluation), which needs a
+  design pass on `home-manager.users` integration
 - `sshd -T` exact-match runtime validation (was part of the removed VM test;
   restore alongside it)
 - Positive prompt-path test: deliberately enable a PAM prompt module (or
   `unixAuth`) and prove `KbdInteractiveAuthentication no` blocks a real
-  prompted-then-rejected exchange end-to-end (needs `sshpass`/expect; design
-  first — the current method-list assertion is the interim guard)
-- Table-driven fixture host in the HM eval (loop hosts × options instead of
-  one "full" host)
+  prompted-then-rejected exchange end-to-end. Refined design (2026-08-29):
+  VM variant with `kbdInteractiveAuthentication = true` + `usePAM = true` +
+  a passwordless-locked test user; drive `ssh -o PreferredAuthentications=
+keyboard-interactive` under `sshpass` with a known-wrong password and
+  assert refusal in the same run that already asserts the negative path.
+  Bounded ~90min task when picked up; the method-list + golden assertions
+  are the interim guards
+- Table-driven fixture host in the HM eval: DECIDED yes (2026-08-29) —
+  adopt when the next host-level option lands; loop `hosts × options`
+  instead of one "full" host so every option pair is asserted uniformly
 
 ### 4. Post-quantum completion
 
@@ -53,9 +78,13 @@ ML-KEM key exchange is deployed; authentication signatures remain classical.
 Raw ideas:
 
 - ML-DSA (FIPS 204) signature support the moment OpenSSH ships it — watch
-  upstream; no implementation timeline exists today
+  upstream; no implementation timeline exists today. RECURRING check:
+  scan the OpenSSH release notes at each quarterly matrix re-verification
+  (next: 2026-12-01); the `ssh -Q` subtest fails the VM the moment a key
+  type would be needed but unsupported
 - Quarterly re-verification cadence for the README OpenSSH compatibility
-  matrix against upstream release notes (watch the OpenSSH release feed)
+  matrix against upstream release notes (watch the OpenSSH release feed).
+  RECURRING: next re-verification due 2026-12-01, then quarterly
 - Re-evaluate the algorithm lists whenever OpenSSH deprecates entries (the
   single source of truth in `modules/shared/crypto.nix` makes this a one-file
   change)
