@@ -44,6 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - flake.lock refreshed (nixpkgs 2026-08-26, home-manager 2026-08-27) with
   the full gate green on the new lock; a weekly PR-based update workflow
   and `scripts/release.sh` (dry-run capable) round off the release flow
+- `SECURITY.md` as a pointer to the README-owned threat model, with a
+  private disclosure path; TODO_LIST reduced to the remaining bounded
+  test-depth work after the 2026-08-29 execution pass
 
 ### Changed
 
