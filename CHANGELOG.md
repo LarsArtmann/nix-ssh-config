@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Keys-only now means keys-only.** The server module never set
+  `KbdInteractiveAuthentication`, so the NixOS default (`yes`, with `UsePAM
+  yes`) survived `passwordAuthentication = false` and PAM-serviced prompts
+  stayed available over keyboard-interactive — on configurations whose sshd
+  PAM service permits Unix passwords (and on any host adding PAM modules
+  such as OTP/2FA), account passwords were still accepted (issue #1). New
+  option `services.ssh-server.kbdInteractiveAuthentication` defaults to
+  `passwordAuthentication` and is emitted into `services.openssh.settings`;
+  set it to `true` explicitly for PAM-backed two-factor auth. Guarded by the
+  new `nixos-kbd-interactive` eval check, extended
+  `nixos-password-auth-disabled`/`nixos-custom-settings` assertions, and two
+  new VM subtests (`sshd -T` plus an end-to-end assertion that the server
+  offers publickey auth only); every new assertion was deliberately broken
+  once to prove it fails
+
 ## [0.1.1] — 2026-08-22
 
 The global-keys bugfix release. v0.1.0's `services.ssh-server.authorizedKeys`

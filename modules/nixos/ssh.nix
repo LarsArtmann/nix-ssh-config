@@ -43,6 +43,21 @@ in
       description = "Whether to allow password authentication";
     };
 
+    kbdInteractiveAuthentication = lib.mkOption {
+      type = lib.types.bool;
+      default = config.services.ssh-server.passwordAuthentication;
+      defaultText = lib.literalExpression "config.services.ssh-server.passwordAuthentication";
+      description = ''
+        Whether to allow keyboard-interactive authentication. Defaults to
+        the value of passwordAuthentication: NixOS otherwise defaults it
+        to yes (with UsePAM also yes), which leaves a PAM-serviced prompt
+        channel open (OTP/2FA modules, or Unix account passwords wherever
+        the sshd PAM service permits them) even when PasswordAuthentication
+        is no, breaking keys-only. Enable it explicitly only for PAM-backed
+        two-factor authentication.
+      '';
+    };
+
     authorizedKeys = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
@@ -100,13 +115,14 @@ in
       enable = true;
 
       # NixOS services.openssh.settings rendering:
-      #   Explicit options (Ciphers, Macs, KexAlgorithms) accept Nix lists —
+      #   Explicit options (Ciphers, Macs, KexAlgorithms) accept Nix lists;
       #   the module joins them with commas automatically.
       #   Freeform keys (HostKeyAlgorithms, PubkeyAcceptedAlgorithms) require
       #   pre-joined comma-separated strings.
       #   AuthorizedKeysFile uses space-separated paths (sshd_config format).
       settings = {
         PasswordAuthentication = config.services.ssh-server.passwordAuthentication;
+        KbdInteractiveAuthentication = config.services.ssh-server.kbdInteractiveAuthentication;
         PermitRootLogin = if config.services.ssh-server.allowRootLogin then "yes" else "no";
         PermitEmptyPasswords = false;
 

@@ -1,5 +1,5 @@
 {
-  description = "Modular, hardened SSH client & server configurations for NixOS and nix-darwin — secure by default, post-quantum ready";
+  description = "Modular, hardened SSH client & server configurations for NixOS and nix-darwin, secure by default, post-quantum ready";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -106,6 +106,36 @@
                 enable = true;
                 port = 2222;
                 extraSettings.LoginGraceTime = 42;
+                extraSettings.KbdInteractiveAuthentication = true;
+              };
+            }
+          ];
+
+          # Issue #1: keyboard-interactive must follow passwordAuthentication
+          # by default (NixOS would otherwise leave it on, and PAM-serviced
+          # prompts break keys-only) while staying independently overridable
+          # for PAM-backed two-factor auth. Note: both evals MUST set
+          # enable = true: without it mkIf disables the module and the
+          # nixpkgs default (yes) silently answers the assertions, making
+          # them vacuous (found via kill-switch testing).
+          nixosKbdCoupledEval = mkNixosEval [
+            {
+              services.ssh-server = {
+                enable = true;
+                passwordAuthentication = true;
+              };
+            }
+          ];
+
+          # Guards the dedicated option's existence: if kbd were merely
+          # mirrored from passwordAuthentication (no option), this eval
+          # fails to evaluate with an unknown-option error.
+          nixosKbdIndependentEval = mkNixosEval [
+            {
+              services.ssh-server = {
+                enable = true;
+                passwordAuthentication = false;
+                kbdInteractiveAuthentication = true;
               };
             }
           ];
@@ -447,6 +477,24 @@
                 actual = sshdSettings.PasswordAuthentication;
                 expected = false;
               }
+              {
+                name = "KbdInteractiveAuthentication (must default off with passwords, or PAM prompts break keys-only)";
+                actual = sshdSettings.KbdInteractiveAuthentication;
+                expected = false;
+              }
+            ];
+
+            nixos-kbd-interactive = assertEq "kbd-interactive" [
+              {
+                name = "follows passwordAuthentication by default (passwords on => kbd on)";
+                actual = nixosKbdCoupledEval.config.services.openssh.settings.KbdInteractiveAuthentication;
+                expected = true;
+              }
+              {
+                name = "can be enabled independently for PAM-backed 2FA (passwords off)";
+                actual = nixosKbdIndependentEval.config.services.openssh.settings.KbdInteractiveAuthentication;
+                expected = true;
+              }
             ];
 
             nixos-root-login-disabled = assertEq "root-login-disabled" [
@@ -532,6 +580,11 @@
                 actual = nixosCustomEval.config.services.openssh.settings.LoginGraceTime;
                 expected = 42;
               }
+              {
+                name = "extraSettings overrides a default (KbdInteractiveAuthentication)";
+                actual = nixosCustomEval.config.services.openssh.settings.KbdInteractiveAuthentication;
+                expected = true;
+              }
             ];
 
             nixos-disabled-noop = assertEq "nixos-disabled-noop" [
@@ -584,8 +637,9 @@
           }
           # QEMU integration test: boots a real VM, starts sshd, and proves
           # the hardened config holds at runtime (sshd -T) plus actual
-          # key-based login. Restored from the pre-flake-parts test (removed
-          # at e910e78), now with a working key-auth subtest.
+          # key-based login and non-publickey auth denial. Restored from the
+          # pre-flake-parts test (removed at e910e78), now with a working
+          # key-auth subtest.
           // lib.optionalAttrs (system == "x86_64-linux") {
             nixos-vm-sshd = pkgs.testers.nixosTest {
               name = "sshd-hardened-config";
@@ -621,6 +675,27 @@
 
                 with subtest("password auth disabled"):
                     server.succeed("sshd -T | grep -i 'passwordauthentication no'")
+
+                with subtest("keyboard-interactive disabled"):
+                    server.succeed("sshd -T | grep -i 'kbdinteractiveauthentication no'")
+
+                # End-to-end: the server must not even advertise
+                # keyboard-interactive/password. If either were offered,
+                # the failure message would list it in the parentheses
+                # (issue #1 regression guard).
+                with subtest("only publickey auth is offered"):
+                    status, output = client.execute(
+                        "ssh"
+                        + " -o StrictHostKeyChecking=accept-new"
+                        + " -o UserKnownHostsFile=/root/known_hosts"
+                        + " -o BatchMode=yes"
+                        + " -o PreferredAuthentications=keyboard-interactive,password"
+                        + " testuser@server -- true 2>&1"
+                    )
+                    assert status != 0, "non-publickey auth unexpectedly succeeded"
+                    assert "Permission denied (publickey)" in output, (
+                        f"server offered more than publickey: {output}"
+                    )
 
                 with subtest("root login disabled"):
                     server.succeed("sshd -T | grep -i 'permitrootlogin no'")

@@ -9,10 +9,10 @@
 #     ];
 #   };
 #
-# Defaults you get without touching anything: password and root login off,
-# pubkey-only auth, modern crypto only (ML-KEM hybrid KEX first), X11/TCP/
-# tunnel forwarding off, MaxAuthTries=3, MaxSessions=2, verbose logging and
-# a legal banner.
+# Defaults you get without touching anything: password, keyboard-interactive
+# and root login off, pubkey-only auth, modern crypto only (ML-KEM hybrid KEX
+# first), X11/TCP/tunnel forwarding off, MaxAuthTries=3, MaxSessions=2,
+# verbose logging and a legal banner.
 {
   services.ssh-server = {
     enable = true;
@@ -29,6 +29,10 @@
     # Everything else is optional: defaults are hardened.
     # port = 22;
     # bannerText = null;  # disable the legal banner
+
+    # PAM-backed two-factor auth? keyboard-interactive follows
+    # passwordAuthentication by default; opt in explicitly:
+    # kbdInteractiveAuthentication = true;
 
     # Escape hatch for any sshd_config directive not modeled above.
     # Merges last, so it can override defaults:
