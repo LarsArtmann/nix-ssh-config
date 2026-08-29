@@ -90,7 +90,7 @@ Raw ideas:
   and the self-hosted cache flaps (502s observed 2026-08-29)
 - Automated release gate: tag → build → VM test → changelog compare-links
   valid → `gh release create`, one flow
-- `nix flake update` cadence decision (inputs move on nixos-unstable)
+- ~~`nix flake update` cadence decision (inputs move on nixos-unstable)~~ decided 2026-08-29: the weekly GitHub workflow (`.github/workflows/update-flake-lock.yml`) opens a labeled PR every Monday; merge only with green checks. Security-relevant consumers pin release tags (see nix-internatial-telephony's `v0.1.2` pin) rather than chasing branches
 
 ## Non-goals
 

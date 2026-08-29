@@ -41,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `updateHostKeys` overrides; explicit `MaxStartups = "10:30:60"` and
   `PerSourcePenalties = true` defaults (both overridable via
   `extraSettings`)
+- flake.lock refreshed (nixpkgs 2026-08-26, home-manager 2026-08-27) with
+  the full gate green on the new lock; a weekly PR-based update workflow
+  and `scripts/release.sh` (dry-run capable) round off the release flow
 
 ### Changed
 

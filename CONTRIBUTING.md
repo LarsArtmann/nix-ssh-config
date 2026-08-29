@@ -101,3 +101,9 @@ decoration.
 4. Create the GitHub _Release object_ (`gh release create`) — tags alone do
    not produce one, and compare links in the CHANGELOG 404 until pushed.
 5. Watch CI on GitHub (both jobs) after the push.
+
+`scripts/release.sh` automates steps 2–5's mechanical parts (it verifies
+the dated CHANGELOG section and compare link, then tags, pushes and
+creates the Release object). Preview with `DRY_RUN=1 scripts/release.sh
+<version>`; it still refuses a dirty tree and never runs the gate — run
+step 1 yourself.
