@@ -730,6 +730,66 @@
                         + " -o BatchMode=yes"
                         + " testuser@server -- true"
                     )
+
+                # Runtime support proof: every algorithm we configure must be
+                # compiled into the installed OpenSSH (guards against the
+                # nixpkgs pin dropping, renaming, or disabling an algorithm).
+                with subtest("ssh -Q supports every configured algorithm"):
+                    for family, algs in [
+                        ("kex", ${builtins.toJSON crypto.pqKex}),
+                        ("cipher", ${builtins.toJSON crypto.aeadCiphers}),
+                        ("mac", ${builtins.toJSON crypto.etmMacs}),
+                    ]:
+                        status, output = client.execute(f"ssh -Q {family}")
+                        assert status == 0, f"ssh -Q {family} failed: {output}"
+                        missing = [a for a in algs if a not in output]
+                        assert missing == [], f"client lacks {family} support: {missing}"
+
+                # The PQ headline as runtime fact: assert the algorithm the
+                # client actually negotiated (not just what sshd -T offers).
+                with subtest("negotiated kex is post-quantum"):
+                    status, output = client.execute(
+                        "ssh -vv -i /root/test-key"
+                        + " -o StrictHostKeyChecking=accept-new"
+                        + " -o UserKnownHostsFile=/root/known_hosts"
+                        + " -o BatchMode=yes"
+                        + " testuser@server -- true 2>&1"
+                    )
+                    assert status == 0, f"key login failed: {output}"
+                    assert "kex: algorithm: mlkem768x25519-sha256" in output, (
+                        f"client did not negotiate ML-KEM: {output}"
+                    )
+
+                # An unauthorized key must fail, and the failure mode must be
+                # the publickey-only method list (issue #1 regression guard).
+                with subtest("wrong key is rejected"):
+                    client.succeed("ssh-keygen -t ed25519 -N ''' -f /root/wrong-key -q")
+                    status, output = client.execute(
+                        "ssh -i /root/wrong-key"
+                        + " -o StrictHostKeyChecking=accept-new"
+                        + " -o UserKnownHostsFile=/root/known_hosts"
+                        + " -o BatchMode=yes"
+                        + " testuser@server -- true 2>&1"
+                    )
+                    assert status != 0, "unauthorized key was accepted"
+                    assert "Permission denied (publickey)" in output, (
+                        f"unexpected rejection mode: {output}"
+                    )
+
+                # The banner is not just configured, it is actually delivered
+                # to connecting clients (pre-auth, printed on stderr).
+                with subtest("client observes the pre-auth banner"):
+                    status, output = client.execute(
+                        "ssh -i /root/test-key"
+                        + " -o StrictHostKeyChecking=accept-new"
+                        + " -o UserKnownHostsFile=/root/known_hosts"
+                        + " -o BatchMode=yes"
+                        + " testuser@server -- true 2>&1"
+                    )
+                    assert status == 0, f"key login failed: {output}"
+                    assert "AUTHORIZED ACCESS ONLY" in output, (
+                        f"banner not delivered to client: {output}"
+                    )
               '';
             };
           };

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- VM runtime proof for the headline claims: the integration test now asserts
+  the client actually **negotiates** `mlkem768x25519-sha256` (`ssh -vv`
+  transcript), that the installed OpenSSH supports every configured KEX,
+  cipher and MAC (`ssh -Q` cross-check against the crypto lists), that an
+  unauthorized key is rejected with the publickey-only method list, and that
+  the legal banner is delivered to connecting clients — post-quantum KEX is
+  a tested runtime fact, not a config claim
+
 ## [0.1.2] — 2026-08-29
 
 ### Fixed
