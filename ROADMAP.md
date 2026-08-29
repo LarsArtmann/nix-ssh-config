@@ -67,6 +67,9 @@ keyboard-interactive` under `sshpass` with a known-wrong password and
   assert refusal in the same run that already asserts the negative path.
   Bounded ~90min task when picked up; the method-list + golden assertions
   are the interim guards
+- HM-in-NixOS-VM evaluation: DESIGNED (2026-08-29) —
+  `docs/designs/hm-in-nixos-vm.md` covers `home-manager.users`
+  integration, cost, rejected alternatives and the kill-switch plan
 - Table-driven fixture host in the HM eval: DECIDED yes (2026-08-29) —
   adopt when the next host-level option lands; loop `hosts × options`
   instead of one "full" host so every option pair is asserted uniformly
@@ -150,10 +153,20 @@ Raw ideas:
   and the self-hosted cache flaps (502s observed 2026-08-29)
 - Automated release gate: tag → build → VM test → changelog compare-links
   valid → `gh release create`, one flow
+- Hermetic dprint revisit: plan 2's D1 chose prettier over dprint because
+  dprint's WASM plugins cannot load in the sandboxed CI format check
+  (network off). Revisit when either (a) treefmt-nix vendors dprint
+  plugins into the nix store (watch treefmt-nix releases for dprint
+  plugin support) or (b) nixpkgs ships dprint plugins as store packages.
+  Until then prettier stays; the `dprint.json` removal is not up for
+  reconsideration in itself
 - Track the maintainer's `~/.config/crush/skills` agent-tooling directory
   in a dotfiles repo (decision D5, plan 3: yes — the docs-health tooling
   exists only untracked in the home dir; creating the repo is maintainer
   setup work, outside this repo's scope)
+- age / sops identity guide: OUTLINED (2026-08-29) —
+  `docs/designs/sops-identities-guide-outline.md` (scope frozen: guide +
+  example, no module option; per-host placement decision tree inside)
 - ~~`nix flake update` cadence decision (inputs move on nixos-unstable)~~ decided 2026-08-29: the weekly GitHub workflow (`.github/workflows/update-flake-lock.yml`) opens a labeled PR every Monday; merge only with green checks. Security-relevant consumers pin release tags (see nix-internatial-telephony's `v0.1.2` pin) rather than chasing branches
 
 ## Non-goals
