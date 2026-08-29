@@ -42,6 +42,27 @@ Note: `nix flake check --all-systems` without `--no-build` tries to build
 foreign-system check derivations and fails with a platform mismatch on any
 single-machine runner.
 
+## Branch protection (maintainer settings)
+
+The repo has no required status checks configured yet. Recommended
+Settings → Branches → Add classic branch protection rule for `master`
+(maintainer UI work; CI cannot set it):
+
+- [ ] **Require status checks to pass** with exactly one required check:
+      `checks-summary` (it aggregates both architecture jobs — requiring
+      `check` and `check-aarch64` individually is redundant and blocks
+      the summary job's `if: always()` reporting path).
+- [ ] **Require branches to be up to date before merging** (reduces the
+      "merged but red on master" class the summary job cannot see).
+- [ ] **Require linear history** — the release script pushes `master` and
+      tags; squash merges keep `git log` one-task-per-commit readable
+      (repo convention, not enforcement).
+- [ ] Leave **restrict pushes** off: the release script pushes tags from
+      a local checkout, so force-push protection only, not push lockdown.
+- [ ] Revisit after Dependabot groups land: enable auto-merge
+      (Settings → General → Pull Requests → Allow auto-merge) so green
+      grouped PRs merge without manual polling.
+
 ## Architecture
 
 - `modules/shared/crypto.nix` — single source of truth for all crypto algorithms

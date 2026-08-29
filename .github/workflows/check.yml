@@ -4,10 +4,18 @@ on:
   push:
     branches: [master]
   pull_request:
+  # Weekly full gate before Monday's flake-lock PRs: catches nixpkgs
+  # drift (new defaults, removed algorithms, sshd changes) on a schedule
+  # instead of only when someone pushes.
+  schedule:
+    - cron: "17 4 * * 0" # Sundays 04:17 UTC
+  workflow_dispatch:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # Pinned instead of ubuntu-latest: Nix builds must not silently change
+    # runner image under a flaky glibc/kernel rollout; bump deliberately.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41 # main
@@ -24,9 +32,17 @@ jobs:
       # (e.g. aarch64-darwin on an x86_64-linux runner -> "platform mismatch"),
       # so evaluate every system, then build+run the native checks only.
       - run: nix flake check --all-systems --no-build
-      - run: nix flake check
+      # The native gate builds the QEMU VM test: tee its transcript to a
+      # file so a red run uploads the full driver log as an artifact
+      # (PIPESTATUS keeps the nix exit code — the tee must not mask it).
+      - run: |
+          set -o pipefail
+          nix flake check 2>&1 | tee /tmp/check-x86_64.log
       - run: nix fmt -- --fail-on-change
       - name: Check markdown links
+        env:
+          # Avoids api.github.com rate limits (429s) during link resolution.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: nix run nixpkgs#lychee -- --no-progress --max-retries 3 README.md CONTRIBUTING.md AGENTS.md CHANGELOG.md FEATURES.md ROADMAP.md TODO_LIST.md docs examples
       # Annotation grammar integrity: every ~~ opened in a doc must be
       # closed (code spans/fences excluded — literal tildes there don't
@@ -39,6 +55,15 @@ jobs:
             if [ $((n % 2)) -ne 0 ]; then echo "UNBALANCED: $f ($n)"; bad=1; fi
           done
           exit $bad
+      # A red VM run without its transcript repeats the ANSI/parse
+      # debugging pain — keep the full driver log as an artifact.
+      - name: Upload failure transcript
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: check-transcript-x86_64
+          path: /tmp/check-x86_64.log
+          if-no-files-found: ignore
 
   check-aarch64:
     # Native arm64 runner (free for public repos) so the aarch64-linux
