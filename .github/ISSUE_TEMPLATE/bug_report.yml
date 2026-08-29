@@ -1,0 +1,46 @@
+name: Bug report
+description: A module does not work as documented
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Which module?
+      options:
+        - Server (nixosModules.ssh)
+        - Client (homeManagerModules.ssh)
+        - Both
+        - Other / not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - x86_64-linux
+        - aarch64-linux
+        - aarch64-darwin
+        - other
+    validations:
+      required: true
+  - type: input
+    id: flake-input
+    attributes:
+      label: How do you consume the flake?
+      placeholder: '`inputs.nix-ssh-config.url = "github:LarsArtmann/nix-ssh-config/v0.1.2";`'
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect instead? Include relevant config (redact secrets).
+    validations:
+      required: true
+  - type: textarea
+    id: check-output
+    attributes:
+      label: "nix flake check output"
+      description: "Output of `nix flake check` in this repo (or your consumer's equivalent), if applicable."
+      render: shell

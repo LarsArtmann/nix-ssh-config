@@ -67,6 +67,25 @@
 
           devShells.default = pkgs.mkShellNoCC {
             packages = [ pkgs.nil ];
+            # Installs (once, non-destructively) a pre-push hook that runs
+            # the full gate. Skip a single push with `git push --no-verify`.
+            shellHook = ''
+                            hook=".git/hooks/pre-push"
+                            if [ ! -f "$hook" ] || ! grep -q "nix fmt" "$hook" 2>/dev/null; then
+                              mkdir -p .git/hooks
+                              cat > "$hook" <<'HOOK'
+              #!/usr/bin/env bash
+              # Pre-push gate (installed by nix develop). Skip with --no-verify.
+              set -euo pipefail
+              nix fmt -- --fail-on-change
+              nix run nixpkgs#statix -- check
+              nix flake check --all-systems --no-build
+              nix flake check
+              HOOK
+                              chmod +x "$hook"
+                              echo "pre-push gate hook installed (.git/hooks/pre-push)"
+                            fi
+            '';
           };
         };
     };

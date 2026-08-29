@@ -1,0 +1,3 @@
+# Default ownership: the maintainer reviews everything until other
+# codeowners emerge.
+* @LarsArtmann
