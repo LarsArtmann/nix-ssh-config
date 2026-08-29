@@ -2,10 +2,18 @@
 
 ## Reporting a vulnerability
 
-Open a GitHub issue only for non-sensitive, already-public problems. For
-anything that could expose a live system, email the maintainer directly or
-use GitHub's private vulnerability reporting
-(Security → Report a vulnerability) instead of a public issue.
+**Preferred (sensitive):** GitHub private vulnerability reporting — open
+this repository, then **Security → Report a vulnerability**. It reaches
+the maintainer privately, supports back-and-forth discussion, and can
+publish a security advisory with the fix. No email or GPG setup needed.
+
+**Only for non-sensitive, already-public problems:** open a regular
+GitHub issue.
+
+Please include: affected version/tag (or commit), the module and option
+configuration involved, and what a minimal reproduction looks like. This
+repo ships configuration, not a runtime daemon — reports about how the
+_generated_ sshd config behaves on your host should say so explicitly.
 
 ## Threat model and security posture
 

@@ -119,6 +119,10 @@ Raw ideas:
   and the self-hosted cache flaps (502s observed 2026-08-29)
 - Automated release gate: tag → build → VM test → changelog compare-links
   valid → `gh release create`, one flow
+- Track the maintainer's `~/.config/crush/skills` agent-tooling directory
+  in a dotfiles repo (decision D5, plan 3: yes — the docs-health tooling
+  exists only untracked in the home dir; creating the repo is maintainer
+  setup work, outside this repo's scope)
 - ~~`nix flake update` cadence decision (inputs move on nixos-unstable)~~ decided 2026-08-29: the weekly GitHub workflow (`.github/workflows/update-flake-lock.yml`) opens a labeled PR every Monday; merge only with green checks. Security-relevant consumers pin release tags (see nix-internatial-telephony's `v0.1.2` pin) rather than chasing branches
 
 ## Non-goals

@@ -41,6 +41,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stale AGENTS check counts corrected; the VM testScript's seven repeated
   ssh option strings hoisted into one variable; the server example now
   shows the full 2FA recipe including the PAM `unixAuth` pin
+- Process: the strikethrough lint lives in
+  `scripts/check-strikethrough.sh` (one source for local and CI), a new
+  `release-script` CI job proves `scripts/release.sh` refuses an existing
+  tag and verifies the CHANGELOG compare link resolves (HTTP check)
+  before tagging, the CI check job runs on a pinned `ubuntu-24.04` plus a
+  Sunday cron gate and uploads the VM transcript on failure,
+  `SECURITY.md` names GitHub private vulnerability reporting as the
+  disclosure channel, and `.github/RELEASE_NOTES_TEMPLATE.md` skeletons
+  hand-written release notes
 
 ## [0.1.3] — 2026-08-29
 

@@ -9,9 +9,10 @@
 #   1. verify clean tree and full local gate were run (gate NOT run here —
 #      run it yourself; this script refuses a dirty tree),
 #   2. CHANGELOG.md must have a dated section for <version>,
-#   3. CHANGELOG compare links must resolve into a [0.x.y] entry,
+#   3. CHANGELOG compare links must exist AND resolve (HTTP check),
 #   4. create annotated tag (notes = the CHANGELOG section), push master + tag,
-#   5. create the GitHub Release object from the tag message, mark Latest.
+#   5. create the GitHub Release object from the tag message, mark Latest
+#      (human notes: .github/RELEASE_NOTES_TEMPLATE.md).
 set -euo pipefail
 
 VERSION="${1:?usage: ./scripts/release.sh <version> (prefix DRY_RUN=1 to preview, DRY_RUN=0 to execute)}"
@@ -32,6 +33,13 @@ grep -q "^## \[${VER}\] — " CHANGELOG.md ||
 
 grep -q "^\[${VER}\]: https://github.com/LarsArtmann/nix-ssh-config/compare/" CHANGELOG.md ||
   { echo "CHANGELOG.md compare link [${VER}] missing"; exit 1; }
+
+# The link must not just exist, it must resolve (GitHub 404s compares of
+# tags that were never pushed — exactly the mistake this catches).
+COMPARE_URL="$(sed -n "s/^\[${VER}\]: \(.*\)$/\1/p" CHANGELOG.md)"
+curl -fsIL --max-time 30 -o /dev/null "$COMPARE_URL" ||
+  { echo "compare link does not resolve: $COMPARE_URL"; exit 1; }
+echo "compare link resolves: $COMPARE_URL"
 
 if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
   echo "tag $TAG already exists"; exit 1
