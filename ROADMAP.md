@@ -89,6 +89,37 @@ Raw ideas:
   single source of truth in `modules/shared/crypto.nix` makes this a one-file
   change)
 
+**Quarterly matrix re-verification procedure** (owner: maintainer;
+next due 2026-12-01, then quarterly):
+
+1. Read the OpenSSH release notes since the last verified version:
+   https://www.openssh.com/releasenotes.html — note every new KEX,
+   cipher, MAC, key type, and every deprecation/removal.
+2. Diff against `modules/shared/crypto.nix` (all four lists):
+   new post-quantum or AEAD entries → add, run the full gate, check
+   `ssh -Q` VM coverage; removed/deprecated entries → remove, regen the
+   golden (`scripts/regen-golden.sh`), update README's matrix.
+3. Trust CI for the pin check: the `ssh -Q supports every configured
+algorithm` VM subtest goes red the moment the nixpkgs pin drops or
+   renames an entry.
+4. Grep the release notes for "ML-DSA" / "FIPS 204"; if present,
+   refine a TODO row for signature support.
+5. Append the re-verification date to the log below.
+
+Re-verification log: 2026-08-29 (plan-2 session, nixpkgs 2026-08-26
+lock) · _2026-12-01 due_.
+
+**ML-DSA watch checklist** (execute at each quarterly re-verification):
+
+- grep the release notes for `ML-DSA`, `FIPS 204`, `mldsa`
+- check `ssh -Q hostkey-sig-algs` / release notes for a `mldsa*`
+  algorithm name and its exact IANA identifier
+- when it lands: add to `modules/shared/crypto.nix` (host-key list +
+  `*String` variant), extend the VM test with a negotiation assertion,
+  regen the golden, update README's Post-Quantum Status section, cut a
+  feature release
+- until then: nothing to do — signatures stay classical by design
+
 ### 5. Module surface candidates
 
 Raw ideas for options/features, most needing only a design pass before they

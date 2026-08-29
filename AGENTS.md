@@ -114,6 +114,10 @@ In `nixosTest` scripts, `machine.succeed(cmd)` returns only stdout and hides fai
 
 Local builds may show `unable to download 'https://cache.home.lan/monitor365/...': HTTP error 502` retries. Root cause: the maintainer's LAN nix substituter is down — that substituter comes from machine-local nix.conf, nothing in this repo. Nix retries 5×, disables the cache for 60s, and proceeds from cache.nixos.org; builds stay green. CI has the same best-effort policy by design: the `magic-nix-cache-action` step runs with `continue-on-error: true`, so a cache outage slows the run but never turns it red (decided 2026-08-29, M5 of plan 2).
 
+### PerSourcePenalties deferred window vs sequential VM subtests
+
+`PerSourcePenalties = true` (a module default) makes sshd record a **deferred 5-second penalty** per client IP after an auth failure — visible in the VM transcript as `srclimit_penalise: ... deferred penalty of 5.000 seconds`. Observed behavior (2026-08-29, prompt-path work): the subtest immediately after the wrong-key rejection still connected and succeeded — a _deferred_ penalty does not drop the next connection within the window, so the wrong-key test cannot flake against its neighbors. The kbd-server subtests are immune anyway: it is a second sshd with its own penalty state. When ADDING subtests that expect repeated auth failures against the same node, put them before network-success probes or space them past 5s; if a mysterious `Connection refused`/drop shows up after a failure-heavy subtest, suspect the penalty window first, not the config. Also note the nixos test driver reserves the name `log` (an AbstractLogger) — a testScript variable named `log` fails the driver's Python type-check with a confusing error; use `jlog` or similar.
+
 ---
 
 ## Conventions
