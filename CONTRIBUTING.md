@@ -112,8 +112,7 @@ decoration.
 - Status reports and planning docs are plain Markdown in `docs/status/` and
   `docs/planning/` (no HTML reports). Fully resolved reports are annotated
   inline (strikethrough + evidence) and `git mv`'d into `docs/status/archived/`.
-- The annotation grammar: `~~item~~ done at \`hash\``for resolved items,`→ TODO_LIST — still open`(or`→ ROADMAP`) for routed items, and
-`**Won't implement — reason.**` for rejected ones. Multi-line
+- The annotation grammar: `~~item~~ done at \`hash\``for resolved items,`→ TODO_LIST — still open`(or`→ ROADMAP`) for routed items, and` **Won't implement — reason.**` for rejected ones. Multi-line
   strikethroughs are legal in prose lists.
 - Strikethrough balance is enforced mechanically: CI (and the local
   equivalent — an awk scan counting `~~` markers per file, code spans and

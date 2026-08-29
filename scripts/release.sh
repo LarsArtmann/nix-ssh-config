@@ -25,28 +25,47 @@ run() {
   if [ "$DRY_RUN" = "1" ]; then echo "[dry-run] $*"; else "$@"; fi
 }
 
-[ -d .git ] || { echo "not a git repo"; exit 1; }
-[ -z "$(git status --porcelain)" ] || { echo "working tree not clean — commit first"; exit 1; }
+[ -d .git ] || {
+  echo "not a git repo"
+  exit 1
+}
+[ -z "$(git status --porcelain)" ] || {
+  echo "working tree not clean — commit first"
+  exit 1
+}
 
 grep -q "^## \[${VER}\] — " CHANGELOG.md ||
-  { echo "CHANGELOG.md has no dated '## [${VER}] — YYYY-MM-DD' section"; exit 1; }
+  {
+    echo "CHANGELOG.md has no dated '## [${VER}] — YYYY-MM-DD' section"
+    exit 1
+  }
 
 grep -q "^\[${VER}\]: https://github.com/LarsArtmann/nix-ssh-config/compare/" CHANGELOG.md ||
-  { echo "CHANGELOG.md compare link [${VER}] missing"; exit 1; }
+  {
+    echo "CHANGELOG.md compare link [${VER}] missing"
+    exit 1
+  }
 
 # The link must not just exist, it must resolve (GitHub 404s compares of
 # tags that were never pushed — exactly the mistake this catches).
 COMPARE_URL="$(sed -n "s/^\[${VER}\]: \(.*\)$/\1/p" CHANGELOG.md)"
 curl -fsIL --max-time 30 -o /dev/null "$COMPARE_URL" ||
-  { echo "compare link does not resolve: $COMPARE_URL"; exit 1; }
+  {
+    echo "compare link does not resolve: $COMPARE_URL"
+    exit 1
+  }
 echo "compare link resolves: $COMPARE_URL"
 
 if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
-  echo "tag $TAG already exists"; exit 1
+  echo "tag $TAG already exists"
+  exit 1
 fi
 
 NOTES="$(awk -v start="## [${VER}] — " 'index($0, start) == 1 {on=1; next} on && /^## \[/{exit} on {print}' CHANGELOG.md)"
-[ -n "$NOTES" ] || { echo "CHANGELOG section for ${VER} is empty — refusing to tag"; exit 1; }
+[ -n "$NOTES" ] || {
+  echo "CHANGELOG section for ${VER} is empty — refusing to tag"
+  exit 1
+}
 
 run git tag -a "$TAG" -m "nix-ssh-config $TAG" -m "$NOTES"
 run git push origin master "$TAG"

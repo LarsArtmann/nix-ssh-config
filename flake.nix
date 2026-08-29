@@ -19,12 +19,7 @@
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      home-manager,
-      ...
-    }@inputs:
+    inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.treefmt-nix.flakeModule
@@ -49,7 +44,6 @@
       perSystem =
         {
           pkgs,
-          config,
           ...
         }:
         {

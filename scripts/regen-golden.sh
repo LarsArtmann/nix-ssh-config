@@ -17,7 +17,10 @@ GOLDEN="tests/sshd-t-golden.txt"
 VM_CHECK=".#checks.x86_64-linux.nixos-vm-sshd"
 DRIVER_PREFIX="vm-test-run-sshd-hardened-config> "
 
-[ -d .git ] || { echo "not a git repo"; exit 1; }
+[ -d .git ] || {
+  echo "not a git repo"
+  exit 1
+}
 [ -z "$(git status --porcelain --untracked-files=no)" ] || {
   echo "working tree not clean — commit or stash first"
   exit 1
@@ -33,23 +36,29 @@ restore() {
 }
 trap restore ERR
 
-: > "$GOLDEN"
+: >"$GOLDEN"
 
 nix build -L "$VM_CHECK" 2>&1 |
   {
     # Strip ANSI (colored -L logs hide plain greps) and the driver's
     # line prefix, keep only the captured block.
     sed 's/\x1b\[[0-9;]*m//g' |
-    sed -n "/GOLDEN-BEGIN/,/GOLDEN-END/p" |
-    grep -v "GOLDEN-BEGIN\|GOLDEN-END" |
-    sed "s/^${DRIVER_PREFIX}//"
+      sed -n "/GOLDEN-BEGIN/,/GOLDEN-END/p" |
+      grep -v "GOLDEN-BEGIN\|GOLDEN-END" |
+      sed "s/^${DRIVER_PREFIX}//"
   } >"$GOLDEN"
 
 # Sanity: a real capture contains directives the module controls.
 grep -q "passwordauthentication" "$GOLDEN" ||
-  { echo "capture looks empty/invalid"; exit 1; }
+  {
+    echo "capture looks empty/invalid"
+    exit 1
+  }
 grep -q "port" "$GOLDEN" ||
-  { echo "capture looks empty/invalid"; exit 1; }
+  {
+    echo "capture looks empty/invalid"
+    exit 1
+  }
 
 trap - ERR
 echo "golden regenerated ($GOLDEN): $(wc -l <"$GOLDEN") lines — review git diff before committing"
