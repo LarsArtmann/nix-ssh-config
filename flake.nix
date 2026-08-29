@@ -244,6 +244,76 @@
                   exit 1
                 ''
             );
+
+          # Docs-drift guard: README's option tables must match the modules'
+          # real option inventories exactly (both directions — a documented
+          # option that does not exist, and an option nobody documented, are
+          # both drift). Rows are matched at line starts like "| `name` |"
+          # so prose and code blocks never false-positive.
+          readme = builtins.readFile (self + "/README.md");
+
+          readmeTableOptions =
+            pattern: lines:
+            lib.concatMap (
+              line:
+              let
+                m = builtins.match pattern line;
+              in
+              lib.optional (m != null) (lib.head m)
+            ) lines;
+
+          readmeServerOptions = lib.sort lib.lessThan (
+            readmeTableOptions ''[| ]*`services\.ssh-server\.([A-Za-z0-9]+)`.*'' (lib.splitString "\n" readme)
+          );
+
+          readmeClientOptions = lib.sort lib.lessThan (
+            readmeTableOptions ''[| ]*`ssh-config\.([A-Za-z0-9]+)`.*'' (lib.splitString "\n" readme)
+          );
+
+          # Host rows use bare names; restrict parsing to the host-submodule
+          # table by slicing between its heading and the paragraph after it.
+          readmeHostOptions = lib.sort lib.lessThan (
+            readmeTableOptions "[| ]*`([A-Za-z0-9]+)`.*" (
+              lib.splitString "\n" (
+                lib.head (
+                  lib.splitString "A **forward** is" (lib.last (lib.splitString "#### Host Submodule Options" readme))
+                )
+              )
+            )
+          );
+
+          nixosOptionNames = lib.sort lib.lessThan (lib.attrNames nixosEval.options.services.ssh-server);
+
+          hmOptionNames = lib.sort lib.lessThan (lib.attrNames hmEval.options.ssh-config);
+
+          hmHostOptionNames = lib.sort lib.lessThan (
+            lib.filter (n: n != "_module") (
+              lib.attrNames (hmEval.options.ssh-config.hosts.type.getSubOptions [ ])
+            )
+          );
+
+          # FEATURES.md claims per-system content-check counts; the counts must
+          # track the actual number of content checks (formatters excluded, VM
+          # separate). Parsing fails eval if the line is reworded beyond the
+          # pattern — exactly the drift class this guard exists for.
+          featuresClaimedCounts =
+            let
+              matches = map (
+                line: builtins.match ''.*[^0-9]([0-9]+) eval/content checks per system \(Linux: ([0-9]+).*'' line
+              ) (lib.splitString "\n" (builtins.readFile (self + "/FEATURES.md")));
+              found = lib.filter (m: m != null) matches;
+            in
+            {
+              darwin = lib.toInt (lib.head (lib.head found));
+              linux = lib.toInt (lib.last (lib.head found));
+            };
+
+          # Reality side of the count guard: everything in checks except the
+          # two formatter entries (format, treefmt) and, on x86_64-linux, the
+          # VM test. attrNames only forces the attrset's keys, so this does
+          # not recurse into the count check that uses it.
+          contentCheckCount =
+            lib.length (lib.attrNames config.checks) - 2 - (if system == "x86_64-linux" then 1 else 0);
         in
         {
           treefmt.programs.nixfmt.enable = true;
@@ -614,7 +684,45 @@
               echo ok > $out
             '';
 
-            format = config.treefmt.build.check self;
+            docs-option-inventory = assertEq "docs-option-inventory" [
+              {
+                name = "README server option table matches services.ssh-server";
+                actual = readmeServerOptions;
+                expected = nixosOptionNames;
+              }
+              {
+                name = "README client option table matches ssh-config";
+                actual = readmeClientOptions;
+                expected = hmOptionNames;
+              }
+              {
+                name = "README host option table matches the hosts submodule";
+                actual = readmeHostOptions;
+                expected = hmHostOptionNames;
+              }
+            ];
+
+            docs-check-count = assertEq "docs-check-count" [
+              {
+                name = "FEATURES.md content-check counts match the actual checks";
+                actual = {
+                  claimed-darwin = featuresClaimedCounts.darwin;
+                  claimed-linux = featuresClaimedCounts.linux;
+                  actual-content-checks = contentCheckCount;
+                  this-system = system;
+                };
+                expected = {
+                  claimed-darwin = featuresClaimedCounts.darwin;
+                  claimed-linux = featuresClaimedCounts.linux;
+                  actual-content-checks =
+                    if pkgs.stdenv.hostPlatform.isDarwin then
+                      featuresClaimedCounts.darwin
+                    else
+                      featuresClaimedCounts.linux;
+                  this-system = system;
+                };
+              }
+            ];
           }
           # Forcing config.assertions pulls in unrelated NixOS assertion
           # machinery that does not evaluate on darwin host platforms
@@ -634,6 +742,10 @@
                 expected = true;
               }
             ];
+          }
+          # Formatting gate: treefmt check on the whole repo (nixfmt).
+          // {
+            format = config.treefmt.build.check self;
           }
           # QEMU integration test: boots a real VM, starts sshd, and proves
           # the hardened config holds at runtime (sshd -T) plus actual

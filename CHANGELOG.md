@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unauthorized key is rejected with the publickey-only method list, and that
   the legal banner is delivered to connecting clients — post-quantum KEX is
   a tested runtime fact, not a config claim
+- Docs-drift guards: `docs-option-inventory` requires README's option tables
+  to match the modules' real option inventories exactly (both directions),
+  and `docs-check-count` requires FEATURES.md's per-system content-check
+  counts to match the actual checks — the drift class behind "13 checks" and
+  stale option tables now fails CI mechanically
 
 ## [0.1.2] — 2026-08-29
 

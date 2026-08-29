@@ -58,7 +58,7 @@ examples/                    # Copy-ready client/server modules → examples.*
 | `nixosModules.ssh`                    | SSH server module (NixOS)                                                                                         |
 | `examples.client` / `examples.server` | Ready-to-use example modules, exercised by `checks.*.examples-evaluate`                                           |
 | `sshKeys`                             | Attrset of tracked public keys (`lars`, `lars-evo-x2`) — consumed as `nix-ssh-config.sshKeys.lars` etc.           |
-| `checks.<system>.*`                   | 16 eval/content checks (17 on Linux: assertion checks are Linux-only) + `format`/`treefmt`; on x86_64-linux additionally `nixos-vm-sshd` (QEMU integration test) |
+| `checks.<system>.*`                   | 18 eval/content checks (19 on Linux: assertion checks are Linux-only) + `format`/`treefmt`; on x86_64-linux additionally `nixos-vm-sshd` (QEMU integration test). `docs-option-inventory`/`docs-check-count` red-flag README/FEATURES drift when these change |
 | `devShells.<system>.default`          | `mkShellNoCC` with `nil` only — formatting comes from treefmt, not the shell                                      |
 | `formatter.<system>`                  | treefmt (via treefmt-nix `flakeModule`, nixfmt enabled)                                                           |
 

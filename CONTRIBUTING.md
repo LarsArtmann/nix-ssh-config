@@ -65,6 +65,11 @@ The test suite includes:
   `nix flake check` including the VM test is a several-minute gate; build
   with `nix build -L` (or read the driver transcript from the store) when a
   green run's per-subtest log lines need to be inspectable.
+- Docs-drift guards (`docs-option-inventory`, `docs-check-count`): README's
+  option tables must match the modules' real option inventories exactly, and
+  FEATURES.md's content-check counts must match the actual number of checks.
+  Adding or removing a check, or renaming an option, turns these red until
+  README/FEATURES are updated — that is the point.
 - Formatting check via treefmt-nix (runs as part of `nix flake check`)
 
 When adding assertions, prove once that they can fail (break the value
