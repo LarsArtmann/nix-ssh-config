@@ -1081,6 +1081,13 @@
             server.wait_for_unit("sshd.service")
             server.wait_for_open_port(22)
 
+            # One place to change the ssh flags every subtest shares.
+            ssh_flags = (
+                " -o StrictHostKeyChecking=accept-new"
+                + " -o UserKnownHostsFile=/root/known_hosts"
+            )
+            ssh_batch = ssh_flags + " -o BatchMode=yes"
+
             with subtest("password auth disabled"):
                 server.succeed("sshd -T | grep -i 'passwordauthentication no'")
 
@@ -1094,9 +1101,7 @@
             with subtest("only publickey auth is offered"):
                 status, output = client.execute(
                     "ssh"
-                    + " -o StrictHostKeyChecking=accept-new"
-                    + " -o UserKnownHostsFile=/root/known_hosts"
-                    + " -o BatchMode=yes"
+                    + ssh_batch
                     + " -o PreferredAuthentications=keyboard-interactive,password"
                     + " testuser@server -- true 2>&1"
                 )
@@ -1117,8 +1122,7 @@
                     + " ssh -o PubkeyAuthentication=no"
                     + " -o PreferredAuthentications=keyboard-interactive"
                     + " -o NumberOfPasswordPrompts=1"
-                    + " -o StrictHostKeyChecking=accept-new"
-                    + " -o UserKnownHostsFile=/root/known_hosts"
+                    + ssh_flags
                     + " testuser@server -- true 2>&1"
                 )
                 assert status != 0, f"keyboard-interactive unexpectedly succeeded: {output}"
@@ -1158,9 +1162,7 @@
                 client.succeed("install -m 600 ${self}/tests/test-key /root/test-key")
                 client.succeed(
                     "ssh -i /root/test-key"
-                    + " -o StrictHostKeyChecking=accept-new"
-                    + " -o UserKnownHostsFile=/root/known_hosts"
-                    + " -o BatchMode=yes"
+                    + ssh_batch
                     + " testuser@server -- true"
                 )
 
@@ -1183,9 +1185,7 @@
             with subtest("negotiated kex is post-quantum"):
                 status, output = client.execute(
                     "ssh -vv -i /root/test-key"
-                    + " -o StrictHostKeyChecking=accept-new"
-                    + " -o UserKnownHostsFile=/root/known_hosts"
-                    + " -o BatchMode=yes"
+                    + ssh_batch
                     + " testuser@server -- true 2>&1"
                 )
                 assert status == 0, f"key login failed: {output}"
@@ -1199,9 +1199,7 @@
                 client.succeed("ssh-keygen -t ed25519 -N ''' -f /root/wrong-key -q")
                 status, output = client.execute(
                     "ssh -i /root/wrong-key"
-                    + " -o StrictHostKeyChecking=accept-new"
-                    + " -o UserKnownHostsFile=/root/known_hosts"
-                    + " -o BatchMode=yes"
+                    + ssh_batch
                     + " testuser@server -- true 2>&1"
                 )
                 assert status != 0, "unauthorized key was accepted"
@@ -1214,9 +1212,7 @@
             with subtest("client observes the pre-auth banner"):
                 status, output = client.execute(
                     "ssh -i /root/test-key"
-                    + " -o StrictHostKeyChecking=accept-new"
-                    + " -o UserKnownHostsFile=/root/known_hosts"
-                    + " -o BatchMode=yes"
+                    + ssh_batch
                     + " testuser@server -- true 2>&1"
                 )
                 assert status == 0, f"key login failed: {output}"
@@ -1237,8 +1233,7 @@
                     + " ssh -o PubkeyAuthentication=no"
                     + " -o PreferredAuthentications=keyboard-interactive"
                     + " -o NumberOfPasswordPrompts=1"
-                    + " -o StrictHostKeyChecking=accept-new"
-                    + " -o UserKnownHostsFile=/root/known_hosts"
+                    + ssh_flags
                     + " kbduser@kbd-server -- true 2>&1"
                 )
                 assert status != 0, f"locked user's password was accepted: {output}"

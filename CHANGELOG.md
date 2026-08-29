@@ -35,6 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   at evaluation time on every port-carrying option — server `port`,
   `listenAddresses` sub-ports, and client host blocks — forcing the real
   consumer wiring, not just the type declarations
+- Docs & DRY: README recipes for `listenAddresses` and the
+  `usePam`/`authenticationMethods` two-factor setup; the pre-push gate
+  hook and the new `scripts/regen-golden.sh` documented in CONTRIBUTING;
+  stale AGENTS check counts corrected; the VM testScript's seven repeated
+  ssh option strings hoisted into one variable; the server example now
+  shows the full 2FA recipe including the PAM `unixAuth` pin
 
 ## [0.1.3] — 2026-08-29
 

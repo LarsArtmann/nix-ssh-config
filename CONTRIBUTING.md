@@ -12,6 +12,13 @@ Or with [direnv](https://direnv.net/):
 echo "use flake" > .envrc && direnv allow
 ```
 
+Entering the dev shell once installs a pre-push git hook that runs the
+full gate before every `git push` (skip a single push with
+`git push --no-verify`). The VM integration test's `sshd -T` golden
+snapshot is never edited by hand: regenerate it with
+`scripts/regen-golden.sh` (refuses a dirty tree, idempotent on an
+unchanged config) and review the diff deliberately.
+
 ## Making Changes
 
 1. Edit modules in `modules/`

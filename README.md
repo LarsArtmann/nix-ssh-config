@@ -224,6 +224,39 @@ Or use keys from the flake output:
 }
 ```
 
+Bind to specific interfaces with `listenAddresses` (entries here replace
+the plain `Port` directive):
+
+```nix
+{
+  services.ssh-server = {
+    enable = true;
+    listenAddresses = [
+      { addr = "10.0.0.5"; } # uses `port`
+      { addr = "::1"; port = 2223; }
+    ];
+    authorizedKeys = [ "ssh-ed25519 AAAA... user@host" ];
+  };
+}
+```
+
+PAM-backed two-factor auth (publickey **and** a keyboard-interactive
+prompt, with direct password logins still off) — note the module fixes
+the sshd PAM stack for you (`security.pam.services.sshd.unixAuth`),
+without which upstream nixpkgs would deny every prompt:
+
+```nix
+{
+  services.ssh-server = {
+    enable = true;
+    passwordAuthentication = false;
+    kbdInteractiveAuthentication = true; # prompt path on (PAM services it)
+    authenticationMethods = "publickey,keyboard-interactive"; # both required, in order
+    authorizedKeys = [ "ssh-ed25519 AAAA... user@host" ];
+  };
+}
+```
+
 ## Security Defaults
 
 ### Server Hardening

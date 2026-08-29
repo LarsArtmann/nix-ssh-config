@@ -33,6 +33,11 @@
     # PAM-backed two-factor auth? keyboard-interactive follows
     # passwordAuthentication by default; opt in explicitly:
     # kbdInteractiveAuthentication = true;
+    # authenticationMethods = "publickey,keyboard-interactive";
+    # (both factors required, in that order). The module also pins
+    # security.pam.services.sshd.unixAuth = true for the explicit
+    # prompt-path opt-in — upstream nixpkgs would otherwise pam_deny
+    # every prompt on a keys-only host.
 
     # Escape hatch for any sshd_config directive not modeled above.
     # Merges last, so it can override module defaults (LoginGraceTime is
