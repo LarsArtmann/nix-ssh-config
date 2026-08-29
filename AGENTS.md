@@ -41,14 +41,16 @@ modules/
 ├── shared/banner.nix        # Default legal banner constant (byte-stable)
 ├── home-manager/ssh.nix     # Client config  → homeManagerModules.ssh
 └── nixos/ssh.nix            # Server config  → nixosModules.ssh
-tests/                       # Throwaway CI keypair for eval fixtures + VM test
+tests/
+├── checks.nix               # The whole check suite as a flake-parts module
+└── test-key{,.pub}          # Throwaway CI keypair (fixtures + VM test)
 examples/                    # Copy-ready client/server modules → examples.*
 ```
 
 - **`modules/shared/crypto.nix`** — Defines four algorithm lists (`pqKex`, `aeadCiphers`, `etmMacs`, `modernHostKeys`) and their comma-joined `*String` variants. Both client and server import this. Any crypto change happens here and propagates to both.
 - **Client** (`home-manager/ssh.nix`) — Options under `ssh-config.*`. Generates `programs.ssh.settings` blocks (`*` global defaults, `github.com`, plus user hosts). Has a Home Manager activation script that creates `~/.ssh/sockets` with mode 700.
 - **Server** (`nixos/ssh.nix`) — Options under `services.ssh-server.*`. Generates `services.openssh.settings` plus `environment.etc` entries for authorized keys and banner. Guards everything with `lib.mkIf config.services.ssh-server.enable`.
-- **Flake** — Built with flake-parts (`mkFlake { inherit inputs; }` receiving an attrset, not a bare module list) plus the treefmt-nix flakeModule.
+- **Flake** — Built with flake-parts (`mkFlake { inherit inputs; }` receiving an attrset, not a bare module list) plus the treefmt-nix flakeModule. `flake.nix` stays small (~60 lines: inputs, modules/examples/sshKeys outputs, treefmt, devShell); **every check lives in `tests/checks.nix`** (imported as a flake-parts module) — new tests go there, not into flake.nix.
 
 ### Flake outputs
 

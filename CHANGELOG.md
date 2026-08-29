@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   counts to match the actual checks — the drift class behind "13 checks" and
   stale option tables now fails CI mechanically
 
+### Changed
+
+- The check suite moved out of `flake.nix` into `tests/checks.nix` (a
+  flake-parts module). `flake.nix` shrinks to ~60 lines of inputs, outputs,
+  formatting and the dev shell; adding a test no longer means spelunking a
+  900-line file. All check names and counts are unchanged
+
 ## [0.1.2] — 2026-08-29
 
 ### Fixed
