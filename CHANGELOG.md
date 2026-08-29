@@ -35,6 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the sntrup761 IANA alias (`sntrup761x25519-sha512`) is configured
   alongside the `@openssh.com` name; `examples/server.nix` now shows the
   evaluated per-user authorized-keys pattern
+- Option batch 2: server `usePam` (null leaves the NixOS default true,
+  false is a PAM-free host) and `authenticationMethods` (comma-chained
+  two-factor auth) options; client per-host `controlMaster` and
+  `updateHostKeys` overrides; explicit `MaxStartups = "10:30:60"` and
+  `PerSourcePenalties = true` defaults (both overridable via
+  `extraSettings`)
 
 ### Changed
 

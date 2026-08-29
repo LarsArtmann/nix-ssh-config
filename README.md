@@ -97,21 +97,23 @@ Configures SSH client settings via Home Manager.
 
 #### Host Submodule Options
 
-| Option                | Type      | Default | Description                                        |
-| --------------------- | --------- | ------- | -------------------------------------------------- |
-| `hostname`            | str       | —       | Host IP or hostname                                |
-| `user`                | str\|null | `null`  | Username (defaults to `ssh-config.user`)           |
-| `port`                | int\|null | `null`  | SSH port                                           |
-| `identityFile`        | str\|null | `null`  | Path to identity file                              |
-| `certificateFile`     | str\|null | `null`  | Certificate file for this host (`CertificateFile`) |
-| `serverAliveInterval` | int\|null | `null`  | Keepalive interval (s)                             |
-| `serverAliveCountMax` | int\|null | `null`  | Max keepalive probes                               |
-| `proxyJump`           | str\|null | `null`  | Jump host to route through (`ProxyJump`)           |
-| `forwardX11`          | bool      | `false` | Forward X11 for this host (`ForwardX11 yes`)       |
-| `localForwards`       | [forward] | `[]`    | Local port forwardings (`LocalForward`)            |
-| `remoteForwards`      | [forward] | `[]`    | Remote port forwardings (`RemoteForward`)          |
-| `dynamicForwards`     | [address] | `[]`    | Dynamic SOCKS forwardings (`DynamicForward`)       |
-| `extraOptions`        | attrs     | `{}`    | Additional SSH options                             |
+| Option                | Type      | Default | Description                                                                           |
+| --------------------- | --------- | ------- | ------------------------------------------------------------------------------------- |
+| `hostname`            | str       | —       | Host IP or hostname                                                                   |
+| `user`                | str\|null | `null`  | Username (defaults to `ssh-config.user`)                                              |
+| `port`                | int\|null | `null`  | SSH port                                                                              |
+| `identityFile`        | str\|null | `null`  | Path to identity file                                                                 |
+| `certificateFile`     | str\|null | `null`  | Certificate file for this host (`CertificateFile`)                                    |
+| `controlMaster`       | str\|null | `null`  | Per-host connection multiplexing (`ControlMaster`: `yes`/`no`/`auto`/`ask`/`autoask`) |
+| `updateHostKeys`      | str\|null | `null`  | Accept rotated host keys (`UpdateHostKeys`: `yes`/`no`/`ask`)                         |
+| `serverAliveInterval` | int\|null | `null`  | Keepalive interval (s)                                                                |
+| `serverAliveCountMax` | int\|null | `null`  | Max keepalive probes                                                                  |
+| `proxyJump`           | str\|null | `null`  | Jump host to route through (`ProxyJump`)                                              |
+| `forwardX11`          | bool      | `false` | Forward X11 for this host (`ForwardX11 yes`)                                          |
+| `localForwards`       | [forward] | `[]`    | Local port forwardings (`LocalForward`)                                               |
+| `remoteForwards`      | [forward] | `[]`    | Remote port forwardings (`RemoteForward`)                                             |
+| `dynamicForwards`     | [address] | `[]`    | Dynamic SOCKS forwardings (`DynamicForward`)                                          |
+| `extraOptions`        | attrs     | `{}`    | Additional SSH options                                                                |
 
 A **forward** is `{ bind = { address ?, port }; host = { address ?, port }; }`
 and an **address** is `{ address ? = "localhost", port }`. The structured
@@ -161,19 +163,21 @@ Configures OpenSSH server (sshd) with hardening.
 
 #### Options
 
-| Option                                             | Type      | Default                  | Description                                                                                                                 |
-| -------------------------------------------------- | --------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `services.ssh-server.enable`                       | bool      | `false`                  | Enable SSH server                                                                                                           |
-| `services.ssh-server.port`                         | int       | `22`                     | Listen port                                                                                                                 |
-| `services.ssh-server.listenAddresses`              | list      | `[]`                     | `{ addr, port ? }` addresses to bind; empty listens on all interfaces at `port`; non-empty overrides the plain port binding |
-| `services.ssh-server.allowUsers`                   | list      | `[]`                     | Allowed users                                                                                                               |
-| `services.ssh-server.allowRootLogin`               | bool      | `false`                  | Allow root login                                                                                                            |
-| `services.ssh-server.passwordAuthentication`       | bool      | `false`                  | Allow passwords                                                                                                             |
-| `services.ssh-server.kbdInteractiveAuthentication` | bool      | `passwordAuthentication` | Allow keyboard-interactive (defaults to follow `passwordAuthentication`; set `true` explicitly for PAM-backed 2FA)          |
-| `services.ssh-server.authorizedKeys`               | list      | `[]`                     | SSH public keys to authorize (file is **copied** into `/etc`, not symlinked — sshd StrictModes rejects store symlinks)      |
-| `services.ssh-server.authorizedKeysFiles`          | list      | (see below)              | Key file paths                                                                                                              |
-| `services.ssh-server.extraSettings`                | attrs     | `{}`                     | Extra OpenSSH settings                                                                                                      |
-| `services.ssh-server.bannerText`                   | str\|null | default banner           | SSH banner (null to disable; control characters are rejected at evaluation time)                                            |
+| Option                                             | Type       | Default                  | Description                                                                                                                                  |
+| -------------------------------------------------- | ---------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `services.ssh-server.enable`                       | bool       | `false`                  | Enable SSH server                                                                                                                            |
+| `services.ssh-server.port`                         | int        | `22`                     | Listen port                                                                                                                                  |
+| `services.ssh-server.listenAddresses`              | list       | `[]`                     | `{ addr, port ? }` addresses to bind; empty listens on all interfaces at `port`; non-empty overrides the plain port binding                  |
+| `services.ssh-server.usePam`                       | bool\|null | `null`                   | PAM authentication (`null` = NixOS default `true`; `false` = PAM-free host); only matters with `kbdInteractiveAuthentication = true` for 2FA |
+| `services.ssh-server.authenticationMethods`        | str\|null  | `null`                   | `AuthenticationMethods` directive; commas chain methods in sequence, e.g. `publickey,keyboard-interactive` for two-factor auth               |
+| `services.ssh-server.allowUsers`                   | list       | `[]`                     | Allowed users                                                                                                                                |
+| `services.ssh-server.allowRootLogin`               | bool       | `false`                  | Allow root login                                                                                                                             |
+| `services.ssh-server.passwordAuthentication`       | bool       | `false`                  | Allow passwords                                                                                                                              |
+| `services.ssh-server.kbdInteractiveAuthentication` | bool       | `passwordAuthentication` | Allow keyboard-interactive (defaults to follow `passwordAuthentication`; set `true` explicitly for PAM-backed 2FA)                           |
+| `services.ssh-server.authorizedKeys`               | list       | `[]`                     | SSH public keys to authorize (file is **copied** into `/etc`, not symlinked — sshd StrictModes rejects store symlinks)                       |
+| `services.ssh-server.authorizedKeysFiles`          | list       | (see below)              | Key file paths                                                                                                                               |
+| `services.ssh-server.extraSettings`                | attrs      | `{}`                     | Extra OpenSSH settings                                                                                                                       |
+| `services.ssh-server.bannerText`                   | str\|null  | default banner           | SSH banner (null to disable; control characters are rejected at evaluation time)                                                             |
 
 Default `authorizedKeysFiles`:
 

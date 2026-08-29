@@ -88,6 +88,30 @@ in
               default = null;
               description = "Certificate file for this host (CertificateFile)";
             };
+            controlMaster = lib.mkOption {
+              type = lib.types.nullOr (
+                lib.types.enum [
+                  "yes"
+                  "no"
+                  "auto"
+                  "ask"
+                  "autoask"
+                ]
+              );
+              default = null;
+              description = "Connection multiplexing for this host (ControlMaster)";
+            };
+            updateHostKeys = lib.mkOption {
+              type = lib.types.nullOr (
+                lib.types.enum [
+                  "yes"
+                  "no"
+                  "ask"
+                ]
+              );
+              default = null;
+              description = "Whether to accept changed host keys into known_hosts (UpdateHostKeys)";
+            };
             serverAliveInterval = lib.mkOption {
               type = lib.types.nullOr lib.types.int;
               default = null;
@@ -244,6 +268,12 @@ in
           // lib.optionalAttrs (hostConfig.identityFile != null) { IdentityFile = hostConfig.identityFile; }
           // lib.optionalAttrs (hostConfig.certificateFile != null) {
             CertificateFile = hostConfig.certificateFile;
+          }
+          // lib.optionalAttrs (hostConfig.controlMaster != null) {
+            ControlMaster = hostConfig.controlMaster;
+          }
+          // lib.optionalAttrs (hostConfig.updateHostKeys != null) {
+            UpdateHostKeys = hostConfig.updateHostKeys;
           }
           // lib.optionalAttrs (hostConfig.serverAliveInterval != null) {
             ServerAliveInterval = hostConfig.serverAliveInterval;

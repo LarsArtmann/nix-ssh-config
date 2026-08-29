@@ -83,6 +83,31 @@ in
       '';
     };
 
+    usePam = lib.mkOption {
+      type = lib.types.nullOr lib.types.bool;
+      default = null;
+      description = ''
+        Whether to enable PAM authentication (settings.UsePAM). `null` (the
+        default) leaves NixOS's own default (true, which also creates the
+        sshd PAM service). Set `false` for a PAM-free host. Password and
+        keyboard-interactive stay off regardless; PAM only matters if you
+        enable `kbdInteractiveAuthentication` for two-factor auth.
+      '';
+    };
+
+    authenticationMethods = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "publickey,keyboard-interactive";
+      description = ''
+        AuthenticationMethods directive (`null` to not emit it). Space-
+        separates alternative method lists; commas within a list mean the
+        methods are required in sequence. For two-factor auth combine with
+        `kbdInteractiveAuthentication = true` and `passwordAuthentication =
+        false`.
+      '';
+    };
+
     authorizedKeys = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
@@ -178,7 +203,22 @@ in
 
         LogLevel = "VERBOSE";
 
+        # Upstream default (10:30:100 since OpenSSH 9.8-era) tightened to a
+        # lower full-backlog cap; overridable via extraSettings.
+        MaxStartups = "10:30:60";
+
+        # Explicit rather than implicit: per-source rate-limit penalties are
+        # on by default since OpenSSH 9.8 and we want that guaranteed
+        # regardless of upstream flips (overridable via extraSettings).
+        PerSourcePenalties = true;
+
         Banner = lib.mkIf (config.services.ssh-server.bannerText != null) (lib.mkDefault "/etc/ssh/banner");
+      }
+      // lib.optionalAttrs (config.services.ssh-server.usePam != null) {
+        UsePAM = config.services.ssh-server.usePam;
+      }
+      // lib.optionalAttrs (config.services.ssh-server.authenticationMethods != null) {
+        AuthenticationMethods = config.services.ssh-server.authenticationMethods;
       }
       // config.services.ssh-server.extraSettings;
 

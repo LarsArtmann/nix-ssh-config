@@ -51,10 +51,12 @@
         "macs"
         "maxauthtries"
         "maxsessions"
+        "maxstartups"
         "passwordauthentication"
         "permitemptypasswords"
         "permitrootlogin"
         "permittunnel"
+        "persourcepenalties"
         "port"
         "pubkeyacceptedalgorithms"
         "pubkeyauthentication"
@@ -111,6 +113,8 @@
                 port = 2223;
               }
             ];
+            usePam = false;
+            authenticationMethods = "publickey,keyboard-interactive";
             extraSettings.LoginGraceTime = 42;
             extraSettings.KbdInteractiveAuthentication = true;
           };
@@ -176,6 +180,8 @@
                 hostname = "example.com";
                 user = "admin";
                 certificateFile = "~/certs/example-cert.pub";
+                controlMaster = "auto";
+                updateHostKeys = "yes";
               };
               # No user set: must inherit ssh-config.user ("test" via
               # home.username).
@@ -515,6 +521,16 @@
             expected = "~/certs/example-cert.pub";
           }
           {
+            name = "ControlMaster per-host override";
+            actual = (hmBlock "test").ControlMaster;
+            expected = "auto";
+          }
+          {
+            name = "UpdateHostKeys per-host override";
+            actual = (hmBlock "test").UpdateHostKeys;
+            expected = "yes";
+          }
+          {
             name = "extraOptions.Compression";
             actual = (hmBlock "full").Compression;
             expected = "yes";
@@ -708,6 +724,31 @@
             name = "LoginGraceTime has an explicit hardened default";
             actual = nixosEval.config.services.openssh.settings.LoginGraceTime;
             expected = 30;
+          }
+          {
+            name = "usePam = false reaches settings.UsePAM";
+            actual = nixosCustomEval.config.services.openssh.settings.UsePAM;
+            expected = false;
+          }
+          {
+            name = "usePam null leaves NixOS default (true) untouched";
+            actual = nixosEval.config.services.openssh.settings.UsePAM;
+            expected = true;
+          }
+          {
+            name = "authenticationMethods reaches settings";
+            actual = nixosCustomEval.config.services.openssh.settings.AuthenticationMethods;
+            expected = "publickey,keyboard-interactive";
+          }
+          {
+            name = "MaxStartups explicitly tightened";
+            actual = nixosEval.config.services.openssh.settings.MaxStartups;
+            expected = "10:30:60";
+          }
+          {
+            name = "PerSourcePenalties explicitly on";
+            actual = nixosEval.config.services.openssh.settings.PerSourcePenalties;
+            expected = true;
           }
           {
             name = "extraSettings overrides a default (KbdInteractiveAuthentication)";

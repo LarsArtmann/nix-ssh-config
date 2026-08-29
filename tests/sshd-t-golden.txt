@@ -13,10 +13,12 @@ loglevel VERBOSE
 macs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com
 maxauthtries 3
 maxsessions 2
+maxstartups 10:30:60
 passwordauthentication no
 permitemptypasswords no
 permitrootlogin no
 permittunnel no
+persourcepenalties crash:90.000000 authfail:5.000000 noauth:1.000000 invaliduser:5.000000 grace-exceeded:10.000000 refuseconnection:10.000000 max:600.000000 min:15.000000 max-sources4:65536 max-sources6:65536 overflow:permissive overflow6:permissive
 port 22
 pubkeyacceptedalgorithms ssh-ed25519,sk-ssh-ed25519@openssh.com,rsa-sha2-512,rsa-sha2-256
 pubkeyauthentication yes
