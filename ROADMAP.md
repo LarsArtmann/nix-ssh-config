@@ -77,7 +77,7 @@ become bounded TODO_LIST rows:
 - Client keepalive/`ControlMaster`/`UpdateHostKeys` as options instead of
   hardcoded values
 - `PerSourcePenalties` / `MaxStartups` hardened defaults decisions
-- `LoginGraceTime` explicit default + doc (upstream 120s + jitter since 9.9)
+- ~~`LoginGraceTime` explicit default + doc (upstream 120s + jitter since 9.9)~~ done in v0.1.3 work (2026-08-29): module pins 30s; documented in README
 - `sntrup761x25519-sha512` IANA alias alongside the `@openssh.com` name
   (OpenSSH 9.9+)
 

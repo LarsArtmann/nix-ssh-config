@@ -25,6 +25,31 @@ in
       description = "Port to listen on";
     };
 
+    listenAddresses = lib.mkOption {
+      type = lib.types.listOf (
+        lib.types.submodule {
+          options = {
+            addr = lib.mkOption {
+              type = lib.types.str;
+              example = "0.0.0.0";
+              description = "Address to bind (IPv6 without brackets)";
+            };
+            port = lib.mkOption {
+              type = lib.types.nullOr lib.types.port;
+              default = null;
+              description = "Port for this address (defaults to `port`)";
+            };
+          };
+        }
+      );
+      default = [ ];
+      description = ''
+        Specific addresses to listen on. Empty (the default) listens on all
+        interfaces at `port`. Non-empty values emit ListenAddress directives,
+        which take precedence over the plain Port directive.
+      '';
+    };
+
     allowUsers = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
@@ -141,6 +166,10 @@ in
         MaxSessions = 2;
         ClientAliveInterval = 300;
         ClientAliveCountMax = 2;
+        # Hardened explicit default: upstream sshd's is 120s (plus random
+        # jitter since OpenSSH 9.9). 30s limits unauthenticated connection
+        # hold time; auth must complete within this window.
+        LoginGraceTime = 30;
 
         Ciphers = crypto.aeadCiphers;
         Macs = crypto.etmMacs;
@@ -155,6 +184,10 @@ in
 
       openFirewall = true;
       ports = [ config.services.ssh-server.port ];
+      listenAddresses = map (l: {
+        inherit (l) addr;
+        port = if l.port != null then l.port else config.services.ssh-server.port;
+      }) config.services.ssh-server.listenAddresses;
     };
 
     environment.etc =

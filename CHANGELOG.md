@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - VM golden snapshot: `tests/sshd-t-golden.txt` captures the effective
   `sshd -T` output of every directive the server module controls; the VM
   test fails with a precise key-by-key diff if runtime behavior drifts
+- Option wins: server `listenAddresses` (bind specific `addr:port` pairs)
+  and an explicit hardened `LoginGraceTime = 30` default (upstream: 120s
+  plus random jitter since OpenSSH 9.9); client host `certificateFile`;
+  the sntrup761 IANA alias (`sntrup761x25519-sha512`) is configured
+  alongside the `@openssh.com` name; `examples/server.nix` now shows the
+  evaluated per-user authorized-keys pattern
 
 ### Changed
 

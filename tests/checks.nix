@@ -46,6 +46,7 @@
         "hostkeyalgorithms"
         "kbdinteractiveauthentication"
         "kexalgorithms"
+        "logingracetime"
         "loglevel"
         "macs"
         "maxauthtries"
@@ -103,6 +104,13 @@
           services.ssh-server = {
             enable = true;
             port = 2222;
+            listenAddresses = [
+              { addr = "0.0.0.0"; }
+              {
+                addr = "::1";
+                port = 2223;
+              }
+            ];
             extraSettings.LoginGraceTime = 42;
             extraSettings.KbdInteractiveAuthentication = true;
           };
@@ -167,6 +175,7 @@
               test = {
                 hostname = "example.com";
                 user = "admin";
+                certificateFile = "~/certs/example-cert.pub";
               };
               # No user set: must inherit ssh-config.user ("test" via
               # home.username).
@@ -330,6 +339,7 @@
               effective=$(ssh -F "$cfg" -G test 2>/dev/null)
               echo "$effective" | grep -qx "hostname example.com"
               echo "$effective" | grep -qx "user admin"
+              echo "$effective" | grep -qx "certificatefile ~/certs/example-cert.pub"
               echo "$effective" | grep -qx "port 22"
               echo "$effective" | grep -qx "ciphers ${crypto.aeadCiphersString}"
               echo "$effective" | grep -qx "kexalgorithms ${crypto.pqKexString}"
@@ -350,6 +360,7 @@
           echo "$cfg" | grep -q 'MACs ${crypto.etmMacsString}'
           echo "$cfg" | grep -q 'HostKeyAlgorithms ${crypto.modernHostKeysString}'
           echo "$cfg" | grep -q 'IdentityFile '
+          echo "$cfg" | grep -q 'CertificateFile ~/certs/example-cert.pub'
           echo ok > $out
         '';
 
@@ -497,6 +508,11 @@
             name = "ServerAliveCountMax";
             actual = (hmBlock "full").ServerAliveCountMax;
             expected = 2;
+          }
+          {
+            name = "CertificateFile";
+            actual = (hmBlock "test").CertificateFile;
+            expected = "~/certs/example-cert.pub";
           }
           {
             name = "extraOptions.Compression";
@@ -673,6 +689,25 @@
             name = "extraSettings overrides a default (LoginGraceTime)";
             actual = nixosCustomEval.config.services.openssh.settings.LoginGraceTime;
             expected = 42;
+          }
+          {
+            name = "listenAddresses pass through (port defaults to `port`)";
+            actual = nixosCustomEval.config.services.openssh.listenAddresses;
+            expected = [
+              {
+                addr = "0.0.0.0";
+                port = 2222;
+              }
+              {
+                addr = "::1";
+                port = 2223;
+              }
+            ];
+          }
+          {
+            name = "LoginGraceTime has an explicit hardened default";
+            actual = nixosEval.config.services.openssh.settings.LoginGraceTime;
+            expected = 30;
           }
           {
             name = "extraSettings overrides a default (KbdInteractiveAuthentication)";

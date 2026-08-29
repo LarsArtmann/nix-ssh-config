@@ -35,7 +35,19 @@
     # kbdInteractiveAuthentication = true;
 
     # Escape hatch for any sshd_config directive not modeled above.
-    # Merges last, so it can override defaults:
-    # extraSettings.LoginGraceTime = 30;
+    # Merges last, so it can override module defaults (LoginGraceTime is
+    # already pinned to a hardened 30s by the module itself):
+    # extraSettings.MaxAuthTries = 2;
+  };
+
+  # Per-user keys: authorize specific keys for one account without adding
+  # them to the global authorizedKeys above (evaluated, so this example
+  # really builds; adjust user and key to your setup).
+  users.users.youruser = {
+    isNormalUser = true;
+    description = "Your login user";
+    openssh.authorizedKeys.keys = [
+      # "ssh-ed25519 AAAA... laptop"  (empty by default; add your keys)
+    ];
   };
 }

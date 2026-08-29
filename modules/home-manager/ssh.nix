@@ -83,6 +83,11 @@ in
               default = null;
               description = "Path to identity file";
             };
+            certificateFile = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Certificate file for this host (CertificateFile)";
+            };
             serverAliveInterval = lib.mkOption {
               type = lib.types.nullOr lib.types.int;
               default = null;
@@ -237,6 +242,9 @@ in
           }
           // lib.optionalAttrs (hostConfig.port != null) { Port = hostConfig.port; }
           // lib.optionalAttrs (hostConfig.identityFile != null) { IdentityFile = hostConfig.identityFile; }
+          // lib.optionalAttrs (hostConfig.certificateFile != null) {
+            CertificateFile = hostConfig.certificateFile;
+          }
           // lib.optionalAttrs (hostConfig.serverAliveInterval != null) {
             ServerAliveInterval = hostConfig.serverAliveInterval;
           }

@@ -7,7 +7,8 @@ clientalivecountmax 2
 clientaliveinterval 300
 hostkeyalgorithms ssh-ed25519,sk-ssh-ed25519@openssh.com,rsa-sha2-512,rsa-sha2-256
 kbdinteractiveauthentication no
-kexalgorithms mlkem768x25519-sha256,sntrup761x25519-sha512@openssh.com,curve25519-sha256@libssh.org,curve25519-sha256
+kexalgorithms mlkem768x25519-sha256,sntrup761x25519-sha512@openssh.com,sntrup761x25519-sha512,curve25519-sha256@libssh.org,curve25519-sha256
+logingracetime 30
 loglevel VERBOSE
 macs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com
 maxauthtries 3
