@@ -4,7 +4,10 @@ Modular, reusable SSH configuration for Nix-based systems. Provides hardened SSH
 
 ## Features
 
-- **Cross-platform**: Works on both macOS (nix-darwin) and NixOS
+- **Cross-platform**: Works on both macOS (nix-darwin) and NixOS. Supported
+  systems: `aarch64-darwin`, `x86_64-linux`, `aarch64-linux` (`x86_64-darwin`
+  is excluded — deprecated in Nixpkgs 26.05). The client module configures
+  macOS SSH; the server module is NixOS-only.
 - **Modular**: Use only what you need - client config, server config, or both
 - **Hardened**: Secure-by-default settings following best practices
 - **Post-quantum ready**: ML-KEM hybrid key exchange for future-proof security
@@ -68,7 +71,7 @@ affects this repo's own CI checks. Two strategies for consumers:
 
 Since the modules render `services.openssh.settings` / `programs.ssh.settings`
 values, the OpenSSH version that actually matters is the one in **your**
-system's nixpkgs — see the compatibility matrix above (≥ 9.9 for
+system's nixpkgs — see the compatibility matrix below (≥ 9.9 for
 post-quantum KEX).
 
 ## Module Reference
@@ -161,10 +164,11 @@ Configures OpenSSH server (sshd) with hardening.
 | `services.ssh-server.allowUsers`             | list      | `[]`           | Allowed users                |
 | `services.ssh-server.allowRootLogin`         | bool      | `false`        | Allow root login             |
 | `services.ssh-server.passwordAuthentication` | bool      | `false`        | Allow passwords              |
-| `services.ssh-server.authorizedKeys`         | list      | `[]`           | SSH public keys to authorize |
+| `services.ssh-server.kbdInteractiveAuthentication` | bool | `passwordAuthentication` | Allow keyboard-interactive (defaults to follow `passwordAuthentication`; set `true` explicitly for PAM-backed 2FA) |
+| `services.ssh-server.authorizedKeys`         | list      | `[]`           | SSH public keys to authorize (file is **copied** into `/etc`, not symlinked — sshd StrictModes rejects store symlinks) |
 | `services.ssh-server.authorizedKeysFiles`    | list      | (see below)    | Key file paths               |
 | `services.ssh-server.extraSettings`          | attrs     | `{}`           | Extra OpenSSH settings       |
-| `services.ssh-server.bannerText`             | str\|null | default banner | SSH banner (null to disable) |
+| `services.ssh-server.bannerText`             | str\|null | default banner | SSH banner (null to disable; control characters are rejected at evaluation time) |
 
 Default `authorizedKeysFiles`:
 
@@ -216,6 +220,13 @@ Or use keys from the flake output:
 ### Server Hardening
 
 - Password authentication disabled (keys only)
+- Keyboard-interactive authentication disabled with passwords (defaults to
+  `passwordAuthentication`): `PasswordAuthentication no` alone is not
+  keys-only — NixOS defaults `KbdInteractiveAuthentication yes` (with
+  `UsePAM yes`), which keeps a PAM-serviced prompt channel open (OTP/2FA
+  modules, or Unix account passwords wherever the sshd PAM service permits
+  them). Set `services.ssh-server.kbdInteractiveAuthentication = true`
+  explicitly if you run PAM-backed two-factor authentication.
 - Root login disabled
 - **Post-quantum key exchange**: `mlkem768x25519-sha256` (ML-KEM hybrid, NIST FIPS 203)
 - AEAD ciphers only: ChaCha20-Poly1305, AES-GCM
@@ -280,11 +291,14 @@ All algorithm choices follow a **conservative + post-quantum** strategy:
 ├── flake.nix                      # Flake entry point (flake-parts)
 ├── modules/
 │   ├── shared/
-│   │   └── crypto.nix             # Shared cryptographic algorithm definitions
+│   │   ├── crypto.nix             # Shared cryptographic algorithm definitions
+│   │   └── banner.nix             # Default legal banner constant
 │   ├── home-manager/
 │   │   └── ssh.nix                # Client configuration
 │   └── nixos/
 │       └── ssh.nix                # Server configuration
+├── examples/                      # Copy-ready client/server modules (flake outputs)
+├── tests/                         # Throwaway keypair for eval fixtures + VM test
 ├── ssh-keys/                      # Tracked public keys (private keys are gitignored)
 │   ├── lars-ed25519.pub
 │   └── lars-evo-x2-ed25519.pub

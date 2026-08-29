@@ -39,9 +39,9 @@ Execute the `docs-health` skill fully: view ALL files, make README / AGENTS / CH
 
 | # | What                           | Status                                                                                                                                                                              | What's Left                                                                                                     |
 | - | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| 1 | **CI fix verification**        | Workflow fixed and the exact gate verified green locally on the same architecture as the GitHub runner.                                                                             | Not pushed — a green `Check` run on GitHub is the only real proof. Tracked as TODO_LIST High.                   |
-| 2 | **OpenSSH compatibility data** | The README matrix (ML-KEM ≥ 9.9, sntrup761 ≥ 8.5, curve25519/chacha20 ≥ 6.5, default since 10.0) was inherited from prior sessions and cross-checked for internal consistency only. | Not re-verified against upstream OpenSSH release notes this session. Low risk, but it is an unverified claim.   |
-| 3 | **Annotation rendering**       | All annotations verified structurally (awk scan: zero unmarked open items in b/c/e/f sections; no double-strikes).                                                                  | Never rendered in an actual Markdown viewer — visual confirmation of the strikethrough tables is still pending. |
+| ~~1~~ | ~~**CI fix verification**~~ done at `0029a6e`, `de815b7` | ~~Workflow fixed and the exact gate verified green locally on the same architecture as the GitHub runner.~~ | ~~Not pushed — a green `Check` run on GitHub is the only real proof. Tracked as TODO_LIST High.~~ |
+| ~~2~~ | ~~**OpenSSH compatibility data**~~ done at `bc62979` | ~~The README matrix (ML-KEM ≥ 9.9, sntrup761 ≥ 8.5, curve25519/chacha20 ≥ 6.5, default since 10.0) was inherited from prior sessions and cross-checked for internal consistency only.~~ | ~~Not re-verified against upstream OpenSSH release notes this session. Low risk, but it is an unverified claim.~~ |
+| ~~3~~ | ~~**Annotation rendering**~~ done at `c35a482` | ~~All annotations verified structurally (awk scan: zero unmarked open items in b/c/e/f sections; no double-strikes).~~ | ~~Never rendered in an actual Markdown viewer — visual confirmation of the strikethrough tables is still pending.~~ |
 
 ---
 
@@ -49,9 +49,9 @@ Execute the `docs-health` skill fully: view ALL files, make README / AGENTS / CH
 
 | # | What                             | Priority | Notes                                                                                                                                                         |
 | - | -------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 | All 12 TODO_LIST.md tasks        | varies   | The session built the list; executing it is future work (see section f).                                                                                      |
-| 2 | `docs/DOMAIN_LANGUAGE.md`        | Low      | Deliberately skipped: crypto terms are defined once in README's rationale; a glossary would duplicate (single-home rule). Confirm or overrule — question g/3. |
-| 3 | Push + green CI run + v0.1.0 tag | High     | Requires maintainer decision (questions g/1, g/2).                                                                                                            |
+| ~~1~~ | ~~All 12 TODO_LIST.md tasks~~ done (executed 2026-08-22, see the 06-24 execution-plan report) | ~~varies~~ | ~~The session built the list; executing it is future work (see section f).~~ |
+| ~~2~~ | ~~`docs/DOMAIN_LANGUAGE.md`~~ **Won't implement — declined, single-home rule (g/3).** | ~~Low~~ | ~~Deliberately skipped: crypto terms are defined once in README's rationale; a glossary would duplicate (single-home rule). Confirm or overrule — question g/3.~~ |
+| ~~3~~ | ~~Push + green CI run + v0.1.0 tag~~ done at `99d533b`, `83ecd85` | ~~High~~ | ~~Requires maintainer decision (questions g/1, g/2).~~ |
 
 ---
 
@@ -75,14 +75,14 @@ Honest self-review of this session's mistakes and near-misses. Nothing shipped b
 
 | # | Area                                | Current State                                                                                          | Improvement                                                                                                                        |
 | - | ----------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 1 | **Skill/tooling fit**               | The bundled annotation scripts only scope to `## f)` sections; this repo's reports use `## A.`–`## G.` | Generalize `annotate-rows.py` scoping (or add a table-section mode) upstream in the skill instead of hand-rolling                  |
-| 2 | **Dry-run discipline**              | My own mutation script ran without a dry-run                                                           | Always dry-run first against a scratch copy, even for "obviously safe" rewrites — the skill exists because of this exact bug class |
-| 3 | **CI green-ness as a doc input**    | Docs claimed CI existed for 4 months; nobody noticed it never passed once                              | Add "CI red" to the things VERIFY checks (gh run list) — I only found it because FEATURES needed an honest status                  |
-| 4 | **Unverified inherited claims**     | OpenSSH version matrix carried forward unverified                                                      | Verify against upstream release notes before the v0.1.0 tag (it is the most quotable claim in the README)                          |
-| 5 | **Pre-existing lint warning**       | `nil_ls` unused `pkgs` binding at `modules/nixos/ssh.nix:4` flagged in every diagnostic                | 1-minute fix, still open (deliberately untouched: out of session scope; now listed in section f)                                   |
-| 6 | **flake.nix test key**              | Real personal key in test evals                                                                        | Replace with throwaway key — hygiene issue tracked in TODO_LIST                                                                    |
+| ~~1~~ | ~~**Skill/tooling fit**~~ **Won't implement — upstream skill concern, out of repo scope.** | ~~The bundled annotation scripts only scope to `## f)` sections; this repo's reports use `## A.`–`## G.`~~ | ~~Generalize `annotate-rows.py` scoping (or add a table-section mode) upstream in the skill instead of hand-rolling~~ |
+| ~~2~~ | ~~**Dry-run discipline**~~ done (process adopted in later passes) | ~~My own mutation script ran without a dry-run~~ | ~~Always dry-run first against a scratch copy, even for "obviously safe" rewrites — the skill exists because of this exact bug class~~ |
+| ~~3~~ | ~~**CI green-ness as a doc input**~~ done (adopted, gh run list checked in the 2026-08-29 docs-health pass) | ~~Docs claimed CI existed for 4 months; nobody noticed it never passed once~~ | ~~Add "CI red" to the things VERIFY checks (gh run list) — I only found it because FEATURES needed an honest status~~ |
+| ~~4~~ | ~~**Unverified inherited claims**~~ done at `bc62979` | ~~OpenSSH version matrix carried forward unverified~~ | ~~Verify against upstream release notes before the v0.1.0 tag (it is the most quotable claim in the README)~~ |
+| ~~5~~ | ~~**Pre-existing lint warning**~~ done at `c35a482` | ~~`nil_ls` unused `pkgs` binding at `modules/nixos/ssh.nix:4` flagged in every diagnostic~~ | ~~1-minute fix, still open (deliberately untouched: out of session scope; now listed in section f)~~ |
+| ~~6~~ | ~~**flake.nix test key**~~ done at `94ccacb` | ~~Real personal key in test evals~~ | ~~Replace with throwaway key — hygiene issue tracked in TODO_LIST~~ |
 | 7 | **Markdown not covered by treefmt** | Only nixfmt is enabled; doc formatting is unchecked by the gate                                        | Acceptable (md formatting is cosmetic), but link checking could be added to CI                                                     |
-| 8 | **Status-report format divergence** | The status-report skill's canonical output is HTML; this report is `.md` per explicit user override    | Decide the canonical format once, so future sessions don't flip-flop (flagged in chat per skill instructions)                      |
+| ~~8~~ | ~~**Status-report format divergence**~~ done (decided Markdown, recorded in TODO_LIST Resolved decisions) | ~~The status-report skill's canonical output is HTML; this report is `.md` per explicit user override~~ | ~~Decide the canonical format once, so future sessions don't flip-flop (flagged in chat per skill instructions)~~ |
 
 ---
 
@@ -90,41 +90,41 @@ Honest self-review of this session's mistakes and near-misses. Nothing shipped b
 
 Already tracked (TODO_LIST.md / ROADMAP.md — deduped, not re-listed as new):
 
-1. Fix HM eval check to force `programs.ssh.settings` (TODO High, 10min)
-2. Restore the 10 dropped content assertions (TODO High, 2h)
-3. Tag v0.1.0 (TODO High, 2min — pending g/2)
-4. Push CI fix, verify green `Check` run (TODO High, 5min — pending g/1)
-5. Throwaway test key (TODO Med, 10min)
-6. Nix-level assertions instead of JSON grep (TODO Med, 30min)
-7. Restore NixOS VM integration test (TODO Med, 2h)
-8. Host submodule options: proxyJump, forwardX11, forwards (TODO Med, 30min)
-9. bannerText validation / submodule (TODO Med, 15min)
-10. `examples/` directory (TODO Low, 30min)
-11. Extract banner text constant (TODO Low, 10min)
-12. ROADMAP themes: darwinModules, age/sops-nix, overlay pin, multi-node test, ML-DSA watch, Darwin CI coverage
+1. ~~Fix HM eval check to force `programs.ssh.settings` (TODO High, 10min)~~ done at `9f64c93`
+2. ~~Restore the 10 dropped content assertions (TODO High, 2h)~~ done at `8be838b`, `e1c3de3`
+3. ~~Tag v0.1.0 (TODO High, 2min — pending g/2)~~ done at `99d533b`
+4. ~~Push CI fix, verify green `Check` run (TODO High, 5min — pending g/1)~~ done at `0029a6e`, `de815b7`
+5. ~~Throwaway test key (TODO Med, 10min)~~ done at `c35a482`
+6. ~~Nix-level assertions instead of JSON grep (TODO Med, 30min)~~ done at `aad4a7a`
+7. ~~Restore NixOS VM integration test (TODO Med, 2h)~~ done at `80ad90e`
+8. ~~Host submodule options: proxyJump, forwardX11, forwards (TODO Med, 30min)~~ done at `19cc522`
+9. ~~bannerText validation / submodule (TODO Med, 15min)~~ done at `3fe1fb6`
+10. ~~`examples/` directory (TODO Low, 30min)~~ done at `af60acb`
+11. ~~Extract banner text constant (TODO Low, 10min)~~ done at `091dfbf`
+12. ~~ROADMAP themes: darwinModules, age/sops-nix, overlay pin, multi-node test, ML-DSA watch, Darwin CI coverage~~ done at `0f27dfd`
 
 New items surfaced by this session (not yet in TODO_LIST/ROADMAP):
 
-13. Verify OpenSSH compatibility matrix against upstream release notes (30min, pre-tag)
-14. Render-check annotated archived reports in a Markdown viewer (10min)
-15. Remove unused `pkgs` binding in `modules/nixos/ssh.nix:4` (1min, silences nil warning)
-16. Add `gh run list` CI-status check to future docs-health VERIFY passes (process change)
-17. Consider a markdown link-checker in CI (20min)
-18. Consider aarch64-linux native CI job alongside x86_64-linux (30min, if runners allow)
-19. Generalize docs-health annotation tooling for `## A.`-style sections (upstream skill PR, 1h)
-20. Decide canonical status-report format (HTML vs md) and record it (5min)
-21. Confirm/decline `docs/DOMAIN_LANGUAGE.md` (5min, pending g/3)
-22. Consider pinning nixpkgs input to a moving-but-tested channel strategy before v0.1.0 consumers rely on it (decision)
+13. ~~Verify OpenSSH compatibility matrix against upstream release notes (30min, pre-tag)~~ done at `bc62979`
+14. ~~Render-check annotated archived reports in a Markdown viewer (10min)~~ done at `c35a482`
+15. ~~Remove unused `pkgs` binding in `modules/nixos/ssh.nix:4` (1min, silences nil warning)~~ done at `c35a482`
+16. ~~Add `gh run list` CI-status check to future docs-health VERIFY passes (process change)~~ done (adopted in the 2026-08-29 docs-health pass)
+17. ~~Consider a markdown link-checker in CI (20min)~~ done at `092760c`
+18. ~~Consider aarch64-linux native CI job alongside x86_64-linux (30min, if runners allow)~~ done at `092760c`
+19. ~~Generalize docs-health annotation tooling for `## A.`-style sections (upstream skill PR, 1h)~~ **Won't implement — upstream skill concern, out of repo scope.**
+20. ~~Decide canonical status-report format (HTML vs md) and record it (5min)~~ done (decided Markdown, recorded in TODO_LIST Resolved decisions)
+21. ~~Confirm/decline `docs/DOMAIN_LANGUAGE.md` (5min, pending g/3)~~ **Won't implement — declined, single-home rule.**
+22. ~~Consider pinning nixpkgs input to a moving-but-tested channel strategy before v0.1.0 consumers rely on it (decision)~~ done (documented in README Nixpkgs Pinning section)
 
 ---
 
 ## g) Questions I can NOT figure out myself
 
-1. **Push now or review first?** The CI fix + entire docs overhaul sit in 4 local commits (`0029a6e`…`c7a5fa8`) on master, unpushed. I never push without permission — and `0029a6e` mixes the daemon's nixfmt reformatting into the CI-fix diff. Say "push" and I will (then watch the first-ever green run), or review first.
+1. ~~**Push now or review first?** The CI fix + entire docs overhaul sit in 4 local commits (`0029a6e`…`c7a5fa8`) on master, unpushed. I never push without permission — and `0029a6e` mixes the daemon's nixfmt reformatting into the CI-fix diff. Say "push" and I will (then watch the first-ever green run), or review first.~~ done at `0029a6e`, `de815b7`
 
-2. **Tag v0.1.0 now or after test coverage is restored?** Tagging now ships a release whose suite is 4 checks (down from 14 + VM test). Tagging after TODO items 1–2/5–7 restores the pre-migration confidence level. Both defensible — it is your release bar.
+2. ~~**Tag v0.1.0 now or after test coverage is restored?** Tagging now ships a release whose suite is 4 checks (down from 14 + VM test). Tagging after TODO items 1–2/5–7 restores the pre-migration confidence level. Both defensible — it is your release bar.~~ done at `99d533b`, `83ecd85`
 
-3. **Is `docs/DOMAIN_LANGUAGE.md` genuinely unwanted?** I skipped it deliberately: every crypto/domain term is defined exactly once in README's rationale, and a glossary would violate the single-home rule for this repo's size. Confirm, or tell me which terms deserve a glossary and I'll build it.
+3. ~~**Is `docs/DOMAIN_LANGUAGE.md` genuinely unwanted?** I skipped it deliberately: every crypto/domain term is defined exactly once in README's rationale, and a glossary would violate the single-home rule for this repo's size. Confirm, or tell me which terms deserve a glossary and I'll build it.~~ **Won't implement — declined, single-home rule.**
 
 ---
 

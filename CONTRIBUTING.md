@@ -20,6 +20,16 @@ echo "use flake" > .envrc && direnv allow
 4. Format: `nix fmt`
 5. Submit a PR
 
+## Gate discipline
+
+- **Never pipe a gate.** `nix flake check … | tail -1` reports the pipe's exit
+  code, not nix's — a crashing eval looks green. Run the bare command (or
+  `cmd && echo OK`).
+- **Claims follow exit codes.** Write "green" (in docs, reports, chat) only
+  after the gate's exit code is in hand — never while it is still running.
+- **After changing behavior or documented defaults**, grep the docs (README,
+  FEATURES, AGENTS, `examples/`) for the old claim before declaring done.
+
 ## Checks
 
 All PRs must pass (mirrored by CI):
@@ -50,7 +60,11 @@ The test suite includes:
   disabled-state no-op, module assertions, examples
 - A QEMU integration test on x86_64-linux (`checks.x86_64-linux.nixos-vm-sshd`):
   boots a real VM, asserts the runtime `sshd -T` config, and performs an
-  actual key-based login with the throwaway keypair in `tests/`
+  actual key-based login with the throwaway keypair in `tests/`. Runtime
+  budget: roughly a minute per boot, three boots per run — a full
+  `nix flake check` including the VM test is a several-minute gate; build
+  with `nix build -L` (or read the driver transcript from the store) when a
+  green run's per-subtest log lines need to be inspectable.
 - Formatting check via treefmt-nix (runs as part of `nix flake check`)
 
 When adding assertions, prove once that they can fail (break the value
@@ -60,6 +74,18 @@ decoration.
 ## Conventions
 
 - Status reports and planning docs are plain Markdown in `docs/status/` and
-  `docs/planning/` (no HTML reports).
+  `docs/planning/` (no HTML reports). Fully resolved reports are annotated
+  inline (strikethrough + evidence) and `git mv`'d into `docs/status/archived/`.
 - There is no `docs/DOMAIN_LANGUAGE.md`: domain terms are defined once, in
   the README's crypto rationale.
+
+## Releases
+
+1. Verify the full local gate (see Checks) — a release gate must include the
+   runtime VM test, not just evaluation (v0.1.0 shipped on eval-green alone
+   and its headline feature was runtime-broken within the hour).
+2. Date the `CHANGELOG.md` `[Unreleased]` section.
+3. Create an annotated tag and push it together with `master`.
+4. Create the GitHub *Release object* (`gh release create`) — tags alone do
+   not produce one, and compare links in the CHANGELOG 404 until pushed.
+5. Watch CI on GitHub (both jobs) after the push.

@@ -15,6 +15,12 @@ nix develop                                # Dev shell with nil (Nix LSP)
 statix check                               # Nix anti-pattern linter (manual, not in CI; keep clean)
 ```
 
+Pre-push pre-flight (one command, run all local gates in CI order):
+
+```bash
+nix fmt -- --fail-on-change && statix check && nix flake check --all-systems --no-build && nix flake check
+```
+
 CI (`.github/workflows/check.yml`) has two jobs: `check` (x86_64-linux, runs the three commands above plus a lychee markdown-link check) and `check-aarch64` (native arm64 runner, same gate). All steps must pass.
 
 ### Supported systems
@@ -52,7 +58,7 @@ examples/                    # Copy-ready client/server modules → examples.*
 | `nixosModules.ssh`                    | SSH server module (NixOS)                                                                                         |
 | `examples.client` / `examples.server` | Ready-to-use example modules, exercised by `checks.*.examples-evaluate`                                           |
 | `sshKeys`                             | Attrset of tracked public keys (`lars`, `lars-evo-x2`) — consumed as `nix-ssh-config.sshKeys.lars` etc.           |
-| `checks.<system>.*`                   | 13 eval/content checks + `format` (treefmt); on x86_64-linux additionally `nixos-vm-sshd` (QEMU integration test) |
+| `checks.<system>.*`                   | 16 eval/content checks (17 on Linux: assertion checks are Linux-only) + `format`/`treefmt`; on x86_64-linux additionally `nixos-vm-sshd` (QEMU integration test) |
 | `devShells.<system>.default`          | `mkShellNoCC` with `nil` only — formatting comes from treefmt, not the shell                                      |
 | `formatter.<system>`                  | treefmt (via treefmt-nix `flakeModule`, nixfmt enabled)                                                           |
 
@@ -98,6 +104,10 @@ Modern OpenSSH prints effective config directives in documented PascalCase (`Pas
 
 `programs.ssh.settings.<block>` is `{ before, after, data, header }`; the actual directives live under `.data` (same as the old `matchBlocks`). The flake's `hmBlock` helper unwraps it. If HM changes representation, that helper is what needs updating.
 
+### VM testScript: `succeed` swallows output, `execute` returns it
+
+In `nixosTest` scripts, `machine.succeed(cmd)` returns only stdout and hides failures behind an exception; `machine.execute(cmd)` returns `(status, output)` and is the only way to assert on a command's *failure* text (e.g. the exact `Permission denied (publickey)` message). Append `2>&1` inside the command or ssh's stderr never reaches `output`.
+
 ---
 
 ## Conventions
@@ -109,6 +119,11 @@ Modern OpenSSH prints effective config directives in documented PascalCase (`Pas
 - **State versions in tests**: use `lib.mkDefault "25.05"` to keep `nix flake check` warning-free.
 - **Test keys are throwaway**: `tests/test-key{,.pub}` (see `tests/README.md`) exist only for CI evals and the VM test. Never embed personal keys in test code.
 - **Kill-switch discipline**: every content assertion was once deliberately broken to prove it fails. Keep that true for new assertions — a test that cannot fail is decoration.
+- **Gates run unmasked, claims follow exit codes**: never pipe a gate (`nix flake check | tail` reports the pipe's exit code, not nix's — this shipped a broken commit once). Run the bare command; write "green" only when the exit code is in hand. Learned twice (2026-08-22, 2026-08-29).
+- **When a gate behaves impossibly, suspect the test first** (vacuous fixture, missing `enable`, async evidence) before blaming tooling caches — purge caches only after a minimal repro proves staleness (2026-08-29: a ~40-minute wrong diagnosis started with an eval-cache purge).
+- **After behavior/default changes, grep the docs**: sweep README/FEATURES/AGENTS/examples for the old claim before declaring done (a stale documented default is a lie shipped on time).
+- **Test evals must set `services.ssh-server.enable = true`** (or another activating flag): without it `mkIf` disables the module and upstream NixOS defaults silently answer the assertions, making them vacuous — they pass even when the module is broken. Found 2026-08-29 when a kill-switch refused to trip.
+- **`toString` on Nix bools gives `"1"`/`""`**, not `"true"`/`"false"` — when tracing values inside derivation strings, use `builtins.toJSON`.
 - **Task automation lives in flake.nix** — no Makefile, no justfile (organizational convention).
 
 ---
@@ -121,7 +136,7 @@ Conservative + post-quantum strategy. All rationale lives in `README.md` (not du
 - **Ciphers**: AEAD-only (ChaCha20-Poly1305, AES-GCM). No CBC.
 - **MACs**: Encrypt-then-MAC only. No encrypt-and-MAC, no HMAC-MD5/SHA1.
 - **Host keys**: Ed25519 preferred; RSA-SHA2 accepted for compat. No DSA, no RSA-SHA1.
-- **Server defaults**: passwords off, root login off, X11/TCP/tunnel forwarding off, MaxAuthTries=3, MaxSessions=2, verbose logging, legal banner.
+- **Server defaults**: passwords and keyboard-interactive off (`kbdInteractiveAuthentication` defaults to `passwordAuthentication`; `PasswordAuthentication no` alone leaves the NixOS-default `KbdInteractiveAuthentication yes` + `UsePAM` PAM prompt channel open — OTP modules or, where the sshd PAM service permits them, Unix passwords), root login off, X11/TCP/tunnel forwarding off, MaxAuthTries=3, MaxSessions=2, verbose logging, legal banner.
 - **Post-quantum signatures (ML-DSA)**: not yet available in OpenSSH — no implementation timeline. Watch upstream.
 
 Public keys are tracked in `ssh-keys/*.pub`; private keys are gitignored. The `sshKeys` flake output reads them via `builtins.readFile`.

@@ -1,6 +1,10 @@
 # Pareto Execution Plan — nix-ssh-config
 
 **Date:** 2026-08-22 04:49 CEST
+**Status:** ~~Execution plan.~~ **EXECUTED 2026-08-22 — all 14 M-tasks and all 56 fine tasks
+completed and verified** (one release-blocking runtime bug found by the restored VM test and
+fixed; shipped as v0.1.0 + v0.1.1). Evidence: `docs/status/archived/2026-08-22_06-24_execution-plan-complete-vm-bugfix-release.md`.
+Open follow-ups live in `TODO_LIST.md` / `ROADMAP.md`.
 **Inputs:** `TODO_LIST.md` (18 open + 2 blocked), `ROADMAP.md` themes, session 7 status report (`docs/status/2026-08-22_04-45_docs-health-audit-and-ci-fix.md` section f)
 **Customer:** downstream NixOS / Home Manager consumers of this flake (primary: the maintainer's own machines)
 **Method:** Pareto planning skill — 1% → 51%, 4% → 64%, 20% → 80%, then the remaining 20% → 100%
@@ -60,8 +64,8 @@ Depth, convenience, and reach:
 
 | ID | Question                          | Recommendation                                                                                                                  |
 | -- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| D2 | Create `docs/DOMAIN_LANGUAGE.md`? | **Decline** — every domain term is defined exactly once in README's crypto rationale; a glossary duplicates (single-home rule). |
-| D3 | Canonical status-report format?   | **`.md`** — user has twice explicitly overridden the skill's HTML default.                                                      |
+| D2 | Create `docs/DOMAIN_LANGUAGE.md`? | **Decline** — every domain term is defined exactly once in README's crypto rationale; a glossary duplicates (single-home rule). **Resolved: declined** (recorded in `TODO_LIST.md` Resolved decisions; `CONTRIBUTING.md` Conventions). |
+| D3 | Canonical status-report format?   | **`.md`** — user has twice explicitly overridden the skill's HTML default. **Resolved: Markdown** (recorded in `TODO_LIST.md` Resolved decisions; `CONTRIBUTING.md` Conventions). |
 
 **Deliberately NOT repo TODOs** (tracked in session 7 report, they concern global tooling, not this repo): generalize docs-health annotation tooling for `## A.`-style sections (upstream skill PR, 1h); make "CI red" a standing docs-health VERIFY input (process change).
 
@@ -244,11 +248,11 @@ flowchart TD
 
 ## Verification checklist (whole plan)
 
-- [ ] CI `Check` green on GitHub (first time ever)
-- [ ] Both modules have content assertions, not just eval checks
-- [ ] No personal keys, no lint warnings, no unverified README claims
-- [ ] `v0.1.0` tag exists, CHANGELOG cut matches reality
-- [ ] Every removed TODO has a CHANGELOG entry (no trophy-section rot)
+- [x] CI `Check` green on GitHub (first time ever) — first green run 2026-08-22; latest green: run `32552000904`
+- [x] Both modules have content assertions, not just eval checks (`9f64c93`, `8be838b`, `e1c3de3`)
+- [x] No personal keys (`c35a482`), no lint warnings, README claims upstream-verified (`bc62979`)
+- [x] `v0.1.0` tag exists (`99d533b`), CHANGELOG cut matches reality (+ v0.1.1 `83ecd85`)
+- [x] Every removed TODO has a CHANGELOG entry (no trophy-section rot)
 
 ---
 
