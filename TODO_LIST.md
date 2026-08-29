@@ -57,6 +57,7 @@
 | 🔴     | Property tests: every `types.port` option rejects 65536 and −1 (eval-failure tests)                                           | `modules/*.nix` port options                    |
 | 🔴     | Assert the HM-rendered `~/.ssh/config` **text** in an eval check (current checks assert the settings attrset, not the rendered file) | `flake.nix` `hmBlock` helper               |
 | 🔴     | Session-report lint: strikethrough-balance check as part of the CI link-check step                                            | `.github/workflows/check.yml` (lychee step)     |
+| 🔴     | Docs tooling & process: upstream multi-line support for docs-health `annotate-prose.py`; record the annotation convention + render-check step in CONTRIBUTING | `docs/status/archived/` annotation styles; CONTRIBUTING |
 
 ## Resolved decisions
 
