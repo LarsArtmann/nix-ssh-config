@@ -54,6 +54,12 @@
         }:
         {
           treefmt = {
+            # This repo publishes the treefmt check as checks.<system>.format
+            # (tests/checks.nix). treefmt-nix's own flakeModule would add a
+            # duplicate `treefmt` attr for the same derivation, which broke
+            # the derived content-check count — so its auto-check is off and
+            # the check lives under exactly one documented name.
+            flakeCheck = false;
             programs.nixfmt.enable = true;
             programs.prettier = {
               enable = true;

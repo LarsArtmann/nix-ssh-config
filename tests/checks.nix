@@ -377,6 +377,42 @@
 
       hmOptionNames = lib.sort lib.lessThan (lib.attrNames hmEval.options.ssh-config);
 
+      # Options referenced by dotted path (`services.ssh-server.X`,
+      # `ssh-config.X`) anywhere in living docs and the examples must
+      # resolve to a real option: a stale name inside prose or a Nix
+      # comment survives evaluation, so it needs this text-level guard.
+      # CHANGELOG and docs/status/ are historical by policy and excluded.
+      docOptionFiles = map (f: self + f) [
+        "/README.md"
+        "/CONTRIBUTING.md"
+        "/AGENTS.md"
+        "/tests/README.md"
+        "/examples/server.nix"
+        "/examples/client.nix"
+      ];
+      dottedOptionRefs =
+        pattern:
+        lib.sort lib.lessThan (
+          lib.unique (
+            lib.flatten (
+              map (
+                file:
+                lib.concatMap (
+                  line:
+                  let
+                    m = builtins.match pattern line;
+                  in
+                  lib.optional (m != null) (lib.head m)
+                ) (lib.splitString "\n" (builtins.readFile file))
+              ) docOptionFiles
+            )
+          )
+        );
+      docServerRefs = dottedOptionRefs ''.+services\.ssh-server\.([A-Za-z0-9]+).*'';
+      # [^-] rejects the flake name `nix-ssh-config.*` (not an option
+      # namespace); a leading char is always present in real prose.
+      docClientRefs = dottedOptionRefs ''.+[^-]ssh-config\.([A-Za-z0-9]+).*'';
+
       hmHostOptionNames = lib.sort lib.lessThan (
         lib.filter (n: n != "_module") (
           lib.attrNames (hmEval.options.ssh-config.hosts.type.getSubOptions [ ])
@@ -400,11 +436,20 @@
         };
 
       # Reality side of the count guard: everything in checks except the
-      # two formatter entries (format, treefmt) and, on x86_64-linux, the
-      # VM test. attrNames only forces the attrset's keys, so this does
-      # not recurse into the count check that uses it.
+      # formatter gate and, on x86_64-linux, the VM test — named constants
+      # in one place instead of the old magic `-2 -1` subtraction. The
+      # old dual `treefmt`+`format` attrs were root-caused to treefmt-nix
+      # publishing its check under a hardcoded `treefmt` name; flake.nix
+      # sets treefmt.flakeCheck = false so `format` (below) is the single
+      # formatter attr. attrNames only forces the attrset's keys, so this
+      # does not recurse into the count check that uses it.
+      formatterCheckName = "format";
+      vmCheckName = "nixos-vm-sshd";
       contentCheckCount =
-        lib.length (lib.attrNames config.checks) - 2 - (if system == "x86_64-linux" then 1 else 0);
+        let
+          excluded = [ formatterCheckName ] ++ lib.optional (system == "x86_64-linux") vmCheckName;
+        in
+        lib.length (lib.filter (name: !lib.elem name excluded) (lib.attrNames config.checks));
     in
     {
 
@@ -905,6 +950,16 @@
             actual = readmeHostOptions;
             expected = hmHostOptionNames;
           }
+          {
+            name = "every dotted services.ssh-server.* mention in docs/examples resolves";
+            actual = lib.filter (n: !lib.elem n nixosOptionNames) docServerRefs;
+            expected = [ ];
+          }
+          {
+            name = "every dotted ssh-config.* mention in docs/examples resolves";
+            actual = lib.filter (n: !lib.elem n hmOptionNames) docClientRefs;
+            expected = [ ];
+          }
         ];
 
         docs-check-count = assertEq "docs-check-count" [
@@ -948,7 +1003,9 @@
           }
         ];
       }
-      # Formatting gate: treefmt check on the whole repo (nixfmt).
+      # Formatting gate: treefmt check on the whole repo, published under
+      # the one documented name (treefmt-nix's own `treefmt` attr is off;
+      # see flake.nix and the count-guard comment above).
       // {
         format = config.treefmt.build.check self;
       }
