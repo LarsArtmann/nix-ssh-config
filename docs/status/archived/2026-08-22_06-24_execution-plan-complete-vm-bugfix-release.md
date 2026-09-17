@@ -41,13 +41,13 @@
 
 ## c) NOT STARTED
 
-| Item                                                                                                        | Why                                                                                                                                                                                                                            |
+| Item | Why |
 | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
-| E1–E5 roadmap epics (darwinModules, age/sops, OpenSSH overlay pin, multi-node handshake test, ML-DSA watch) | Deliberately parked in ROADMAP per plan rule 5 — not refined into bounded tasks. **Still open by design → ROADMAP themes (module-surface candidates now in theme 5).**                                                         |
-| GitHub Releases (objects, not tags)                                                                         | See b). **Still open 2026-08-29 → TODO_LIST.**                                                                                                                                                                                 |     |
-| README server-options table refresh for banner constraints                                                  | Never re-checked after M9; likely still says plain "bannerText (null to disable)" without the control-char rule. **Resolved 2026-08-29: bannerText control-char note + authorizedKeys copy-not-symlink note added to README.** |
-| Negative-path VM tests (wrong key rejected, password attempt rejected, banner served to client)             | Not in the restored test's scope; obvious next depth. **Partially resolved 2026-08-29: publickey-only-offered subtest shipped (issue #1); wrong-key + banner-to-client → TODO_LIST.**                                          |
-| Client-side runtime verification (`ssh -G` against rendered config)                                         | Only the server has runtime proof. **Still open → TODO_LIST (client runtime proof).**                                                                                                                                          |
+| E1–E5 roadmap epics (darwinModules, age/sops, OpenSSH overlay pin, multi-node handshake test, ML-DSA watch) | Deliberately parked in ROADMAP per plan rule 5 — not refined into bounded tasks. **Still open by design → ROADMAP themes (module-surface candidates now in theme 5).** |
+| GitHub Releases (objects, not tags) | See b). **Still open 2026-08-29 → TODO_LIST.** | |
+| README server-options table refresh for banner constraints | Never re-checked after M9; likely still says plain "bannerText (null to disable)" without the control-char rule. **Resolved 2026-08-29: bannerText control-char note + authorizedKeys copy-not-symlink note added to README.** |
+| Negative-path VM tests (wrong key rejected, password attempt rejected, banner served to client) | Not in the restored test's scope; obvious next depth. **Partially resolved 2026-08-29: publickey-only-offered subtest shipped (issue #1); wrong-key + banner-to-client → TODO_LIST.** |
+| Client-side runtime verification (`ssh -G` against rendered config) | Only the server has runtime proof. **Still open → TODO_LIST (client runtime proof).** |
 
 ## d) TOTALLY FUCKED UP
 
