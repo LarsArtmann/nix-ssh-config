@@ -46,15 +46,25 @@ grep -q "^\[${VER}\]: https://github.com/LarsArtmann/nix-ssh-config/compare/" CH
     exit 1
   }
 
-# The link must not just exist, it must resolve (GitHub 404s compares of
-# tags that were never pushed — exactly the mistake this catches).
-COMPARE_URL="$(sed -n "s/^\[${VER}\]: \(.*\)$/\1/p" CHANGELOG.md)"
-curl -fsIL --max-time 30 -o /dev/null "$COMPARE_URL" ||
-  {
-    echo "compare link does not resolve: $COMPARE_URL"
-    exit 1
-  }
-echo "compare link resolves: $COMPARE_URL"
+# The link must not just exist, it must resolve — except for the tag being
+# created by this very run: GitHub 404s compares of tags that were never
+# pushed, so the new version's own link cannot resolve before step 4 pushes
+# it. Every other link (old releases) must resolve. The new version's link
+# is the one ENDING in ...<tag>; older tags also appear inside URLs, so a
+# plain substring match would wrongly exempt them.
+case "$COMPARE_URL" in
+*"...$TAG")
+  echo "compare link references $TAG (not pushed yet) — skipping HTTP check"
+  ;;
+*)
+  curl -fsIL --max-time 30 -o /dev/null "$COMPARE_URL" ||
+    {
+      echo "compare link does not resolve: $COMPARE_URL"
+      exit 1
+    }
+  echo "compare link resolves: $COMPARE_URL"
+  ;;
+esac
 
 if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
   echo "tag $TAG already exists"
