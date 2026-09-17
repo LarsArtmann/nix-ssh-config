@@ -52,6 +52,7 @@ grep -q "^\[${VER}\]: https://github.com/LarsArtmann/nix-ssh-config/compare/" CH
 # it. Every other link (old releases) must resolve. The new version's link
 # is the one ENDING in ...<tag>; older tags also appear inside URLs, so a
 # plain substring match would wrongly exempt them.
+COMPARE_URL="$(sed -n "s/^\[${VER}\]: \(.*\)$/\1/p" CHANGELOG.md)"
 case "$COMPARE_URL" in
 *"...$TAG")
   echo "compare link references $TAG (not pushed yet) — skipping HTTP check"
