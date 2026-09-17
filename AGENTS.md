@@ -153,6 +153,16 @@ Public keys are tracked in `ssh-keys/*.pub`; private keys are gitignored. The `s
 
 ---
 
+## Known consumers (verified 2026-09-17)
+
+| Consumer                        | Pin               | Usage                                                                                                                                                   |
+| ------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nix-international-telephony`   | `v0.1.3` tag      | Server module on `pbx` (VM) + `pbx-prod`; `attrValues sshKeys` for authorizedKeys; `tests/ssh.nix` + `tests/prod-boot.nix` VM-prove it                  |
+| `pbx-artmann`                   | follows telephony | Server module on real `pbx.artmann.tech`; inlines the evo-x2 key (byte-identical to `sshKeys.lars-evo-x2`)                                              |
+| `SystemNix`                     | floating ref      | Server module on `evo-x2` only; HM client module on darwin + NixOS homes (`platforms/common/programs/ssh-config.nix`); `rpi3-dns` uses plain `services.openssh` + `sshKeys` only |
+
+All four NixOS configs were eval-verified to produce the full hardened profile (AEAD ciphers, PQ kex, ETM MACs, LoginGraceTime 30, banner, 0444 authorized_keys copy). SystemNix was locked to exactly v0.1.4 at verification time.
+
 ## Dependencies
 
 - `nixpkgs` — `nixos-unstable`
