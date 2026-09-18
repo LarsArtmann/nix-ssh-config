@@ -25,7 +25,7 @@ CI (`.github/workflows/check.yml`) has two jobs: `check` (x86_64-linux, runs the
 
 ### Supported systems
 
-`aarch64-darwin`, `x86_64-linux`, `aarch64-linux`. **`x86_64-darwin` is excluded** (deprecated in Nixpkgs 26.05) via a filter over the `nix-systems` input.
+`aarch64-darwin`, `x86_64-linux`, `aarch64-linux`, as a literal `systems` list in `flake.nix`. **`x86_64-darwin` is excluded** (deprecated in Nixpkgs 26.05). The list was inlined (2026-09-18) from the former `nix-systems` input + filter — one less input for consumers to follow.
 
 ### Why `--all-systems` needs `--no-build`
 
@@ -169,7 +169,6 @@ All four NixOS configs were eval-verified to produce the full hardened profile (
 - `home-manager` — follows nixpkgs; used for `homeManagerConfiguration` in test evals (deliberately kept for test fidelity)
 - `flake-parts` — flake architecture (`mkFlake`)
 - `treefmt-nix` — formatter + `checks.*.format` (nixfmt)
-- `nix-systems` — canonical system list (filtered to drop `x86_64-darwin`)
 
 ---
 

@@ -15,7 +15,6 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-systems.url = "github:nix-systems/default";
   };
 
   outputs =
@@ -26,7 +25,13 @@
         ./tests/checks.nix
       ];
 
-      systems = builtins.filter (s: s != "x86_64-darwin") (import inputs.nix-systems);
+      # x86_64-darwin deliberately absent: deprecated in Nixpkgs 26.05
+      # (see AGENTS.md, Supported systems).
+      systems = [
+        "aarch64-darwin"
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
 
       flake = {
         homeManagerModules.ssh = import ./modules/home-manager/ssh.nix;
