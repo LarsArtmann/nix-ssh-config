@@ -76,6 +76,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The VM prompt-path positive control no longer races kbd-server's
+  boot: the subtest now explicitly waits for the variant node's sshd
+  before probing it. It previously relied on earlier subtests being
+  slow enough — a fast client (the new HM-in-NixOS activation and
+  subtests finish in under a second) reached the probe while
+  kbd-server was still booting ("Connection refused", observed
+  2026-09-18)
 - `docs-option-inventory` no longer treats file paths as option
   references: AGENTS.md's consumer table cites the SystemNix module
   file `programs/ssh-config.nix`, and the `/` before `ssh-config.`
