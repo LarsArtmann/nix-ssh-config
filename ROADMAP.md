@@ -51,11 +51,10 @@ Raw ideas:
 Raw ideas:
 
 - Multi-node NixOS test: this flake's client connecting to this flake's server,
-  end-to-end — PARTIALLY DONE (2026-08-29): the VM already proves a real
-  client↔server handshake with negotiated ML-KEM, wrong-key rejection and
-  banner delivery; the remaining delta is putting the Home Manager _client
-  module itself_ inside the VM (HM-in-NixOS evaluation), which needs a
-  design pass on `home-manager.users` integration
+  end-to-end — DONE (2026-08-29: handshake, negotiated ML-KEM, wrong-key
+  rejection, banner delivery; 2026-09-18: the remaining delta — putting
+  the Home Manager client module itself inside the VM — closed, see
+  below)
 - `sshd -T` exact-match runtime validation (was part of the removed VM test;
   restore alongside it)
 - Positive prompt-path test: deliberately enable a PAM prompt module (or
@@ -67,12 +66,16 @@ keyboard-interactive` under `sshpass` with a known-wrong password and
   assert refusal in the same run that already asserts the negative path.
   Bounded ~90min task when picked up; the method-list + golden assertions
   are the interim guards
-- HM-in-NixOS-VM evaluation: DESIGNED (2026-08-29) —
-  `docs/designs/hm-in-nixos-vm.md` covers `home-manager.users`
-  integration, cost, rejected alternatives and the kill-switch plan
-- Table-driven fixture host in the HM eval: DECIDED yes (2026-08-29) —
-  adopt when the next host-level option lands; loop `hosts × options`
-  instead of one "full" host so every option pair is asserted uniformly
+- ~~HM-in-NixOS-VM evaluation~~ DONE (2026-09-18): implemented per
+  `docs/designs/hm-in-nixos-vm.md` — activation script, real login
+  through the rendered config (module-negotiated ML-KEM, banner), and
+  ControlMaster socket in the activation-created dir are runtime-proven
+  in `tests/checks.nix`; kill-switch tested (tampered port fails the
+  login subtest)
+- ~~Table-driven fixture host in the HM eval~~ DONE (2026-09-18) —
+  adopted ahead of the "next host-level option" trigger: isolation
+  rows asserted by full-block equality in `tests/checks.nix`
+  (`hostFixtures`)
 
 ### 4. Post-quantum completion
 

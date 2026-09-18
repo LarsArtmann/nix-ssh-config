@@ -14,18 +14,20 @@
 
 ## Open items
 
-### Test depth
-
-| Status | Item                                                                                                                                                            | Evidence                                                  |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 🔴     | Table-driven fixture host in the HM eval (decided yes 2026-08-29): loop hosts × options instead of one "full" host. Adopt when the next host-level option lands | `tests/checks.nix` `hmEval` fixture                       |
-| 🔴     | HM client module inside the NixOS VM (HM-in-NixOS evaluation) so the module — not just a plain ssh client — gets runtime proof. Needs a design pass first       | `tests/checks.nix` VM nodes; ROADMAP theme 3 "multi-node" |
+_None open. The former Test depth rows were executed 2026-09-18 (see
+below and CHANGELOG)._
 
 Executed 2026-08-29 (plan 3, M3): property tests (`nixos-port-bounds`,
 `hm-port-bounds` via `builtins.tryEval`) and the prompt-path VM positive
 control — the control immediately caught the PAM `unixAuth` coupling bug
 (keys-only + explicit kbd-interactive was `pam_deny`-denied end-to-end),
 fixed in the module and re-proven; see CHANGELOG.
+
+Executed 2026-09-18: table-driven HM host fixtures (isolation rows with
+full-block equality — also pinned HM's header-in-data block shape) and
+HM-in-NixOS VM runtime proof (activation script, real login through the
+rendered config, ML-KEM negotiation, ControlMaster socket); both
+kill-switch tested; see CHANGELOG.
 
 ## Resolved decisions
 

@@ -32,6 +32,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Table-driven host fixtures in the Home Manager eval**: the single
+  kitchen-sink `full` host is replaced by an isolation table in which
+  every host-level option gets its own host that sets only that option,
+  and every row is asserted by full-block equality — whole-block
+  comparison catches directives leaking into the wrong host block,
+  which per-field lookups never could. On its first run the stronger
+  assertion immediately surfaced that Home Manager stores the block
+  header line (`Host <alias>`) inside the block data alongside the
+  directives; that header is now pinned too. The three `hm-host-*`
+  check families are generated from the table; check count unchanged
+  (21 per system, 22 on Linux)
+- **The Home Manager client module now runs inside the VM integration
+  test (HM-in-NixOS)**: the client node activates the module for a
+  `client` user, so the module — not just a plain ssh binary — gets
+  runtime proof: the activation script creates `~/.ssh/sockets` with
+  mode 700, the rendered `~/.ssh/config` drives a real key login
+  against the hardened server (negotiating ML-KEM through the module's
+  own crypto defaults, banner delivered), and a ControlMaster socket
+  lands in the activation-created dir. The existing root-driven
+  subtests remain as the no-HM control path. Kill-switch-proven:
+  a tampered host port fails exactly the login subtest (design:
+  `docs/designs/hm-in-nixos-vm.md`)
 - Root-login emission coverage: the new `nixos-root-login-modes`
   check family asserts both non-default matrix cells
   (`prohibit-password` for keys-only root, `yes` with passwords) via
