@@ -282,6 +282,9 @@
           expected = {
             HostName = config.hostname;
             User = if user != null then user else "test";
+            # HM's settings renderer stores the block's header line
+            # ("Host <alias>") inside .data alongside the directives.
+            header = "Host ${name}";
           } // directives;
         };
 
@@ -741,126 +744,31 @@
           }
         ];
 
-        hm-host-blocks = assertEq "hm-host-blocks" [
-          {
-            name = "HostName rendered from hostname";
-            actual = (hmBlock "test").HostName;
-            expected = "example.com";
-          }
-          {
-            name = "explicit per-host user";
-            actual = (hmBlock "test").User;
-            expected = "admin";
-          }
-          {
-            name = "null user inherits ssh-config.user";
-            actual = (hmBlock "inherit-user").User;
-            expected = "test";
-          }
-        ];
+        # Host-block families are generated from the hostFixtures table
+        # (full-block equality per isolation row); the `test` combination
+        # host stays hand-asserted here as the one composition proof on
+        # top of the per-option isolation rows.
+        hm-host-blocks = assertEq "hm-host-blocks" (
+          [
+            {
+              name = "combination host renders exactly its options";
+              actual = hmBlock "test";
+              expected = {
+                HostName = "example.com";
+                User = "admin";
+                CertificateFile = "~/certs/example-cert.pub";
+                ControlMaster = "auto";
+                UpdateHostKeys = "yes";
+                header = "Host test";
+              };
+            }
+          ]
+          ++ hostFixtureChecks "blocks"
+        );
 
-        hm-host-options = assertEq "hm-host-options" [
-          {
-            name = "Port";
-            actual = (hmBlock "full").Port;
-            expected = 2222;
-          }
-          {
-            name = "IdentityFile";
-            actual = (hmBlock "full").IdentityFile;
-            expected = "~/.ssh/full_key";
-          }
-          {
-            name = "ServerAliveInterval";
-            actual = (hmBlock "full").ServerAliveInterval;
-            expected = 30;
-          }
-          {
-            name = "ServerAliveCountMax";
-            actual = (hmBlock "full").ServerAliveCountMax;
-            expected = 2;
-          }
-          {
-            name = "CertificateFile";
-            actual = (hmBlock "test").CertificateFile;
-            expected = "~/certs/example-cert.pub";
-          }
-          {
-            name = "ControlMaster per-host override";
-            actual = (hmBlock "test").ControlMaster;
-            expected = "auto";
-          }
-          {
-            name = "UpdateHostKeys per-host override";
-            actual = (hmBlock "test").UpdateHostKeys;
-            expected = "yes";
-          }
-          {
-            name = "extraOptions.Compression";
-            actual = (hmBlock "full").Compression;
-            expected = "yes";
-          }
-          {
-            name = "extraOptions.StrictHostKeyChecking";
-            actual = (hmBlock "full").StrictHostKeyChecking;
-            expected = "accept-new";
-          }
-        ];
+        hm-host-options = assertEq "hm-host-options" (hostFixtureChecks "options");
 
-        hm-host-advanced = assertEq "hm-host-advanced" [
-          {
-            name = "ProxyJump";
-            actual = (hmBlock "full").ProxyJump;
-            expected = "bastion.example.com";
-          }
-          {
-            name = "ForwardX11";
-            actual = (hmBlock "full").ForwardX11;
-            expected = "yes";
-          }
-          {
-            name = "LocalForward (structured, defaults applied)";
-            actual = (hmBlock "full").LocalForward;
-            expected = [
-              {
-                bind = {
-                  address = "localhost";
-                  port = 8080;
-                };
-                host = {
-                  address = "10.0.0.13";
-                  port = 80;
-                };
-              }
-            ];
-          }
-          {
-            name = "RemoteForward (structured, defaults applied)";
-            actual = (hmBlock "full").RemoteForward;
-            expected = [
-              {
-                bind = {
-                  address = "localhost";
-                  port = 9090;
-                };
-                host = {
-                  address = "db.internal";
-                  port = 5432;
-                };
-              }
-            ];
-          }
-          {
-            name = "DynamicForward (structured, defaults applied)";
-            actual = (hmBlock "full").DynamicForward;
-            expected = [
-              {
-                address = "localhost";
-                port = 1080;
-              }
-            ];
-          }
-        ];
+        hm-host-advanced = assertEq "hm-host-advanced" (hostFixtureChecks "advanced");
 
         nixos-password-auth-disabled = assertEq "password-auth-disabled" [
           {
