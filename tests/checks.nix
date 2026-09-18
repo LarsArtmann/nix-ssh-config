@@ -285,7 +285,8 @@
             # HM's settings renderer stores the block's header line
             # ("Host <alias>") inside .data alongside the directives.
             header = "Host ${name}";
-          } // directives;
+          }
+          // directives;
         };
 
       hostFixtures = [
@@ -325,16 +326,19 @@
           serverAliveCountMax = 7;
         } { ServerAliveCountMax = 7; })
         # extraOptions merge with their upstream directive names.
-        (mkHostFixture "options" "extra-options" {
-          hostname = "extra.example.com";
-          extraOptions = {
+        (mkHostFixture "options" "extra-options"
+          {
+            hostname = "extra.example.com";
+            extraOptions = {
+              Compression = "yes";
+              StrictHostKeyChecking = "accept-new";
+            };
+          }
+          {
             Compression = "yes";
             StrictHostKeyChecking = "accept-new";
-          };
-        } {
-          Compression = "yes";
-          StrictHostKeyChecking = "accept-new";
-        })
+          }
+        )
         (mkHostFixture "advanced" "proxy-jump" {
           hostname = "jump.example.com";
           proxyJump = "bastion.example.com";
@@ -345,58 +349,72 @@
         } { ForwardX11 = "yes"; })
         # Forwarding values keep their structured shape (HM renders
         # them); expected values carry the sub-module defaults applied.
-        (mkHostFixture "advanced" "local-forwards" {
-          hostname = "local.example.com";
-          localForwards = [
-            {
-              bind.port = 8080;
-              host.address = "10.0.0.13";
-              host.port = 80;
-            }
-          ];
-        } {
-          LocalForward = [
-            {
-              bind = {
+        (mkHostFixture "advanced" "local-forwards"
+          {
+            hostname = "local.example.com";
+            localForwards = [
+              {
+                bind.port = 8080;
+                host.address = "10.0.0.13";
+                host.port = 80;
+              }
+            ];
+          }
+          {
+            LocalForward = [
+              {
+                bind = {
+                  address = "localhost";
+                  port = 8080;
+                };
+                host = {
+                  address = "10.0.0.13";
+                  port = 80;
+                };
+              }
+            ];
+          }
+        )
+        (mkHostFixture "advanced" "remote-forwards"
+          {
+            hostname = "remote.example.com";
+            remoteForwards = [
+              {
+                bind.port = 9090;
+                host.address = "db.internal";
+                host.port = 5432;
+              }
+            ];
+          }
+          {
+            RemoteForward = [
+              {
+                bind = {
+                  address = "localhost";
+                  port = 9090;
+                };
+                host = {
+                  address = "db.internal";
+                  port = 5432;
+                };
+              }
+            ];
+          }
+        )
+        (mkHostFixture "advanced" "dynamic-forwards"
+          {
+            hostname = "dynamic.example.com";
+            dynamicForwards = [ { port = 1080; } ];
+          }
+          {
+            DynamicForward = [
+              {
                 address = "localhost";
-                port = 8080;
-              };
-              host = {
-                address = "10.0.0.13";
-                port = 80;
-              };
-            }
-          ];
-        })
-        (mkHostFixture "advanced" "remote-forwards" {
-          hostname = "remote.example.com";
-          remoteForwards = [
-            {
-              bind.port = 9090;
-              host.address = "db.internal";
-              host.port = 5432;
-            }
-          ];
-        } {
-          RemoteForward = [
-            {
-              bind = {
-                address = "localhost";
-                port = 9090;
-              };
-              host = {
-                address = "db.internal";
-                port = 5432;
-              };
-            }
-          ];
-        })
-        (mkHostFixture "advanced" "dynamic-forwards" {
-          hostname = "dynamic.example.com";
-          dynamicForwards = [ { port = 1080; } ];
-        } {
-          DynamicForward = [ { address = "localhost"; port = 1080; } ];
-        })
+                port = 1080;
+              }
+            ];
+          }
+        )
       ];
 
       fixtureHosts = lib.listToAttrs (map (f: lib.nameValuePair f.name f.config) hostFixtures);
@@ -425,7 +443,8 @@
                 controlMaster = "auto";
                 updateHostKeys = "yes";
               };
-            } // fixtureHosts;
+            }
+            // fixtureHosts;
           };
           home = {
             username = "test";
@@ -1156,6 +1175,7 @@
                       # exercised by logging in THROUGH this config.
                       hosts.test = {
                         hostname = "server";
+                        port = 2299;
                         user = "testuser";
                         identityFile = "/home/client/.ssh/test_key";
                         controlMaster = "auto";
