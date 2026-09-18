@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Keys-only root login now emits `PermitRootLogin "prohibit-password"`
+  instead of `"yes"`.** The value is a matrix over the two options:
+  `no` when `allowRootLogin = false` (unchanged), `prohibit-password`
+  when root login is allowed but `passwordAuthentication` is off,
+  `yes` only when both are on. Under keys-only operation the two are
+  runtime-identical (root has no password channel either way), but the
+  new value is self-defending: if a downstream consumer ever flips
+  passwords on, root stays keys-only instead of silently gaining
+  password logins. Both production consumers that used
+  `allowRootLogin = true` carried inline comments explaining their
+  `"yes"` was "really" prohibit-password — the module now encodes that
+  posture and the comment debt disappears. Override via
+  `extraSettings.PermitRootLogin` if a password-less 2FA root flow
+  ever needs plain `"yes"`; the `allowRootLogin` option documentation
+  spells out the full matrix
+- **`nix-systems` input removed.** The supported systems
+  (`aarch64-darwin`, `x86_64-linux`, `aarch64-linux`) are now a
+  literal list in `flake.nix`; the input existed only to filter out
+  `x86_64-darwin`, and dropping it removes one node from every
+  consumer's input graph
+
+### Added
+
+- Root-login emission coverage: the new `nixos-root-login-modes`
+  check family asserts both non-default matrix cells
+  (`prohibit-password` for keys-only root, `yes` with passwords) via
+  two dedicated eval fixtures — the `allowRootLogin = true` branch
+  every production consumer uses previously had zero check coverage.
+  Content checks now number 21 per system (22 on Linux)
+- Consumer-compat canary CI job: evals the public
+  nix-international-telephony NixOS configurations against this
+  repository's checkout via `--override-input`, so breaking module
+  changes fail CI before a consumer updates. Runs per push, per PR and
+  weekly; wired into the checks-summary aggregation gate
+- README "Consumers & Versioning" (float vs pin-to-tag policy, the
+  canonical `follows` block, the `builtins.attrValues sshKeys`
+  pattern, the hypothetical-2.0 rename heads-up) and "Verify Your
+  Wiring" (eval one-liners for effective sshd settings, the
+  authorized_keys `0444` copy-mode guarantee, the rendered Home
+  Manager config, plus the vacuous-without-`enable` trap); the server
+  example now shows the `attrValues` key pattern and documents the
+  root-login matrix
+
+### Fixed
+
+- `docs-option-inventory` no longer treats file paths as option
+  references: AGENTS.md's consumer table cites the SystemNix module
+  file `programs/ssh-config.nix`, and the `/` before `ssh-config.`
+  slipped past the flake-name guard and failed the check with a
+  phantom `ssh-config.nix` option. Path components are now rejected
+  alongside the `nix-ssh-config.*` flake name
+
 ## [0.1.4] — 2026-09-17
 
 ### Fixed
