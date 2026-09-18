@@ -1175,7 +1175,6 @@
                       # exercised by logging in THROUGH this config.
                       hosts.test = {
                         hostname = "server";
-                        port = 2299;
                         user = "testuser";
                         identityFile = "/home/client/.ssh/test_key";
                         controlMaster = "auto";
