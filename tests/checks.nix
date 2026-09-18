@@ -425,7 +425,7 @@
         map (f: {
           name = "host '${f.name}' renders exactly its own options (no leaked directives)";
           actual = hmBlock f.name;
-          expected = f.expected;
+          inherit (f) expected;
         }) (lib.filter (f: f.family == family) hostFixtures);
 
       hmEval = mkHmEval [

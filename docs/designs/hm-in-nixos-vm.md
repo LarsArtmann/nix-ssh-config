@@ -1,6 +1,7 @@
 # Design: Home Manager client module inside the NixOS VM
 
-**Status:** design (not started) · **Theme:** 3 "Test depth" ·
+**Status:** implemented 2026-09-18 (see the `client` node and "HM …"
+subtests in `tests/checks.nix`) · **Theme:** 3 "Test depth" ·
 **Refined:** 2026-08-29 (plan 3 M9) · **Estimated:** ~3–4h once approved
 
 ## Goal
@@ -81,5 +82,20 @@ module's activation script) and all defaults.
 
 ## Follow-ups
 
-- Migrate the `ssh -Q` and negotiated-kex subtests to the HM client.
-- Keep the existing BatchMode subtests as the no-HM control path.
+- ~~Migrate the `ssh -Q` and negotiated-kex subtests to the HM client.~~
+  Resolved differently (2026-09-18): the HM login subtest asserts the
+  negotiated ML-KEM line itself, so the module's crypto defaults are
+  runtime-proven without duplicating the `ssh -Q` matrix.
+- Kept: the existing BatchMode subtests remain the no-HM control path.
+
+## As built (2026-09-18)
+
+Matches the sketch, plus three deltas:
+
+- The host also sets `controlMaster = "auto"` and routes `ControlPath`
+  through `~/.ssh/sockets/%r@%h-%p` via `extraOptions`, so the
+  multiplexing socket provably lands in the activation-created dir.
+- `StrictHostKeyChecking = "accept-new"` comes from `extraOptions`,
+  exercising that escape hatch at runtime too.
+- Kill-switch executed as planned: `port = 2299` failed exactly the
+  login subtest; restored and re-run green.
