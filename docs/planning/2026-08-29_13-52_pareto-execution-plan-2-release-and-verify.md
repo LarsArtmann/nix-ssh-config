@@ -25,9 +25,9 @@ issue #1 stays open, and the repo has zero GitHub Release objects (verified
 One release motion fixes the security exposure, the paper trail, and the
 trust signal simultaneously.
 
-| ID  | What                          | Why it is 51%                                                                                                                                                                                        | Effort |
-| --- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| M1  | **Release v0.1.2 end-to-end** | The fix reaches consumers; issue #1 closes with evidence; Release objects exist for the first time; downstream unpin becomes possible. Everything else in this plan is worth more after this exists. | 45min  |
+| ID | What                          | Why it is 51%                                                                                                                                                                                        | Effort |
+| -- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| M1 | **Release v0.1.2 end-to-end** | The fix reaches consumers; issue #1 closes with evidence; Release objects exist for the first time; downstream unpin becomes possible. Everything else in this plan is worth more after this exists. | 45min  |
 
 ### The 4% that delivers 64% (adds ~2.7h, 2 tasks)
 
@@ -38,10 +38,10 @@ fragments (`sshd -T` greps), not as runtime behavior. And the docs have
 drifted three times ("13 checks", ghost conventions, "matrix above"); nothing
 catches it mechanically yet.
 
-| ID  | What                 | Why the next 13%                                                                                                                                                                                                                   | Effort |
-| --- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| M2  | **VM runtime depth** | Assert the _negotiated_ KEX is `mlkem768x25519-sha256` (`ssh -vv`), cross-check `ssh -Q` vs sshd support, prove a wrong key is rejected and the banner is actually delivered. The PQ headline becomes a tested fact, not a claim.  | 100min |
-| M3  | **Docs-drift guard** | Eval check that every README option-table row exists in the modules (and counts match `builtins.attrNames checks`). Mechanically kills the drift class that produced "13 checks", the ghost convention, and the broken table cell. | 60min  |
+| ID | What                 | Why the next 13%                                                                                                                                                                                                                   | Effort |
+| -- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| M2 | **VM runtime depth** | Assert the _negotiated_ KEX is `mlkem768x25519-sha256` (`ssh -vv`), cross-check `ssh -Q` vs sshd support, prove a wrong key is rejected and the banner is actually delivered. The PQ headline becomes a tested fact, not a claim.  | 100min |
+| M3 | **Docs-drift guard** | Eval check that every README option-table row exists in the modules (and counts match `builtins.attrNames checks`). Mechanically kills the drift class that produced "13 checks", the ghost convention, and the broken table cell. | 60min  |
 
 ### The 20% that delivers 80% (adds ~6h, 5 tasks)
 
@@ -50,13 +50,13 @@ lines makes every future test addition expensive; CI has no dependency
 automation or cache fallback; the client module still has zero runtime proof;
 docs hygiene is one blocked decision away from being finished forever.
 
-| ID  | What                                          | Why the next 16%                                                                                                                                                   | Effort |
-| --- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| M4  | **Extract `tests/checks.nix`**                | flake.nix shrinks to ~200 lines; test work stops requiring spelunking a 740-line file. Debt actively grew all month.                                               | 90min  |
-| M5  | **CI automation + cache robustness**          | Dependabot for pinned Actions, weekly flake.lock PRs, combined checks-summary job, cache fallback + `cache.home.lan` 502 investigation. CI stops rotting silently. | 80min  |
-| M6  | **Client runtime proof + test consolidation** | `ssh -G` + rendered-config-text checks (client's first runtime proof), dedupe the two weak `deepSeq` checks, `sshd -T` golden snapshot.                            | 80min  |
-| M7  | **Docs hygiene completion**                   | Execute the dprint decision (D1), strikethrough-balance lint, README badges, record the annotation convention — docs hygiene becomes self-enforcing.               | 60min  |
-| M8  | **Repo meta**                                 | CODEOWNERS, issue/PR templates, pre-push gate hook. First-impression and contributor-intake work.                                                                  | 45min  |
+| ID | What                                          | Why the next 16%                                                                                                                                                   | Effort |
+| -- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| M4 | **Extract `tests/checks.nix`**                | flake.nix shrinks to ~200 lines; test work stops requiring spelunking a 740-line file. Debt actively grew all month.                                               | 90min  |
+| M5 | **CI automation + cache robustness**          | Dependabot for pinned Actions, weekly flake.lock PRs, combined checks-summary job, cache fallback + `cache.home.lan` 502 investigation. CI stops rotting silently. | 80min  |
+| M6 | **Client runtime proof + test consolidation** | `ssh -G` + rendered-config-text checks (client's first runtime proof), dedupe the two weak `deepSeq` checks, `sshd -T` golden snapshot.                            | 80min  |
+| M7 | **Docs hygiene completion**                   | Execute the dprint decision (D1), strikethrough-balance lint, README badges, record the annotation convention — docs hygiene becomes self-enforcing.               | 60min  |
+| M8 | **Repo meta**                                 | CODEOWNERS, issue/PR templates, pre-push gate hook. First-impression and contributor-intake work.                                                                  | 45min  |
 
 ### The other 20% → 100% (~5.5h + parked epics)
 
@@ -71,37 +71,37 @@ Depth, reach, and the long tail — most gated on the release and the decisions.
 
 **Decisions (BLOCKED, need maintainer — 5min each):**
 
-| ID  | Question                                                 | Recommendation                                                                                                                   |
-| --- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | dprint: wire into treefmt or drop `dprint.json`?         | **Wire it** — enforced markdown formatting kills the table-drift class; re-verify strikethrough integrity in archives afterward. |
-| D2  | v0.1.0 disposition (headline feature was runtime-broken) | **Leave it** — CHANGELOG warns, compare links intact; rewriting history hurts anyone who pinned.                                 |
-| D3  | Keep personal pubkeys as public `sshKeys` output?        | **Keep** — public keys are public; the output is load-bearing in the README quick-start.                                         |
-| D4  | SECURITY.md vs README-owned threat model                 | **Keep README canonical** (single-home), add `SECURITY.md` only as a pointer with contact/disclosure policy.                     |
-| D5  | ARCHITECTURE: own file or stay in AGENTS.md?             | **Stay in AGENTS.md** — one consumer (AI sessions + maintainers); a separate file is ceremony at this size.                      |
+| ID | Question                                                 | Recommendation                                                                                                                   |
+| -- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| D1 | dprint: wire into treefmt or drop `dprint.json`?         | **Wire it** — enforced markdown formatting kills the table-drift class; re-verify strikethrough integrity in archives afterward. |
+| D2 | v0.1.0 disposition (headline feature was runtime-broken) | **Leave it** — CHANGELOG warns, compare links intact; rewriting history hurts anyone who pinned.                                 |
+| D3 | Keep personal pubkeys as public `sshKeys` output?        | **Keep** — public keys are public; the output is load-bearing in the README quick-start.                                         |
+| D4 | SECURITY.md vs README-owned threat model                 | **Keep README canonical** (single-home), add `SECURITY.md` only as a pointer with contact/disclosure policy.                     |
+| D5 | ARCHITECTURE: own file or stay in AGENTS.md?             | **Stay in AGENTS.md** — one consumer (AI sessions + maintainers); a separate file is ceremony at this size.                      |
 
 ---
 
 ## Step 2 — Comprehensive Plan (30–100min tasks, sorted by importance/impact/effort/customer-value)
 
-| #   | ID  | Task (bundle)                                                                     | Covers TODO(s)              | Pareto tier | Impact | Effort | Customer value                                       |
-| --- | --- | --------------------------------------------------------------------------------- | --------------------------- | ----------- | ------ | ------ | ---------------------------------------------------- |
-| 1   | M1  | Release v0.1.2: date changelog, tag, push, Release objects ×3, issue #1 close-out | TODO Release & remote       | 1%          | High   | 45min  | The security fix ships; trust + paper trail restored |
-| 2   | M2  | VM runtime depth: negotiated KEX, `ssh -Q`, wrong-key, banner delivery            | TODO Test depth ×4          | 4%          | High   | 100min | "Hardened + post-quantum" becomes runtime-proven     |
-| 3   | M3  | Docs-drift guard: README options ↔ modules, counts ↔ attrNames                    | TODO Test depth             | 4%          | High   | 60min  | Docs stop lying mechanically                         |
-| 4   | M4  | Extract `tests/checks.nix`                                                        | TODO Refactoring            | 20%         | Med    | 90min  | Every future test task gets cheaper                  |
-| 5   | M5  | CI automation + cache robustness                                                  | TODO CI automation/cache    | 20%         | Med    | 80min  | CI stays green without manual babysitting            |
-| 6   | M6  | Client runtime proof + dedupe + golden snapshot                                   | TODO Test depth/Refactoring | 20%         | Med    | 80min  | Client module finally runtime-proven                 |
-| 7   | M7  | Docs hygiene completion (dprint execution, lint, badges, conventions)             | TODO Decisions/Low          | 20%         | Med    | 60min  | Docs formatting + integrity self-enforcing           |
-| 8   | M8  | Repo meta: CODEOWNERS, templates, pre-push hook                                   | TODO Low                    | 20%         | Low    | 45min  | Contributor intake works                             |
-| 9   | M9  | Option wins batch 1                                                               | ROADMAP theme 5             | other 20%   | Med    | 70min  | Common asks covered without escape hatches           |
-| 10  | M10 | Option batch 2 (design-heavy)                                                     | ROADMAP theme 5             | other 20%   | Med    | 100min | 2FA and PAM-less setups become first-class           |
-| 11  | M11 | Post-release ecosystem                                                            | ROADMAP themes 2/6          | other 20%   | Med    | 60min  | Downstream simplifies; inputs stay fresh             |
-| 12  | M12 | ROADMAP refinement/parking (E1–E5, watch cadences, process)                       | ROADMAP themes 1–6          | other 20%   | Low    | 90min  | Long-term direction stays actionable, not vague      |
-| 13  | D1  | Decision: dprint policy                                                           | TODO Decisions              | gate        | Med    | 5min   | Unblocks M7                                          |
-| 14  | D2  | Decision: v0.1.0 disposition                                                      | ROADMAP open questions      | gate        | Low    | 5min   | Closes a standing question                           |
-| 15  | D3  | Decision: `sshKeys` output future                                                 | ROADMAP open questions      | gate        | Low    | 5min   | Closes a standing question                           |
-| 16  | D4  | Decision: SECURITY.md                                                             | ROADMAP open questions      | gate        | Low    | 5min   | Closes a standing question                           |
-| 17  | D5  | Decision: ARCHITECTURE placement                                                  | ROADMAP open questions      | gate        | Low    | 5min   | Closes a standing question                           |
+| #  | ID  | Task (bundle)                                                                     | Covers TODO(s)              | Pareto tier | Impact | Effort | Customer value                                       |
+| -- | --- | --------------------------------------------------------------------------------- | --------------------------- | ----------- | ------ | ------ | ---------------------------------------------------- |
+| 1  | M1  | Release v0.1.2: date changelog, tag, push, Release objects ×3, issue #1 close-out | TODO Release & remote       | 1%          | High   | 45min  | The security fix ships; trust + paper trail restored |
+| 2  | M2  | VM runtime depth: negotiated KEX, `ssh -Q`, wrong-key, banner delivery            | TODO Test depth ×4          | 4%          | High   | 100min | "Hardened + post-quantum" becomes runtime-proven     |
+| 3  | M3  | Docs-drift guard: README options ↔ modules, counts ↔ attrNames                    | TODO Test depth             | 4%          | High   | 60min  | Docs stop lying mechanically                         |
+| 4  | M4  | Extract `tests/checks.nix`                                                        | TODO Refactoring            | 20%         | Med    | 90min  | Every future test task gets cheaper                  |
+| 5  | M5  | CI automation + cache robustness                                                  | TODO CI automation/cache    | 20%         | Med    | 80min  | CI stays green without manual babysitting            |
+| 6  | M6  | Client runtime proof + dedupe + golden snapshot                                   | TODO Test depth/Refactoring | 20%         | Med    | 80min  | Client module finally runtime-proven                 |
+| 7  | M7  | Docs hygiene completion (dprint execution, lint, badges, conventions)             | TODO Decisions/Low          | 20%         | Med    | 60min  | Docs formatting + integrity self-enforcing           |
+| 8  | M8  | Repo meta: CODEOWNERS, templates, pre-push hook                                   | TODO Low                    | 20%         | Low    | 45min  | Contributor intake works                             |
+| 9  | M9  | Option wins batch 1                                                               | ROADMAP theme 5             | other 20%   | Med    | 70min  | Common asks covered without escape hatches           |
+| 10 | M10 | Option batch 2 (design-heavy)                                                     | ROADMAP theme 5             | other 20%   | Med    | 100min | 2FA and PAM-less setups become first-class           |
+| 11 | M11 | Post-release ecosystem                                                            | ROADMAP themes 2/6          | other 20%   | Med    | 60min  | Downstream simplifies; inputs stay fresh             |
+| 12 | M12 | ROADMAP refinement/parking (E1–E5, watch cadences, process)                       | ROADMAP themes 1–6          | other 20%   | Low    | 90min  | Long-term direction stays actionable, not vague      |
+| 13 | D1  | Decision: dprint policy                                                           | TODO Decisions              | gate        | Med    | 5min   | Unblocks M7                                          |
+| 14 | D2  | Decision: v0.1.0 disposition                                                      | ROADMAP open questions      | gate        | Low    | 5min   | Closes a standing question                           |
+| 15 | D3  | Decision: `sshKeys` output future                                                 | ROADMAP open questions      | gate        | Low    | 5min   | Closes a standing question                           |
+| 16 | D4  | Decision: SECURITY.md                                                             | ROADMAP open questions      | gate        | Low    | 5min   | Closes a standing question                           |
+| 17 | D5  | Decision: ARCHITECTURE placement                                                  | ROADMAP open questions      | gate        | Low    | 5min   | Closes a standing question                           |
 
 **Sort rationale:** ship (M1) before prove (M2/M3) because an unshipped fix
 makes proof academic; prove before grow (M9/M10) because new options must
@@ -115,16 +115,16 @@ go into the clean structure, not the 740-line flake. D1 gates M7; D2–D5 float
 
 ### Tier 1% → 51%
 
-| #   | Fine task                                                                  | Parent | Effort | Verify by                              |
-| --- | -------------------------------------------------------------------------- | ------ | ------ | -------------------------------------- |
-| F1  | Push master (`5b54f76`, `9060fed`) and watch both CI jobs green            | M1     | 10min  | `gh run list`: success on both jobs    |
-| F2  | Date the `CHANGELOG.md` `[Unreleased]` section as `0.1.2 — 2026-08-29`     | M1     | 5min   | diff shows dated section               |
-| F3  | Create annotated tag `v0.1.2` and push tag + master                        | M1     | 5min   | `git tag -l` + tag visible on GitHub   |
-| F4  | Verify CI green on the tag push                                            | M1     | 10min  | run conclusion = success               |
-| F5  | `gh release create v0.1.2` from the annotated tag message                  | M1     | 12min  | Release page renders notes             |
-| F6  | Backfill Release objects for v0.1.0 and v0.1.1 from their tag messages     | M1     | 12min  | `gh release list` shows three releases |
-| F7  | Comment on issue #1: verification summary, fix, PAM nuance, v0.1.2 pointer | M1     | 10min  | comment visible with evidence          |
-| F8  | Close issue #1 referencing v0.1.2                                          | M1     | 2min   | issue state = closed                   |
+| #  | Fine task                                                                  | Parent | Effort | Verify by                              |
+| -- | -------------------------------------------------------------------------- | ------ | ------ | -------------------------------------- |
+| F1 | Push master (`5b54f76`, `9060fed`) and watch both CI jobs green            | M1     | 10min  | `gh run list`: success on both jobs    |
+| F2 | Date the `CHANGELOG.md` `[Unreleased]` section as `0.1.2 — 2026-08-29`     | M1     | 5min   | diff shows dated section               |
+| F3 | Create annotated tag `v0.1.2` and push tag + master                        | M1     | 5min   | `git tag -l` + tag visible on GitHub   |
+| F4 | Verify CI green on the tag push                                            | M1     | 10min  | run conclusion = success               |
+| F5 | `gh release create v0.1.2` from the annotated tag message                  | M1     | 12min  | Release page renders notes             |
+| F6 | Backfill Release objects for v0.1.0 and v0.1.1 from their tag messages     | M1     | 12min  | `gh release list` shows three releases |
+| F7 | Comment on issue #1: verification summary, fix, PAM nuance, v0.1.2 pointer | M1     | 10min  | comment visible with evidence          |
+| F8 | Close issue #1 referencing v0.1.2                                          | M1     | 2min   | issue state = closed                   |
 
 ### Tier 4% → 64%
 
