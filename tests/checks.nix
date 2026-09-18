@@ -150,6 +150,30 @@
         }
       ];
 
+      # Root-login emission matrix: allowRootLogin with keys-only must
+      # emit "prohibit-password" (a downstream password flip can never
+      # open root password logins), with passwords "yes". Both set
+      # enable = true — without it the assertions would be vacuous.
+      nixosRootLoginKeysEval = mkNixosEval [
+        {
+          services.ssh-server = {
+            enable = true;
+            allowRootLogin = true;
+            authorizedKeys = [ testKey ];
+          };
+        }
+      ];
+
+      nixosRootLoginPasswordsEval = mkNixosEval [
+        {
+          services.ssh-server = {
+            enable = true;
+            allowRootLogin = true;
+            passwordAuthentication = true;
+          };
+        }
+      ];
+
       # mkEnableOption defaults to false, so a bare eval is the disabled
       # state: the module must contribute nothing to openssh or /etc.
       nixosDisabledEval = mkNixosEval [ ];
@@ -762,6 +786,19 @@
             name = "PermitRootLogin";
             actual = sshdSettings.PermitRootLogin;
             expected = "no";
+          }
+        ];
+
+        nixos-root-login-modes = assertEq "root-login-modes" [
+          {
+            name = "allowRootLogin + keys-only emits prohibit-password (self-defending if passwords ever flip on)";
+            actual = nixosRootLoginKeysEval.config.services.openssh.settings.PermitRootLogin;
+            expected = "prohibit-password";
+          }
+          {
+            name = "allowRootLogin + passwords emits yes";
+            actual = nixosRootLoginPasswordsEval.config.services.openssh.settings.PermitRootLogin;
+            expected = "yes";
           }
         ];
 
