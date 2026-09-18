@@ -59,7 +59,17 @@ in
     allowRootLogin = lib.mkOption {
       type = lib.types.bool;
       default = false;
-      description = "Whether to allow root login";
+      description = ''
+        Whether to allow root login. The emitted PermitRootLogin value
+        is a matrix over passwordAuthentication: "no" when root login
+        is disabled; "prohibit-password" when root login is enabled but
+        password authentication is off (keys-only root — runtime-
+        identical to "yes" in that state, but a downstream password flip
+        can never silently open root password logins); "yes" only when
+        both root login and password authentication are enabled. Override
+        via services.ssh-server.extraSettings.PermitRootLogin if a
+        password-less 2FA root flow ever needs plain "yes".
+      '';
     };
 
     passwordAuthentication = lib.mkOption {
@@ -180,7 +190,13 @@ in
       settings = {
         PasswordAuthentication = config.services.ssh-server.passwordAuthentication;
         KbdInteractiveAuthentication = config.services.ssh-server.kbdInteractiveAuthentication;
-        PermitRootLogin = if config.services.ssh-server.allowRootLogin then "yes" else "no";
+        PermitRootLogin =
+          if !config.services.ssh-server.allowRootLogin then
+            "no"
+          else if config.services.ssh-server.passwordAuthentication then
+            "yes"
+          else
+            "prohibit-password";
         PermitEmptyPasswords = false;
 
         PubkeyAuthentication = true;
