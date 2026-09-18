@@ -22,9 +22,20 @@
     allowUsers = [ "youruser" ];
 
     # Public keys authorized for every user account on the host.
+    # Authorize every key tracked by this flake in one line (requires
+    # the nix-ssh-config input in scope; see README "Consumers &
+    # Versioning"):
+    #   authorizedKeys = builtins.attrValues nix-ssh-config.sshKeys;
     authorizedKeys = [
       # "ssh-ed25519 AAAA... you@machine"
     ];
+
+    # Need root login (appliances, build boxes)? It stays keys-only:
+    # allowRootLogin = true emits PermitRootLogin "prohibit-password"
+    # while passwordAuthentication is off, and "yes" only when you also
+    # enable passwords — a later password flip can never silently open
+    # root password logins.
+    # allowRootLogin = true;
 
     # Everything else is optional: defaults are hardened.
     # port = 22;
