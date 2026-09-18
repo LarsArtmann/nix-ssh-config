@@ -434,8 +434,10 @@
         );
       docServerRefs = dottedOptionRefs ''.+services\.ssh-server\.([A-Za-z0-9]+).*'';
       # [^-] rejects the flake name `nix-ssh-config.*` (not an option
-      # namespace); a leading char is always present in real prose.
-      docClientRefs = dottedOptionRefs ''.+[^-]ssh-config\.([A-Za-z0-9]+).*'';
+      # namespace); `[^-/]` also rejects file paths like the consumer
+      # module `programs/ssh-config.nix` — a leading char is always
+      # present in real prose refs.
+      docClientRefs = dottedOptionRefs ''.+[^-/]ssh-config\.([A-Za-z0-9]+).*'';
 
       hmHostOptionNames = lib.sort lib.lessThan (
         lib.filter (n: n != "_module") (
