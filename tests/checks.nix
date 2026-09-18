@@ -1128,9 +1128,52 @@
                 system.stateVersion = "25.05";
               };
 
+            # HM-in-NixOS client node: the Home Manager module itself
+            # runs inside the VM (design: docs/designs/hm-in-nixos-vm.md)
+            # so its activation script, rendered config and control
+            # socket plumbing get runtime proof. The root-driven plain
+            # ssh commands in the subtests above stay as the no-HM
+            # control path.
             client =
               { pkgs, ... }:
               {
+                imports = [ inputs.home-manager.nixosModules.home-manager ];
+                home-manager = {
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  users.client = {
+                    imports = [ self.homeManagerModules.ssh ];
+                    home = {
+                      username = "client";
+                      homeDirectory = "/home/client";
+                      stateVersion = "25.05";
+                    };
+                    ssh-config = {
+                      enable = true;
+                      # `test` mirrors the host alias the HM subtests ssh
+                      # to: Host-block matching, per-host user/identity
+                      # wiring and the global crypto defaults all get
+                      # exercised by logging in THROUGH this config.
+                      hosts.test = {
+                        hostname = "server";
+                        user = "testuser";
+                        identityFile = "/home/client/.ssh/test_key";
+                        controlMaster = "auto";
+                        extraOptions = {
+                          StrictHostKeyChecking = "accept-new";
+                          # Routes the multiplexing socket through the
+                          # dir the module's activation script creates
+                          # (~/.ssh/sockets, mode 700).
+                          ControlPath = "~/.ssh/sockets/%r@%h-%p";
+                        };
+                      };
+                    };
+                  };
+                };
+                users.users.client = {
+                  isNormalUser = true;
+                  description = "HM-driven VM client user";
+                };
                 environment.systemPackages = [
                   pkgs.openssh
                   pkgs.sshpass
@@ -1288,6 +1331,39 @@
                 assert "AUTHORIZED ACCESS ONLY" in output, (
                     f"banner not delivered to client: {output}"
                 )
+
+            # HM-in-NixOS runtime proof: the Home Manager client module —
+            # not just a plain ssh binary — drives a real login. Its
+            # activation script, rendered config, Host-block matching,
+            # IdentityFile wiring, multiplexing socket location and
+            # crypto defaults all face the real sshd.
+            with subtest("HM client module activated"):
+                client.wait_for_unit("home-manager-client.service")
+                client.succeed("grep -q '^Host test$' /home/client/.ssh/config")
+                mode = client.succeed("stat -c %a /home/client/.ssh/sockets").strip()
+                assert mode == "700", f"activation script left sockets dir at {mode}"
+
+            with subtest("HM-rendered config drives a real login"):
+                client.succeed(
+                    "install -m 600 ${self}/tests/test-key /home/client/.ssh/test_key"
+                    + " && chown client /home/client/.ssh/test_key"
+                )
+                status, output = client.execute(
+                    "sudo -u client -H ssh -o BatchMode=yes -vv test -- true 2>&1"
+                )
+                assert status == 0, f"HM-configured login failed: {output}"
+                # The module's own crypto defaults must carry the connection.
+                assert "kex: algorithm: mlkem768x25519-sha256" in output, (
+                    f"HM client did not negotiate ML-KEM: {output}"
+                )
+                assert "AUTHORIZED ACCESS ONLY" in output, (
+                    f"banner not delivered to the HM client: {output}"
+                )
+
+            with subtest("HM multiplexing socket lives in the activation-created dir"):
+                client.succeed("sudo -u client -H ssh -f -N test")
+                client.succeed("find /home/client/.ssh/sockets -type s | grep -q .")
+                client.succeed("sudo -u client -H ssh -O exit test")
 
             # Positive control for the prompt path: on the variant node
             # where kbd-interactive + PAM are deliberately enabled, the
