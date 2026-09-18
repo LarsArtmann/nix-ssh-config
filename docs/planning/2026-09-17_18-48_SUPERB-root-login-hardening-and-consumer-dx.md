@@ -71,16 +71,16 @@ graph TD
 
 ## Comprehensive Plan (30–100 min tasks)
 
-| # | Task                                                                                                     | Impact   | Effort | Value                                                           |
-| - | -------------------------------------------------------------------------------------------------------- | -------- | ------ | --------------------------------------------------------------- |
-| 1 | Module: PermitRootLogin emission matrix + `allowRootLogin` description                                   | Critical | 30 min | Defense-in-depth for every consumer; deletes field comment debt |
-| 2 | Checks: `nixos-root-login-modes` family (prohibit-password / yes) + count bookkeeping (FEATURES, AGENTS) | Critical | 45 min | Untested-but-production branch becomes kill-switch guarded      |
-| 3 | README: "Verify your wiring" + "Consumers & versioning" + prose sweep for old "yes" claim                | High     | 60 min | Consumers stop inventing eval incantations; pin policy defined  |
-| 4 | flake.nix: inline systems list, drop `nix-systems` input, lock update, AGENTS deps                       | Medium   | 30 min | Nix-native, smaller input tax per consumer                      |
-| 5 | examples/server.nix: `attrValues sshKeys` field pattern + root-login matrix note                         | Medium   | 30 min | Examples mirror reality                                         |
-| 6 | CHANGELOG `[Unreleased]` entries for all of the above                                                    | Medium   | 30 min | Consumer-impact trail                                           |
-| 7 | CI canary: weekly + manual job evaling telephony against local master (if probe green)                   | High     | 90 min | Breaking changes caught before release                          |
-| 8 | Full unmasked gates + per-task commits + push                                                            | Critical | 60 min | Proven green, clean history                                     |
+| #   | Task                                                                                                     | Impact   | Effort | Value                                                           |
+| --- | -------------------------------------------------------------------------------------------------------- | -------- | ------ | --------------------------------------------------------------- |
+| 1   | Module: PermitRootLogin emission matrix + `allowRootLogin` description                                   | Critical | 30 min | Defense-in-depth for every consumer; deletes field comment debt |
+| 2   | Checks: `nixos-root-login-modes` family (prohibit-password / yes) + count bookkeeping (FEATURES, AGENTS) | Critical | 45 min | Untested-but-production branch becomes kill-switch guarded      |
+| 3   | README: "Verify your wiring" + "Consumers & versioning" + prose sweep for old "yes" claim                | High     | 60 min | Consumers stop inventing eval incantations; pin policy defined  |
+| 4   | flake.nix: inline systems list, drop `nix-systems` input, lock update, AGENTS deps                       | Medium   | 30 min | Nix-native, smaller input tax per consumer                      |
+| 5   | examples/server.nix: `attrValues sshKeys` field pattern + root-login matrix note                         | Medium   | 30 min | Examples mirror reality                                         |
+| 6   | CHANGELOG `[Unreleased]` entries for all of the above                                                    | Medium   | 30 min | Consumer-impact trail                                           |
+| 7   | CI canary: weekly + manual job evaling telephony against local master (if probe green)                   | High     | 90 min | Breaking changes caught before release                          |
+| 8   | Full unmasked gates + per-task commits + push                                                            | Critical | 60 min | Proven green, clean history                                     |
 
 ## Micro-Breakdown (max 12 min each)
 
