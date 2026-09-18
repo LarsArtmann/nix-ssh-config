@@ -146,7 +146,7 @@ Conservative + post-quantum strategy. All rationale lives in `README.md` (not du
 - **Ciphers**: AEAD-only (ChaCha20-Poly1305, AES-GCM). No CBC.
 - **MACs**: Encrypt-then-MAC only. No encrypt-and-MAC, no HMAC-MD5/SHA1.
 - **Host keys**: Ed25519 preferred; RSA-SHA2 accepted for compat. No DSA, no RSA-SHA1.
-- **Server defaults**: passwords and keyboard-interactive off (`kbdInteractiveAuthentication` defaults to `passwordAuthentication`; `PasswordAuthentication no` alone leaves the NixOS-default `KbdInteractiveAuthentication yes` + `UsePAM` PAM prompt channel open — OTP modules or, where the sshd PAM service permits them, Unix passwords), root login off, X11/TCP/tunnel forwarding off, MaxAuthTries=3, MaxSessions=2, verbose logging, legal banner.
+- **Server defaults**: passwords and keyboard-interactive off (`kbdInteractiveAuthentication` defaults to `passwordAuthentication`; `PasswordAuthentication no` alone leaves the NixOS-default `KbdInteractiveAuthentication yes` + `UsePAM` PAM prompt channel open — OTP modules or, where the sshd PAM service permits them, Unix passwords), root login off (`allowRootLogin = true` emits `prohibit-password` while passwords are off, `yes` only with passwords on — guarded by `nixos-root-login-modes`), X11/TCP/tunnel forwarding off, MaxAuthTries=3, MaxSessions=2, verbose logging, legal banner.
 - **Post-quantum signatures (ML-DSA)**: not yet available in OpenSSH — no implementation timeline. Watch upstream.
 
 Public keys are tracked in `ssh-keys/*.pub`; private keys are gitignored. The `sshKeys` flake output reads them via `builtins.readFile`.

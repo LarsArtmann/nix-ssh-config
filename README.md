@@ -78,6 +78,72 @@ values, the OpenSSH version that actually matters is the one in **your**
 system's nixpkgs — see the compatibility matrix below (≥ 9.9 for
 post-quantum KEX).
 
+## Consumers & Versioning
+
+This flake is consumed as an input by other NixOS / Home Manager
+configurations. The modules are pure configuration expressions — no
+packages flow from this flake into your system — so a floating input is
+low-risk. Two policies:
+
+1. **Float (the default).**
+   `inputs.nix-ssh-config.url = "github:LarsArtmann/nix-ssh-config";`
+   tracks the default branch; changes land under `[Unreleased]` in the
+   CHANGELOG before every tagged release.
+2. **Pin to a tag.** Append the tag (`github:LarsArtmann/nix-ssh-config/v0.1.4`)
+   when you want to review every update yourself.
+
+The canonical `follows` block — it only affects this flake's own test
+evals; your system always builds against **your** nixpkgs:
+
+```nix
+inputs.nix-ssh-config = {
+  url = "github:LarsArtmann/nix-ssh-config";
+  inputs.nixpkgs.follows = "nixpkgs";
+};
+```
+
+Track your keys once: the `sshKeys` output is a plain attrset of public
+key strings (`lars`, `lars-evo-x2`). Authorize all of them with
+`authorizedKeys = builtins.attrValues nix-ssh-config.sshKeys;` — there is
+no `all` convenience key on purpose (it would mix an attrset of strings
+with a list member).
+
+Heads-up for floaters: the client option namespace `ssh-config.*` uses a
+hyphen, a known deviation from Nix convention. A rename is deferred to a
+hypothetical 2.0 — if that would break you, pin to a tag.
+
+## Verify Your Wiring
+
+Eval beats hope. Run these from your consuming flake before deploying:
+
+```bash
+# Effective sshd settings (this module's output plus your overrides)
+nix eval --json .#nixosConfigurations.myhost.config.services.openssh.settings
+
+# The authorized_keys copy guarantee: must print "0444" — any other
+# value means NixOS symlinked into /nix/store and sshd StrictModes will
+# silently ignore the file at runtime
+nix eval .#nixosConfigurations.myhost.config.environment.etc \
+  --apply 'e: e."ssh/authorized_keys".mode'
+
+# Rendered client config (the exact file Home Manager installs)
+cat $(nix eval --raw .#homeConfigurations.youruser.config.home.file.".ssh/config".source)
+```
+
+Two traps this repo's own checks guard against, worth knowing as a
+consumer:
+
+- **The `enable` trap.** Without `services.ssh-server.enable = true` the
+  module is inert (`mkIf`), and the eval above happily reports _nixpkgs
+  defaults_ (upstream already sets `PermitRootLogin "prohibit-password"`)
+  instead of this module's output. A green eval with `enable` off proves
+  nothing.
+- **Root-login modes.** `allowRootLogin = true` emits `PermitRootLogin
+"prohibit-password"` while passwords are off — runtime-identical to
+  `"yes"` under keys-only, but a later password flip can never open root
+  password logins. `"yes"` is emitted only when `passwordAuthentication =
+true` as well.
+
 ## Module Reference
 
 ### Home Manager Module (`homeManagerModules.ssh`)
@@ -172,7 +238,7 @@ Configures OpenSSH server (sshd) with hardening.
 | `services.ssh-server.usePam`                       | bool\|null | `null`                   | PAM authentication (`null` = NixOS default `true`; `false` = PAM-free host); only matters with `kbdInteractiveAuthentication = true` for 2FA |
 | `services.ssh-server.authenticationMethods`        | str\|null  | `null`                   | `AuthenticationMethods` directive; commas chain methods in sequence, e.g. `publickey,keyboard-interactive` for two-factor auth               |
 | `services.ssh-server.allowUsers`                   | list       | `[]`                     | Allowed users                                                                                                                                |
-| `services.ssh-server.allowRootLogin`               | bool       | `false`                  | Allow root login                                                                                                                             |
+| `services.ssh-server.allowRootLogin`               | bool       | `false`                  | Allow root login; emits `prohibit-password` when keys-only, `yes` only if `passwordAuthentication` is also on                                |
 | `services.ssh-server.passwordAuthentication`       | bool       | `false`                  | Allow passwords                                                                                                                              |
 | `services.ssh-server.kbdInteractiveAuthentication` | bool       | `passwordAuthentication` | Allow keyboard-interactive (defaults to follow `passwordAuthentication`; set `true` explicitly for PAM-backed 2FA)                           |
 | `services.ssh-server.authorizedKeys`               | list       | `[]`                     | SSH public keys to authorize (file is **copied** into `/etc`, not symlinked — sshd StrictModes rejects store symlinks)                       |
@@ -270,7 +336,9 @@ without which upstream nixpkgs would deny every prompt:
   modules, or Unix account passwords wherever the sshd PAM service permits
   them). Set `services.ssh-server.kbdInteractiveAuthentication = true`
   explicitly if you run PAM-backed two-factor authentication.
-- Root login disabled
+- Root login disabled by default; `allowRootLogin = true` stays keys-only
+  (`prohibit-password`) unless `passwordAuthentication` is explicitly on
+  too — a downstream password flip can never silently open root passwords
 - **Post-quantum key exchange**: `mlkem768x25519-sha256` (ML-KEM hybrid, NIST FIPS 203)
 - AEAD ciphers only: ChaCha20-Poly1305, AES-GCM
 - Encrypt-then-MAC only (no encrypt-and-MAC)
