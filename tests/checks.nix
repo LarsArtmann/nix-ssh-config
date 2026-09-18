@@ -1391,7 +1391,15 @@
             # kill-switch for the refusal subtest above: give kbduser the
             # probed password and this subtest goes red, proving the test
             # detects a config where passwords work.
+            #
+            # The explicit wait is load-bearing: kbd-server is otherwise
+            # only contacted here, and a fast client (e.g. once its HM
+            # activation and subtests finish quickly) can reach this
+            # subtest while kbd-server is still booting — observed as
+            # "Connection refused" (2026-09-18).
             with subtest("enabled prompt path refuses a locked user"):
+                kbd_server.wait_for_unit("sshd.service")
+                kbd_server.wait_for_open_port(22)
                 status, output = client.execute(
                     "sshpass -p 'definitely-wrong'"
                     + " ssh -o PubkeyAuthentication=no"
