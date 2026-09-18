@@ -21,7 +21,7 @@ Pre-push pre-flight (one command, run all local gates in CI order):
 nix fmt -- --fail-on-change && statix check && nix flake check --all-systems --no-build && nix flake check
 ```
 
-CI (`.github/workflows/check.yml`) has two jobs: `check` (x86_64-linux, runs the three commands above plus a lychee markdown-link check) and `check-aarch64` (native arm64 runner, same gate). All steps must pass.
+CI (`.github/workflows/check.yml`) has five jobs: `check` (x86_64-linux, runs the three commands above plus a lychee markdown-link check), `check-aarch64` (native arm64 runner, same gate), `consumer-compat` (canary: evals the public nix-international-telephony configs against this checkout via `--override-input`), `release-script` (guard-logic proof), and `checks-summary` (aggregation gate for branch protection). All steps must pass.
 
 ### Supported systems
 
