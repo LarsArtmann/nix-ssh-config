@@ -262,10 +262,158 @@
           ++ extraModules;
         };
 
+      # Table-driven host fixtures (decided 2026-08-29, adopted
+      # 2026-09-18): every host-level option gets an isolation row whose
+      # host sets ONLY that option (plus the hostname every host needs),
+      # and every row is asserted by FULL-block equality. One
+      # kitchen-sink host can hide a broken merge behind a sibling
+      # option, and single-field lookups cannot catch a directive that
+      # leaks into the wrong host block — whole-block comparison catches
+      # both. `family` routes a row's assertion to its check: "blocks"
+      # (user-resolution invariants), "options" (scalar directives),
+      # "advanced" (jump/x11/forwards).
+      mkHostFixture =
+        family: name: config: directives:
+        let
+          user = config.user or null;
+        in
+        {
+          inherit family name config;
+          expected = {
+            HostName = config.hostname;
+            User = if user != null then user else "test";
+          } // directives;
+        };
+
+      hostFixtures = [
+        (mkHostFixture "blocks" "explicit-user" {
+          hostname = "user.example.com";
+          user = "admin";
+        } { })
+        # No user set: must inherit ssh-config.user ("test" via
+        # home.username).
+        (mkHostFixture "blocks" "inherit-user" { hostname = "inherit.example.com"; } { })
+        (mkHostFixture "options" "port" {
+          hostname = "port.example.com";
+          port = 2222;
+        } { Port = 2222; })
+        (mkHostFixture "options" "identity-file" {
+          hostname = "identity.example.com";
+          identityFile = "~/.ssh/full_key";
+        } { IdentityFile = "~/.ssh/full_key"; })
+        (mkHostFixture "options" "certificate-file" {
+          hostname = "certificate.example.com";
+          certificateFile = "~/certs/host-cert.pub";
+        } { CertificateFile = "~/certs/host-cert.pub"; })
+        (mkHostFixture "options" "control-master" {
+          hostname = "controlmaster.example.com";
+          controlMaster = "autoask";
+        } { ControlMaster = "autoask"; })
+        (mkHostFixture "options" "update-host-keys" {
+          hostname = "updatehostkeys.example.com";
+          updateHostKeys = "ask";
+        } { UpdateHostKeys = "ask"; })
+        (mkHostFixture "options" "server-alive-interval" {
+          hostname = "alive-interval.example.com";
+          serverAliveInterval = 45;
+        } { ServerAliveInterval = 45; })
+        (mkHostFixture "options" "server-alive-count-max" {
+          hostname = "alive-count.example.com";
+          serverAliveCountMax = 7;
+        } { ServerAliveCountMax = 7; })
+        # extraOptions merge with their upstream directive names.
+        (mkHostFixture "options" "extra-options" {
+          hostname = "extra.example.com";
+          extraOptions = {
+            Compression = "yes";
+            StrictHostKeyChecking = "accept-new";
+          };
+        } {
+          Compression = "yes";
+          StrictHostKeyChecking = "accept-new";
+        })
+        (mkHostFixture "advanced" "proxy-jump" {
+          hostname = "jump.example.com";
+          proxyJump = "bastion.example.com";
+        } { ProxyJump = "bastion.example.com"; })
+        (mkHostFixture "advanced" "forward-x11" {
+          hostname = "x11.example.com";
+          forwardX11 = true;
+        } { ForwardX11 = "yes"; })
+        # Forwarding values keep their structured shape (HM renders
+        # them); expected values carry the sub-module defaults applied.
+        (mkHostFixture "advanced" "local-forwards" {
+          hostname = "local.example.com";
+          localForwards = [
+            {
+              bind.port = 8080;
+              host.address = "10.0.0.13";
+              host.port = 80;
+            }
+          ];
+        } {
+          LocalForward = [
+            {
+              bind = {
+                address = "localhost";
+                port = 8080;
+              };
+              host = {
+                address = "10.0.0.13";
+                port = 80;
+              };
+            }
+          ];
+        })
+        (mkHostFixture "advanced" "remote-forwards" {
+          hostname = "remote.example.com";
+          remoteForwards = [
+            {
+              bind.port = 9090;
+              host.address = "db.internal";
+              host.port = 5432;
+            }
+          ];
+        } {
+          RemoteForward = [
+            {
+              bind = {
+                address = "localhost";
+                port = 9090;
+              };
+              host = {
+                address = "db.internal";
+                port = 5432;
+              };
+            }
+          ];
+        })
+        (mkHostFixture "advanced" "dynamic-forwards" {
+          hostname = "dynamic.example.com";
+          dynamicForwards = [ { port = 1080; } ];
+        } {
+          DynamicForward = [ { address = "localhost"; port = 1080; } ];
+        })
+      ];
+
+      fixtureHosts = lib.listToAttrs (map (f: lib.nameValuePair f.name f.config) hostFixtures);
+
+      # Full-block equality entries generated from the table above.
+      hostFixtureChecks =
+        family:
+        map (f: {
+          name = "host '${f.name}' renders exactly its own options (no leaked directives)";
+          actual = hmBlock f.name;
+          expected = f.expected;
+        }) (lib.filter (f: f.family == family) hostFixtures);
+
       hmEval = mkHmEval [
         {
           ssh-config = {
             enable = true;
+            # `test` is the combination host the runtime checks resolve
+            # (`ssh -G test`, rendered-config greps); per-option coverage
+            # lives in the isolation table above.
             hosts = {
               test = {
                 hostname = "example.com";
@@ -274,39 +422,7 @@
                 controlMaster = "auto";
                 updateHostKeys = "yes";
               };
-              # No user set: must inherit ssh-config.user ("test" via
-              # home.username).
-              inherit-user.hostname = "inherit.example.com";
-              # Every per-host option exercised at once.
-              full = {
-                hostname = "full.example.com";
-                port = 2222;
-                identityFile = "~/.ssh/full_key";
-                serverAliveInterval = 30;
-                serverAliveCountMax = 2;
-                proxyJump = "bastion.example.com";
-                forwardX11 = true;
-                localForwards = [
-                  {
-                    bind.port = 8080;
-                    host.address = "10.0.0.13";
-                    host.port = 80;
-                  }
-                ];
-                remoteForwards = [
-                  {
-                    bind.port = 9090;
-                    host.address = "db.internal";
-                    host.port = 5432;
-                  }
-                ];
-                dynamicForwards = [ { port = 1080; } ];
-                extraOptions = {
-                  Compression = "yes";
-                  StrictHostKeyChecking = "accept-new";
-                };
-              };
-            };
+            } // fixtureHosts;
           };
           home = {
             username = "test";
