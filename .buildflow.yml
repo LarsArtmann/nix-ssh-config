@@ -1,0 +1,6 @@
+# Whole-tool skip, the only suppression mechanism BuildFlow supports (no
+# per-rule ignore key exists). nix-checker's only findings in this repo are
+# port-collision false positives; analysis and un-skip criteria:
+# AGENTS.md -> "BuildFlow nix-checker port-collision findings are false positives".
+skip_steps:
+  - nix-checker
