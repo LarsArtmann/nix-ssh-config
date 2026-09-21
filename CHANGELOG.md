@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.1.5] - 2026-09-21
+
 ### Changed
 
 - **Keys-only root login now emits `PermitRootLogin "prohibit-password"`
