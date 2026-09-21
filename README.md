@@ -245,6 +245,7 @@ Configures OpenSSH server (sshd) with hardening.
 | `services.ssh-server.authorizedKeysFiles`          | list       | (see below)              | Key file paths                                                                                                                               |
 | `services.ssh-server.extraSettings`                | attrs      | `{}`                     | Extra OpenSSH settings                                                                                                                       |
 | `services.ssh-server.bannerText`                   | str\|null  | default banner           | SSH banner (null to disable; control characters are rejected at evaluation time)                                                             |
+| `services.ssh-server.fastfetchOnLogin`             | bool       | `true`                   | Greet interactive SSH logins with fastfetch when it is installed (no-op without it); login shells only — scp, sftp, remote commands and local logins never trigger it  |
 
 Default `authorizedKeysFiles`:
 
@@ -347,6 +348,11 @@ without which upstream nixpkgs would deny every prompt:
 - X11 and TCP forwarding disabled
 - Verbose logging
 - Legal banner displayed
+- Optional fastfetch greeting on interactive SSH logins (default on, but a
+  no-op until fastfetch is installed on the host; runs via the login-shell
+  hook only — never for scp, sftp subsystems, remote commands, local
+  logins or scheduled jobs; set `services.ssh-server.fastfetchOnLogin =
+  false` to opt out)
 
 ### Client Defaults
 

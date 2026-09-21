@@ -32,6 +32,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **fastfetch greeting on interactive SSH logins (`fastfetchOnLogin`,
+  default on).** Every interactive SSH login now runs fastfetch — but
+  only when the binary is installed on the host, so hosts without it
+  behave exactly as before and the option is safe to leave on
+  everywhere. The hook lives in `environment.loginShellInit` (the one
+  hook bash, zsh and fish all execute for login shells — NixOS's
+  `/etc/profile` never sources `/etc/profile.d`) and guards on
+  `SSH_CONNECTION`, `SSH_TTY` and a once-per-session marker: scp, sftp
+  subsystems, remote commands, local logins and scheduled jobs stay
+  silent. Asserted by the new `nixos-fastfetch-login` eval check
+  (content checks now 22 per system, 23 on Linux) and runtime-proven
+  in the VM (fires on a forced-TTY login through real sshd, silent
+  for non-interactive commands and local shells). Opt out with
+  `services.ssh-server.fastfetchOnLogin = false`
 - **Table-driven host fixtures in the Home Manager eval**: the single
   kitchen-sink `full` host is replaced by an isolation table in which
   every host-level option gets its own host that sets only that option,
