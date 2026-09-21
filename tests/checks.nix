@@ -1421,8 +1421,15 @@
                     + ssh_flags
                     + " -tt testuser@server 'bash -lc true' 2>&1"
                 )
-                assert status == 0, f"forced-TTY login failed: {output}"
-                assert "OS:" in output, f"fastfetch did not greet the login: {output}"
+                # status is deliberately not asserted: with -tt the client
+                # can lose the remote exit-status at pty teardown
+                # ("Connection to server closed.", seen in the kill-switch
+                # run even though sshd accepted the key and opened the
+                # session). The property under test is the greeting itself,
+                # which only an authenticated login shell can produce.
+                assert "OS:" in output, (
+                    f"fastfetch did not greet the login (status {status}): {output}"
+                )
 
             # The guards must keep non-interactive ssh commands and local
             # (non-SSH) login shells silent — scp/rsync/systemd output
