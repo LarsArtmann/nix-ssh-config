@@ -1448,39 +1448,6 @@
                     f"fastfetch fired on a local non-SSH login shell: {local}"
                 )
 
-            # TEMP DEBUG: pty-stall isolation matrix (remove after diagnosis)
-            with subtest("DEBUG pty stall matrix"):
-                debug_variants = [
-                    (
-                        "no-tty-bash-lc (control, expected pass)",
-                        "ssh -i /root/test-key" + ssh_batch + " testuser@server -- bash -lc true",
-                    ),
-                    (
-                        "tt-true",
-                        "ssh -i /root/test-key" + ssh_flags + " -tt testuser@server -- true",
-                    ),
-                    (
-                        "tt-bash-c",
-                        "ssh -i /root/test-key" + ssh_flags + " -tt testuser@server -- bash -c true",
-                    ),
-                    (
-                        "tt-bash-lc",
-                        "ssh -i /root/test-key" + ssh_flags + " -tt testuser@server -- bash -lc true",
-                    ),
-                    (
-                        "tt-bash-lc-xtrace",
-                        "ssh -i /root/test-key" + ssh_flags + " -tt testuser@server -- bash -lcx true",
-                    ),
-                    (
-                        "tt-true-stdin-devnull",
-                        "ssh -i /root/test-key" + ssh_flags + " -tt testuser@server -- true </dev/null",
-                    ),
-                ]
-                for dbg_name, dbg_cmd in debug_variants:
-                    dbg_status, dbg_output = client.execute(dbg_cmd + " 2>&1", timeout=20)
-                    dbg_tail = dbg_output.strip().splitlines()[-1] if dbg_output.strip() else "<empty>"
-                    print(f"PTYDEBUG {dbg_name}: status={dbg_status} tail={dbg_tail!r}")
-
             # HM-in-NixOS runtime proof: the Home Manager client module —
             # not just a plain ssh binary — drives a real login. Its
             # activation script, rendered config, Host-block matching,
