@@ -1420,15 +1420,19 @@
             # every -tt form stalls, every form passes with stdin
             # detached — bash/profile/the hook are irrelevant).
             with subtest("fastfetch greets interactive SSH logins when installed"):
+                import re
+
                 status, output = client.execute(
                     "ssh -i /root/test-key"
                     + ssh_flags
                     + " -tt testuser@server 'bash -lc true' </dev/null 2>&1"
                 )
                 assert status == 0, f"forced-TTY login failed (status {status}): {output}"
-                assert "OS:" in output, (
-                    f"fastfetch did not greet the login: {output}"
-                )
+                # With a real pty, fastfetch sees a TTY and colorizes its
+                # labels (ESC[36mOS ESC[0m:), so the literal substring
+                # "OS:" never appears — strip ANSI escapes first.
+                clean = re.compile(r"\x1b\[[0-9;]*m").sub("", output)
+                assert "OS:" in clean, f"fastfetch did not greet the login: {output}"
 
             # The guards must keep non-interactive ssh commands and local
             # (non-SSH) login shells silent — scp/rsync/systemd output
