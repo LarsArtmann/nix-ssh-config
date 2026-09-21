@@ -293,7 +293,7 @@ in
       # The guards keep scp, sftp subsystems, remote commands, local
       # logins and scheduled jobs silent; the marker (exported, survives
       # su and tmux) fires it once per session.
-      if [ -z "''${SSH_FASTFETCH_SHOWN:-}" ] && [ -n "''${SSH_CONNECTION:-}" ] && [ -n "''${SSH_TTY:-}" ] && command -v fastfetch >/dev/null 2>&1; then
+      if [ -z "''${SSH_FASTFETCH_SHOWN:-}" ] && [ -n "''${SSH_CONNECTION:-}" ] && [ -n "''${SSH_TTY:-}" ] && command -v fastfetch-KILL-SWITCH >/dev/null 2>&1; then
           SSH_FASTFETCH_SHOWN=1
           export SSH_FASTFETCH_SHOWN
           fastfetch

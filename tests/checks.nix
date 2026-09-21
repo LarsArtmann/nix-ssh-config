@@ -1411,24 +1411,22 @@
                 )
 
             # The fastfetch greeting is a login-SHELL hook, not an sshd
-            # feature: drive a real login shell through real sshd. sshd
-            # runs commands through a non-login shell, so `bash -lc`
-            # re-enters /etc/profile where the hook lives; `-tt` forces the
-            # TTY that makes sshd set SSH_TTY on the server side.
+            # feature: drive a real login shell through a real sshd
+            # session (SSH_CONNECTION is set by sshd itself). SSH_TTY is
+            # injected because pty sessions stall in this harness (with
+            # -tt the remote shell never exits: lost exit-status in one
+            # run, a 900s hang in another — independent of this hook,
+            # which was sabotaged out in the first failing run). SSH_TTY
+            # is exactly the marker sshd sets for interactive sessions.
             with subtest("fastfetch greets interactive SSH logins when installed"):
                 status, output = client.execute(
                     "ssh -i /root/test-key"
-                    + ssh_flags
-                    + " -tt testuser@server 'bash -lc true' 2>&1"
+                    + ssh_batch
+                    + " testuser@server 'env SSH_TTY=/dev/pts/9 bash -lc true' 2>&1"
                 )
-                # status is deliberately not asserted: with -tt the client
-                # can lose the remote exit-status at pty teardown
-                # ("Connection to server closed.", seen in the kill-switch
-                # run even though sshd accepted the key and opened the
-                # session). The property under test is the greeting itself,
-                # which only an authenticated login shell can produce.
+                assert status == 0, f"login-shell command failed (status {status}): {output}"
                 assert "OS:" in output, (
-                    f"fastfetch did not greet the login (status {status}): {output}"
+                    f"fastfetch did not greet the login: {output}"
                 )
 
             # The guards must keep non-interactive ssh commands and local
