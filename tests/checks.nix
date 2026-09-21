@@ -1411,20 +1411,21 @@
                 )
 
             # The fastfetch greeting is a login-SHELL hook, not an sshd
-            # feature: drive a real login shell through a real sshd
-            # session (SSH_CONNECTION is set by sshd itself). SSH_TTY is
-            # injected because pty sessions stall in this harness (with
-            # -tt the remote shell never exits: lost exit-status in one
-            # run, a 900s hang in another — independent of this hook,
-            # which was sabotaged out in the first failing run). SSH_TTY
-            # is exactly the marker sshd sets for interactive sessions.
+            # feature: drive a real interactive pty session through real
+            # sshd, which then sets SSH_CONNECTION and SSH_TTY itself —
+            # nothing injected. The </dev/null is load-bearing: ssh -tt
+            # bridges its local stdin into the remote pty, and the test
+            # driver's console stdin never EOFs, so the client lingers
+            # until the driver timeout (root-caused via a variant matrix:
+            # every -tt form stalls, every form passes with stdin
+            # detached — bash/profile/the hook are irrelevant).
             with subtest("fastfetch greets interactive SSH logins when installed"):
                 status, output = client.execute(
                     "ssh -i /root/test-key"
-                    + ssh_batch
-                    + " testuser@server 'env SSH_TTY=/dev/pts/9 bash -lc true' 2>&1"
+                    + ssh_flags
+                    + " -tt testuser@server 'bash -lc true' </dev/null 2>&1"
                 )
-                assert status == 0, f"login-shell command failed (status {status}): {output}"
+                assert status == 0, f"forced-TTY login failed (status {status}): {output}"
                 assert "OS:" in output, (
                     f"fastfetch did not greet the login: {output}"
                 )
