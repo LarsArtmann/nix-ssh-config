@@ -163,6 +163,22 @@ in
         evaluation time because they can break the sshd banner channel.
       '';
     };
+
+    fastfetchOnLogin = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Greet interactive SSH logins with fastfetch - but only when the
+        fastfetch binary is installed on the host; without it the hook is a
+        no-op, so the option is safe to leave on everywhere. The hook runs
+        from environment.loginShellInit, the one hook bash (/etc/profile),
+        zsh (/etc/zprofile) and fish (babelfish-translated) all execute for
+        login shells; guards on SSH_CONNECTION and SSH_TTY keep scp, sftp
+        subsystems, remote commands, local logins and scheduled jobs
+        silent, and a marker variable fires it once per session (su, tmux
+        panes). Set false to remove the hook entirely.
+      '';
+    };
   };
 
   config = lib.mkIf config.services.ssh-server.enable {
@@ -265,6 +281,24 @@ in
       config.services.ssh-server.kbdInteractiveAuthentication
       && config.services.ssh-server.usePam != false
     ) (lib.mkForce true);
+
+    # fastfetchOnLogin must hook the login-shell path, NOT /etc/profile.d:
+    # NixOS's /etc/profile never sources that directory (verified against
+    # nixpkgs shells-environment.nix), so a profile.d file would be inert.
+    # environment.loginShellInit is consumed by bash's /etc/profile, zsh's
+    # /etc/zprofile and fish's babelfish-translated loginShellInit - login
+    # shells only. POSIX sh inside: babelfish must be able to translate it.
+    environment.loginShellInit = lib.mkIf config.services.ssh-server.fastfetchOnLogin ''
+      # Greet interactive SSH logins with fastfetch when it is installed.
+      # The guards keep scp, sftp subsystems, remote commands, local
+      # logins and scheduled jobs silent; the marker (exported, survives
+      # su and tmux) fires it once per session.
+      if [ -z "''${SSH_FASTFETCH_SHOWN:-}" ] && [ -n "''${SSH_CONNECTION:-}" ] && [ -n "''${SSH_TTY:-}" ] && command -v fastfetch >/dev/null 2>&1; then
+          SSH_FASTFETCH_SHOWN=1
+          export SSH_FASTFETCH_SHOWN
+          fastfetch
+      fi
+    '';
 
     environment.etc =
       (lib.optionalAttrs (config.services.ssh-server.authorizedKeys != [ ]) {
