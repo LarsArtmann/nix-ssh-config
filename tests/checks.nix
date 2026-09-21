@@ -1264,6 +1264,12 @@
             start_all()
             server.wait_for_unit("sshd.service")
             server.wait_for_open_port(22)
+            # Boot race (AGENTS: start_all does not guarantee every node
+            # finished booting): the first client->server ssh must wait
+            # until the client actually has a route, or it dies with
+            # "Network is unreachable" (observed 2026-09-21 under heavy
+            # host load).
+            client.wait_until_succeeds("ip route show default | grep -q .")
 
             # One place to change the ssh flags every subtest shares.
             ssh_flags = (

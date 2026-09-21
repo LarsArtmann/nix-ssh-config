@@ -167,3 +167,14 @@ _Format note: written as Markdown per your explicit instruction — the status-r
 _Next step per the status-report skill: section (f) is HARVEST input for TODO_LIST.md/ROADMAP.md (docs-health) — say the word and I'll run it._
 
 **WAITING FOR INSTRUCTIONS.**
+
+---
+
+## Appendix — instructions received and executed (16:30 CEST)
+
+Answers to (g): (1) tag now; (2) hosts — "none of your issue" (user handles installs); (3) root-cause the stall.
+
+1. **v0.1.5 released (locally)** — CHANGELOG `Unreleased` dated as `[v0.1.5] - 2026-09-21`, committed as `7007044`, annotated tag `v0.1.5` created. **Not pushed** — `git push origin master v0.1.5` is the user's call. Host installs: user's own.
+2. **The `-tt`/pty stall is ROOT-CAUSED** (was b-5/d-2, now resolved). One VM run with a 6-variant matrix proved it: **every `ssh -tt` form stalls when the client's stdin is the driver's console (it never EOFs — `-tt` bridges that stdin into the remote pty), and every form passes with stdin detached** (`</dev/null`). bash, the profile chain and the hook were never involved. Second, separate find: with a _real_ pty, fastfetch sees a TTY and colorizes labels, so the literal `"OS:"` assertion could never match (the earlier injected-`SSH_TTY` variant passed only because pipe-stdout disabled colors). Also hit the documented boot-race class live (`Network is unreachable`) and hardened it with the AGENTS-prescribed explicit wait (`client.wait_until_succeeds("ip route show default | grep -q .")`).
+3. **Subtest upgraded to the strictly stronger proof**: real interactive pty session, sshd sets `SSH_CONNECTION`/`SSH_TTY` itself (nothing injected), login shell re-enters `/etc/profile`, ANSI-stripped assertion, deterministic exit. Kill-switch re-proven red-first on the new form (sabotaged guard → exactly that subtest fails, exit status clean). One intermittent driver flake (`int('')` console-parse under boot-log flood) appeared once and passed on re-run — pre-existing fragility, noted for (f).
+4. **Final gate state**: fmt clean, statix clean, `nix flake check --all-systems --no-build` green, full `nix flake check` (VM, 15 subtests) green. AGENTS gotcha updated with the root cause and the load-bearing `</dev/null`. The v0.1.5 tag contains the earlier injected-`SSH_TTY` test form; these test upgrades live on master after the tag (normal flow).
