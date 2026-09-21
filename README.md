@@ -230,22 +230,22 @@ Configures OpenSSH server (sshd) with hardening.
 
 #### Options
 
-| Option                                             | Type       | Default                  | Description                                                                                                                                  |
-| -------------------------------------------------- | ---------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `services.ssh-server.enable`                       | bool       | `false`                  | Enable SSH server                                                                                                                            |
-| `services.ssh-server.port`                         | int        | `22`                     | Listen port                                                                                                                                  |
-| `services.ssh-server.listenAddresses`              | list       | `[]`                     | `{ addr, port ? }` addresses to bind; empty listens on all interfaces at `port`; non-empty overrides the plain port binding                  |
-| `services.ssh-server.usePam`                       | bool\|null | `null`                   | PAM authentication (`null` = NixOS default `true`; `false` = PAM-free host); only matters with `kbdInteractiveAuthentication = true` for 2FA |
-| `services.ssh-server.authenticationMethods`        | str\|null  | `null`                   | `AuthenticationMethods` directive; commas chain methods in sequence, e.g. `publickey,keyboard-interactive` for two-factor auth               |
-| `services.ssh-server.allowUsers`                   | list       | `[]`                     | Allowed users                                                                                                                                |
-| `services.ssh-server.allowRootLogin`               | bool       | `false`                  | Allow root login; emits `prohibit-password` when keys-only, `yes` only if `passwordAuthentication` is also on                                |
-| `services.ssh-server.passwordAuthentication`       | bool       | `false`                  | Allow passwords                                                                                                                              |
-| `services.ssh-server.kbdInteractiveAuthentication` | bool       | `passwordAuthentication` | Allow keyboard-interactive (defaults to follow `passwordAuthentication`; set `true` explicitly for PAM-backed 2FA)                           |
-| `services.ssh-server.authorizedKeys`               | list       | `[]`                     | SSH public keys to authorize (file is **copied** into `/etc`, not symlinked — sshd StrictModes rejects store symlinks)                       |
-| `services.ssh-server.authorizedKeysFiles`          | list       | (see below)              | Key file paths                                                                                                                               |
-| `services.ssh-server.extraSettings`                | attrs      | `{}`                     | Extra OpenSSH settings                                                                                                                       |
-| `services.ssh-server.bannerText`                   | str\|null  | default banner           | SSH banner (null to disable; control characters are rejected at evaluation time)                                                             |
-| `services.ssh-server.fastfetchOnLogin`             | bool       | `true`                   | Greet interactive SSH logins with fastfetch when it is installed (no-op without it); login shells only — scp, sftp, remote commands and local logins never trigger it  |
+| Option                                             | Type       | Default                  | Description                                                                                                                                                           |
+| -------------------------------------------------- | ---------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `services.ssh-server.enable`                       | bool       | `false`                  | Enable SSH server                                                                                                                                                     |
+| `services.ssh-server.port`                         | int        | `22`                     | Listen port                                                                                                                                                           |
+| `services.ssh-server.listenAddresses`              | list       | `[]`                     | `{ addr, port ? }` addresses to bind; empty listens on all interfaces at `port`; non-empty overrides the plain port binding                                           |
+| `services.ssh-server.usePam`                       | bool\|null | `null`                   | PAM authentication (`null` = NixOS default `true`; `false` = PAM-free host); only matters with `kbdInteractiveAuthentication = true` for 2FA                          |
+| `services.ssh-server.authenticationMethods`        | str\|null  | `null`                   | `AuthenticationMethods` directive; commas chain methods in sequence, e.g. `publickey,keyboard-interactive` for two-factor auth                                        |
+| `services.ssh-server.allowUsers`                   | list       | `[]`                     | Allowed users                                                                                                                                                         |
+| `services.ssh-server.allowRootLogin`               | bool       | `false`                  | Allow root login; emits `prohibit-password` when keys-only, `yes` only if `passwordAuthentication` is also on                                                         |
+| `services.ssh-server.passwordAuthentication`       | bool       | `false`                  | Allow passwords                                                                                                                                                       |
+| `services.ssh-server.kbdInteractiveAuthentication` | bool       | `passwordAuthentication` | Allow keyboard-interactive (defaults to follow `passwordAuthentication`; set `true` explicitly for PAM-backed 2FA)                                                    |
+| `services.ssh-server.authorizedKeys`               | list       | `[]`                     | SSH public keys to authorize (file is **copied** into `/etc`, not symlinked — sshd StrictModes rejects store symlinks)                                                |
+| `services.ssh-server.authorizedKeysFiles`          | list       | (see below)              | Key file paths                                                                                                                                                        |
+| `services.ssh-server.extraSettings`                | attrs      | `{}`                     | Extra OpenSSH settings                                                                                                                                                |
+| `services.ssh-server.bannerText`                   | str\|null  | default banner           | SSH banner (null to disable; control characters are rejected at evaluation time)                                                                                      |
+| `services.ssh-server.fastfetchOnLogin`             | bool       | `true`                   | Greet interactive SSH logins with fastfetch when it is installed (no-op without it); login shells only — scp, sftp, remote commands and local logins never trigger it |
 
 Default `authorizedKeysFiles`:
 
@@ -352,7 +352,7 @@ without which upstream nixpkgs would deny every prompt:
   no-op until fastfetch is installed on the host; runs via the login-shell
   hook only — never for scp, sftp subsystems, remote commands, local
   logins or scheduled jobs; set `services.ssh-server.fastfetchOnLogin =
-  false` to opt out)
+false` to opt out)
 
 ### Client Defaults
 
