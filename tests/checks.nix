@@ -178,6 +178,17 @@
       # state: the module must contribute nothing to openssh or /etc.
       nixosDisabledEval = mkNixosEval [ ];
 
+      # fastfetchOnLogin opt-out: the login hook must disappear entirely,
+      # leaving environment.loginShellInit untouched for other modules.
+      nixosFastfetchOffEval = mkNixosEval [
+        {
+          services.ssh-server = {
+            enable = true;
+            fastfetchOnLogin = false;
+          };
+        }
+      ];
+
       # Port property evals: types.port is 0–65535, so out-of-range values
       # must make the config throw at eval time — both on the top-level
       # port option and on the listenAddresses sub-module's port field.
@@ -989,6 +1000,48 @@
             actual = nixosDisabledEval.config.environment.etc ? "ssh/authorized_keys";
             expected = false;
           }
+          {
+            name = "no fastfetch login hook generated";
+            actual = nixosDisabledEval.config.environment.loginShellInit;
+            expected = "";
+          }
+        ];
+
+        # The fastfetch login greeting: option default, hook wiring, the
+        # guards that keep non-interactive/non-SSH shells silent, and the
+        # clean opt-out. Runtime proof lives in the VM test (real sshd,
+        # real login shell); these evals pin the wiring itself.
+        nixos-fastfetch-login = assertEq "nixos-fastfetch-login" [
+          {
+            name = "fastfetchOnLogin defaults to true";
+            actual = nixosEval.config.services.ssh-server.fastfetchOnLogin;
+            expected = true;
+          }
+          {
+            name = "hook is wired into environment.loginShellInit";
+            actual = lib.hasInfix "fastfetch" nixosEval.config.environment.loginShellInit;
+            expected = true;
+          }
+          {
+            name = "hook guards on session marker, SSH connection, TTY, and installed binary";
+            actual = map (s: lib.hasInfix s nixosEval.config.environment.loginShellInit) [
+              "SSH_FASTFETCH_SHOWN"
+              "SSH_CONNECTION"
+              "SSH_TTY"
+              "command -v fastfetch"
+            ];
+            expected = [
+              true
+              true
+              true
+              true
+            ];
+          }
+          {
+            name = "fastfetchOnLogin = false removes the hook entirely";
+            actual = nixosFastfetchOffEval.config.environment.loginShellInit;
+            expected = "";
+          }
         ];
 
         # Port property tests: out-of-range ports must be rejected at
@@ -1114,7 +1167,13 @@
                   isNormalUser = true;
                   description = "VM test login user";
                 };
-                environment.systemPackages = [ pkgs.openssh ];
+                # fastfetch is deliberately installed ONLY on this node: the
+                # login-greeting subtests prove the hook fires when the
+                # binary exists and stays silent when the guards say no.
+                environment.systemPackages = [
+                  pkgs.openssh
+                  pkgs.fastfetch
+                ];
                 system.stateVersion = "25.05";
               };
 
@@ -1349,6 +1408,38 @@
                 assert status == 0, f"key login failed: {output}"
                 assert "AUTHORIZED ACCESS ONLY" in output, (
                     f"banner not delivered to client: {output}"
+                )
+
+            # The fastfetch greeting is a login-SHELL hook, not an sshd
+            # feature: drive a real login shell through real sshd. sshd
+            # runs commands through a non-login shell, so `bash -lc`
+            # re-enters /etc/profile where the hook lives; `-tt` forces the
+            # TTY that makes sshd set SSH_TTY on the server side.
+            with subtest("fastfetch greets interactive SSH logins when installed"):
+                status, output = client.execute(
+                    "ssh -i /root/test-key"
+                    + ssh_flags
+                    + " -tt testuser@server 'bash -lc true' 2>&1"
+                )
+                assert status == 0, f"forced-TTY login failed: {output}"
+                assert "OS:" in output, f"fastfetch did not greet the login: {output}"
+
+            # The guards must keep non-interactive ssh commands and local
+            # (non-SSH) login shells silent — scp/rsync/systemd output
+            # contracts depend on this.
+            with subtest("fastfetch stays quiet for commands and local shells"):
+                status, output = client.execute(
+                    "ssh -i /root/test-key"
+                    + ssh_batch
+                    + " testuser@server -- true 2>&1"
+                )
+                assert status == 0, f"plain command login failed: {output}"
+                assert "OS:" not in output, (
+                    f"fastfetch leaked into a non-interactive command: {output}"
+                )
+                local = server.succeed('bash -lc "true"')
+                assert "OS:" not in local, (
+                    f"fastfetch fired on a local non-SSH login shell: {local}"
                 )
 
             # HM-in-NixOS runtime proof: the Home Manager client module —
